@@ -1,8 +1,8 @@
 public class MenuModel
 {
-    public int ID { get; set; }
-    public string Food { get; set; }
-    public string Drink { get; set; }
+    public int MenuID { get; set; }
+    public string Food { get; set; } = "";
+    public string Drink { get; set; } = "";
     public double Price { get; set; }
 
     public MenuModel(int id, string food, string drink, double price)
