@@ -5,11 +5,11 @@ public class MenuModel
     public string Drink { get; set; }
     public double Price { get; set; }
 
-    public MenuModel(int ID, string Food, string Drink, double Price)
+    public MenuModel(int id, string food, string drink, double price)
     {
         ID = id;
         Food = food;
         Drink = drink;
         Price = price;
-    }
+    }   
 }
