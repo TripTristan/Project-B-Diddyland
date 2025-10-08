@@ -6,7 +6,7 @@ public static class AppFactory
     public static UserLoginUI CreateLoginUI()
     {
         var repo = new AccountRepository();
-        var logic = new UserLogic(repo);
+        var logic = new AcounyntLogicLogic(repo);
         var ui = new UserLoginUI(logic);
         return ui;
     }

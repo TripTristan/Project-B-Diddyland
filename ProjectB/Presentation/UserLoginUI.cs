@@ -20,6 +20,7 @@ public class UserLoginUI
             if (success)
             {
                 Console.WriteLine("Login successful!");
+
                 break;
             }
             else
@@ -63,7 +64,7 @@ public class UserLoginUI
         return successOrFailure;
     }
 
-
+    
     // do while loop >>> non-empty input
     private string Input_Read(string text)
     {
