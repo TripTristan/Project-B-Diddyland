@@ -4,7 +4,7 @@ public class UserLogoutUI
     private void ShowLogoutMenu()
     {
         Console.WriteLine("=== Logout Menu ===");
-        Console.WriteLine("Are you sure you want to logout? (1) Yes (2) No");
+        Console.WriteLine("Are you sure you want to logout?\n(1) Yes \n(2) No");
 
         while (true)
         {
@@ -33,8 +33,5 @@ public class UserLogoutUI
         string message = _logic.Logout();
         Console.WriteLine(message);
     }
-    //#########################################################################################
-
-
 
 }

@@ -1,14 +1,13 @@
 public class UserLoginUI
 {
-    private readonly UserLogic _logic;
+    private readonly Loginlogic _logic;
 
-    public UserLoginUI(UserLogic logic)
+    public UserLoginUI(Loginlogic logic)
     {
         _logic = logic;
     }
 
 
-    // start point of Login function
     public void StartLogin()
     {
         Console.WriteLine("=== Customer Login  ===");
@@ -26,6 +25,7 @@ public class UserLoginUI
             else
             {
                 Console.WriteLine("Invalid username or password.");
+                Console.WriteLine("Please try again.");
 
                 if (!LoginAgain())
                 {
@@ -37,7 +37,6 @@ public class UserLoginUI
     }
 
 
-    // do while loop >>> Try again? (y/n) >>> return true/false
     private bool LoginAgain()
     {
         Console.Write("Try again? (y/n): ");
@@ -59,13 +58,11 @@ public class UserLoginUI
         string username = Input_Read("Username: ");
         string password = Input_Read("Password: ");
 
-        // Call the logic layer >>>> userLogics
         bool successOrFailure = _logic.AccountVerify(username, password); 
         return successOrFailure;
     }
 
     
-    // do while loop >>> non-empty input
     private string Input_Read(string text)
     {
         string input;

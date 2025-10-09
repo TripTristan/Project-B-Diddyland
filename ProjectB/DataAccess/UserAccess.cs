@@ -18,6 +18,13 @@ public class UsersAccess
         return _connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
     }
 
+    public UserModel? GetByUsername(string username)
+    {
+        const string sql = "SELECT * FROM Account WHERE Username = @Username";
+        return _connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
+    }
+
+
     public IEnumerable<UserModel> GetAll()
     {
         const string sql = "SELECT * FROM Account";

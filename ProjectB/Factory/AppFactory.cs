@@ -1,16 +1,12 @@
 public static class AppFactory
 {
-
-    // factory method
-    // userLoginUI >>> userLogics >>> userRepository
+    // userLoginUI >>> LoginLogics >>> userAccess
     public static UserLoginUI CreateLoginUI()
     {
-        var repo = new AccountRepository();
-        var logic = new AcounyntLogicLogic(repo);
+        var repo = new UsersAccess();
+        var logic = new Loginlogic(repo);
         var ui = new UserLoginUI(logic);
         return ui;
     }
-    //#########################################################
-
 
 }
