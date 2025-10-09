@@ -11,12 +11,14 @@ public class MenuLogic
 
     public void AddItem(string? food, string? drink, double price)
     {
-        food ??= "";        // Set Defaullt Value
-        drink ??= "";       
+        food ??= "";        // Set defaullt value
+        drink ??= "";
 
-        if (string.IsNullOrWhiteSpace(food) && string.IsNullOrWhiteSpace(drink))
-            throw new ArgumentException("Provide at least a food or a drink name.");
-        if (price < 0) throw new ArgumentException("Price cannot be negative.");
+        if (string.IsNullOrWhiteSpace(food) && string.IsNullOrWhiteSpace(drink))        // Nothing filled in
+            return "Please provide at least a food or drink name.";
+
+        if (price < 0)      // Negative price
+            return "Price cannot be negative.";
 
         var model = new MenuModel
         {
@@ -26,10 +28,20 @@ public class MenuLogic
         };
 
         _access.Insert(model);
+            return "Item added successfully!";
     }
-
 
     public void AddFood(string name, double price) => AddItem(name, "", price);
     public void AddDrink(string name, double price) => AddItem("", name, price);
+
+    public void RemoveItem(int menuId)
+    {
+        var existing = _access.GetById(menuId);
+        if (existing == null)       // Item not found
+            return $"Menu item with ID {menuId} not found.";
+
+        _access.Delete(menuId);
+            return "Item removed successfully.";
+    }
 
 }
