@@ -5,9 +5,9 @@ public class MenuModel
     public string Drink { get; set; } = "";
     public double Price { get; set; }
 
-    public MenuModel(int id, string food, string drink, double price)
+    public MenuModel(int menuId, string food, string drink, double price)
     {
-        ID = id;
+        MenuID = menuId;
         Food = food;
         Drink = drink;
         Price = price;

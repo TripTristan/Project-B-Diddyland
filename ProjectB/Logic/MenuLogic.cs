@@ -28,7 +28,7 @@ public class MenuLogic
         };
 
         _access.Insert(model);
-            return "Item added successfully!";
+        return "Item added successfully!";
     }
 
     public void AddFood(string name, double price) => AddItem(name, "", price);
@@ -41,7 +41,9 @@ public class MenuLogic
             return $"Menu item with ID {menuId} not found.";
 
         _access.Delete(menuId);
-            return "Item removed successfully.";
+        return "Item removed successfully.";
     }
+
+    
 
 }
