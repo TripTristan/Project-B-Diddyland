@@ -3,9 +3,7 @@ using System.ComponentModel;
 public class ReservationUI
 {
     private readonly ReservationLogic _logic;
-    private readonly UserModel _customerInfo;
-
-    private const UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
+    private readonly UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
 
     public ReservationUI(ReservationLogic logic)
     {
@@ -19,10 +17,9 @@ public class ReservationUI
         if (_customerInfo == null)
         {
             bool guest = LoginOrNot();
-            if (guest)
+            if (!guest) // tru is as guest, false is to login
             {
                 LoginCustomer();
-                break;
             }
         }
 
@@ -37,7 +34,7 @@ public class ReservationUI
         SelectAndProcessSession(sessions);
     }
 
-    public staticvoid LoginCustomer()
+    public static void LoginCustomer()
     {
         UserLoginUI.StartLogin();
     }
@@ -52,12 +49,11 @@ public class ReservationUI
             if (choice == "y")
             {
                 Console.WriteLine("Continuing as guest...");
-                return;
+                return true;
             }
             else if (choice == "n")
             {
-                Console.WriteLine("Reservation cancelled. Please log in to continue.");
-                return;
+                return false;
             }
             else
             {
@@ -65,13 +61,6 @@ public class ReservationUI
             }
         }
     }
-
-
-
-
-
-
-
 
 
     public static void DisplaySessions(List<Session> sessions)
