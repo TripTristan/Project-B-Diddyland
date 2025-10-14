@@ -31,6 +31,14 @@ public class OrderLogic
         }
         return $"Added {quantity} × \"{CartLine.BuildLabel(item)}\" to cart.";
     }
+
+    public string RemoveFromCart(int menuId)
+    {
+        var existing = _cart.FirstOrDefault(c => c.Item.ID == menuId);
+        if (existing == null) return $"Item with ID {menuId} is not in the cart.";
+        _cart.Remove(existing);
+        return "Item removed from cart.";
+    }
 }
 
 public class CartLine
