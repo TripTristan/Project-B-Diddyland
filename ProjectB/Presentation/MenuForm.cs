@@ -35,7 +35,7 @@ public static class MenuForm
         while (true)
         {
             Console.Clear();
-            Console.WriteLine(FormatMenu(logic.GetAll()));
+            Console.WriteLine(FormatMenu(logic.GetAll())); // only run this for non amdin users
             Console.WriteLine();
             Console.WriteLine("Choose an action:");
             Console.WriteLine("[1] Add FOOD");
