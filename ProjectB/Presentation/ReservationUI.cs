@@ -17,7 +17,7 @@ public class ReservationUI
         if (_customerInfo == null)
         {
             bool guest = LoginOrNot();
-            if (!guest) // tru is as guest, false is to login
+            if (!guest) // true is as guest, false is to login
             {
                 LoginCustomer();
             }
@@ -30,13 +30,13 @@ public class ReservationUI
             return;
         }
 
-        DisplaySessions(sessions);
+        DisplaySessions(sessions);//Show available sessions
         SelectAndProcessSession(sessions);
     }
 
     public static void LoginCustomer()
     {
-        UserLoginUI.StartLogin();
+        UserLoginUI.StartLogin(); // 
     }
 
     public static bool LoginOrNot()
@@ -114,28 +114,34 @@ public class ReservationUI
     {
         Dictionary<int, int> bookProcessPrepare = new Dictionary<int, int>();
 
+
         while (true)
         {
             int choice = GetSessionChoice(sessions);
             int bookingQuantity = GetBookingQuantity(sessions, choice);
             bookProcessPrepare[choice] = bookingQuantity;
 
-            if (AnOtherSession()) continue;
-
-            if (ConfirmReservation())
+            if (AnOtherSession())
             {
-                foreach (var (key, value) in bookProcessPrepare)
-                {
-                    string orderNumber = _logic.CreateBooking(sessions[key].Id, value, _customerInfo);
-                    ShowSuccessMessage(orderNumber);
-                    ShowBookingDetails(orderNumber, bookProcessPrepare);
-                }
-                return;
+                continue;
             }
             else
             {
-                Console.WriteLine("Reservation cancelled.");
-                return;
+                if (ConfirmReservation())
+                {
+                    foreach (var (key, value) in bookProcessPrepare)
+                    {
+                        string orderNumber = _logic.CreateBooking(sessions[key].Id, value, _customerInfo);
+                        ShowSuccessMessage(orderNumber);
+                        ShowBookingDetails(orderNumber, bookProcessPrepare);
+                    }
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine("Reservation cancelled.");
+                    return;
+                }
             }
         }
     }
