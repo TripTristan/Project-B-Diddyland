@@ -39,6 +39,15 @@ public class OrderLogic
         _cart.Remove(existing);
         return "Item removed from cart.";
     }
+
+    public string UpdateQuantity(int menuId, int quantity)
+    {
+        if (quantity <= 0) return "Quantity must be at least 1.";
+        var existing = _cart.FirstOrDefault(c => c.Item.ID == menuId);
+        if (existing == null) return $"Item with ID {menuId} is not in the cart.";
+        existing.Quantity = quantity;
+        return "Quantity updated.";
+    }
 }
 
 public class CartLine
