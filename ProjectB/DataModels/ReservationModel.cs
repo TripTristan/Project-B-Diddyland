@@ -6,4 +6,5 @@ public class ReservationModel
     public double Price { get; set; }
     public string Date { get; set; } = "";
     public int Amount { get; set; }
+    public string Time { get; set; } = ""; //morning, afternoon
 }
