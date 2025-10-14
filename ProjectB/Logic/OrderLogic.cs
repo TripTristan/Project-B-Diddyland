@@ -51,6 +51,22 @@ public class OrderLogic
 
     public double GetTotal() => _cart.Sum(c => c.LineTotal);
     public bool IsCartEmpty() => !_cart.Any();
+
+    public OrderSummary FinalizeOrder()
+    {
+        var lines = _cart.Select(c => new OrderLineSnapshot(
+            c.Item.ID,
+            c.Item.Food,
+            c.Item.Drink,
+            c.Item.Price,
+            c.Quantity
+        )).ToList();
+
+        var total = lines.Sum(l => l.Price * l.Quantity);
+        var summary = new OrderSummary(DateTime.Now, lines, total);
+        _cart.Clear();
+        return summary;
+    }
 }
 
 public class CartLine
