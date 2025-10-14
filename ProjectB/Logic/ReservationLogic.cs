@@ -12,6 +12,7 @@ public class ReservationLogic
         _bookingRepo = bookingRepo;
     }
 
+
     public List<Session> GetAvailableSessions()
     {
         List<Session> allSessions = _sessionRepo.GetAllSessions();
@@ -26,6 +27,14 @@ public class ReservationLogic
         }
 
         return available;
+    }
+
+
+    public bool CanBookSession(int sessionId, int quantity) 
+    {
+        Session? session = _sessionRepo.GetSessionById(sessionId);
+        if (session == null) return false;
+        return session.CurrentBookings + quantity <= session.MaxCapacity;
     }
 
 
@@ -45,7 +54,7 @@ public class ReservationLogic
         session.CurrentBookings += quantity;
         _sessionRepo.UpdateSession(session);
 
-        string orderNumber = GenerateOrderNumber();
+        string orderNumber = GenerateOrderNumber(customer);
 
         Booking booking = new Booking
         {
@@ -61,15 +70,16 @@ public class ReservationLogic
         return orderNumber;
     }
 
-    private string GenerateOrderNumber()
+
+    private string GenerateOrderNumber(UserModel? customerInfo)
     {
         UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
         Random random = new Random();
         int randomNumber = random.Next(1000, 9999);
 
-        if (_customerInfo != null)
+        if (customerInfo != null)
         {
-            return $"ORD-{_customerInfo.Id}-{_customerInfo.Username}-{DateTime.Now:yyyyMMddHHmmss}-{randomNumber}-{Guid.NewGuid().ToString()[..4]}";
+            return $"ORD-{customerInfo.Id}-{customerInfo.Username}-{DateTime.Now:yyyyMMddHHmmss}-{randomNumber}-{Guid.NewGuid().ToString()[..4]}";
         }
         return $"ORD-{DateTime.Now:yyyyMMddHHmmss}-GUEST-{randomNumber}-{Guid.NewGuid().ToString()[..4]}";
     }
