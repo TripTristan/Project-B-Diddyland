@@ -14,6 +14,23 @@ public class OrderLogic
 
     public IEnumerable<MenuModel> GetAllMenuItems() => _menuLogic.GetAll();
     public IReadOnlyList<CartLine> GetCart() => _cart;
+
+    public string AddToCart(int menuId, int quantity)
+    {
+        if (quantity <= 0) return "Quantity must be at least 1.";
+        var item = _menuLogic.GetAll().FirstOrDefault(m => m.ID == menuId);
+        if (item == null) return $"Menu item with ID {menuId} not found.";
+        var existing = _cart.FirstOrDefault(c => c.Item.ID == menuId);
+        if (existing == null)
+        {
+            _cart.Add(new CartLine(item, quantity));
+        }
+        else
+        {
+            existing.Quantity += quantity;
+        }
+        return $"Added {quantity} × \"{CartLine.BuildLabel(item)}\" to cart.";
+    }
 }
 
 public class CartLine
