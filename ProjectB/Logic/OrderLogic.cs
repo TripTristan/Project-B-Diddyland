@@ -48,6 +48,9 @@ public class OrderLogic
         existing.Quantity = quantity;
         return "Quantity updated.";
     }
+
+    public double GetTotal() => _cart.Sum(c => c.LineTotal);
+    public bool IsCartEmpty() => !_cart.Any();
 }
 
 public class CartLine
