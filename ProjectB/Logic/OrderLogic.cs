@@ -59,7 +59,9 @@ public class OrderLogic
         )).ToList();
 
         var total = lines.Sum(l => l.Price * l.Quantity);
-        var summary = new OrderSummary(DateTime.Now, lines, total);
+        var orderTime = DateTime.Now;
+        var pickupTime = orderTime.AddMinutes(30); 
+        var summary = new OrderSummary(orderTime, pickupTime, lines, total);
         _cart.Clear();
         return summary;
     }
@@ -92,4 +94,4 @@ public record OrderLineSnapshot(int ID, string Food, string Drink, double Price,
     public double Subtotal => Price * Quantity;
 }
 
-public record OrderSummary(DateTime Timestamp, List<OrderLineSnapshot> Lines, double Total);
+public record OrderSummary(DateTime Timestamp, DateTime PickupTime, List<OrderLineSnapshot> Lines, double Total);

@@ -115,6 +115,7 @@ public static class OrderForm
         Console.Clear();
         Console.WriteLine("=== Order Confirmed ===");
         Console.WriteLine($"Time: {summary.Timestamp:G}");
+        Console.WriteLine($"Pickup Time: {summary.PickupTime:G}");
         Console.WriteLine();
 
         var sb = new StringBuilder();

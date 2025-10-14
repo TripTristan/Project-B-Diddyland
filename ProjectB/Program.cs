@@ -9,7 +9,7 @@
         while (true)
         {
             Console.Clear();
-            Console.WriteLine("=== THEME PARK ===");
+            Console.WriteLine("=== DIDDYLAND ===");
             Console.WriteLine("[1] Order (customer)");
             Console.WriteLine("[2] Manage Menu (admin)");
             Console.WriteLine("[0] Exit");
