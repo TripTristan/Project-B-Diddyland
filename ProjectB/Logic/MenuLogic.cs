@@ -44,6 +44,4 @@ public class MenuLogic
         return "Item removed successfully.";
     }
 
-    
-
 }
