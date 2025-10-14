@@ -11,6 +11,8 @@ public class OrderLogic
     {
         _menuLogic = menuLogic;
     }
+    
+    public IEnumerable<MenuModel> GetAllMenuItems() => _menuLogic.GetAll();
 }
 
 public class CartLine { }
