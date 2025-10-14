@@ -89,3 +89,11 @@ public class CartLine
         return parts.Count > 0 ? string.Join(" / ", parts) : "(Unnamed)";
     }
 }
+
+public record OrderLineSnapshot(int ID, string Food, string Drink, double Price, int Quantity)
+{
+    public string Label => CartLine.BuildLabel(new MenuModel(ID, Food, Drink, Price));
+    public double Subtotal => Price * Quantity;
+}
+
+public record OrderSummary(DateTime Timestamp, List<OrderLineSnapshot> Lines, double Total);
