@@ -38,7 +38,8 @@ public class ReservationLogic
     }
 
 
-    public string CreateBooking(int sessionId, int quantity, UserModel? customer)
+    // Shopping-cart // create booking
+    public string CreateBooking(int sessionId, int quantity, UserModel? customer, string OrderNumber)
     {
         Session? session = _sessionRepo.GetSessionById(sessionId);
         if (session == null)
@@ -54,8 +55,6 @@ public class ReservationLogic
         session.CurrentBookings += quantity;
         _sessionRepo.UpdateSession(session);
 
-        string orderNumber = GenerateOrderNumber(customer);
-
         Booking booking = new Booking
         {
             OrderNumber = orderNumber,
@@ -66,7 +65,6 @@ public class ReservationLogic
         };
 
         _bookingRepo.AddBooking(booking);
-
         return orderNumber;
     }
 

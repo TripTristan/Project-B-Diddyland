@@ -1,4 +1,6 @@
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class ReservationUI
 {
@@ -10,106 +12,101 @@ public class ReservationUI
         _logic = logic;
     }
 
+
     public void StartReservation()
     {
         Console.WriteLine("=== Reservation ===");
 
         if (_customerInfo == null)
         {
-            bool guest = LoginOrNot();
-            if (!guest) // true is as guest, false is to login
+            bool guest = ChoiceHelper(
+                "You are not logged in. Continue as guest?",
+                "Yes, continue as guest.",
+                "No, I want to log in."
+            );
+            if (!guest)
             {
                 LoginCustomer();
             }
         }
 
         List<Session> sessions = _logic.GetAvailableSessions();
-        DisplaySessions(sessions);//Show available sessions
-        SelectAndProcessSession(sessions); 
-    }
-
-    public static void LoginCustomer()
-    {
-        UserLoginUI.StartLogin(); // 
-    }
-
-    public static bool LoginOrNot()
-    {
-        while (true)
-        {
-            Console.Write("You are not logged in. Continue as guest? (y/n): ");
-            string choice = Console.ReadLine()?.Trim().ToLower();
-
-            if (choice == "y")
-            {
-                Console.WriteLine("Continuing as guest...");
-                return true;
-            }
-            else if (choice == "n")
-            {
-                return false;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-            }
-        }
-    }
-
-
-    public static void DisplaySessions(List<Session> sessions)
-    {
-        var groupedByDate = sessions
-            .GroupBy(s => s.Date)
-            .ToList();
-
         if (sessions.Count == 0)
         {
-            Console.WriteLine("Sorry, no available sessions at the moment.");
+            Console.WriteLine("No available sessions.");
             return;
         }
 
-        Console.WriteLine("Available Sessions:");
-        for (int i = 0; i < groupedByDate.Count; i++)
-        { // Time in here is only 1 or 2 (morning or afternoon)
-        //     var session = sessions[i];
-        //     Console.WriteLine($"{i}. Date: {session.Date}, Time: {session.Time}, Available Spots: {session.MaxCapacity - session.CurrentBookings}");
-        Console.WriteLine($"{i}. {groupedByDate[i].Key:yyyy-MM-dd}");
-        }
+        DisplayDates(sessions);
+        SelectAndProcessSession(sessions);
     }
 
 
-    public static int GetSessionChoice()
+    public static void LoginCustomer()
     {
-        int choice;
+        UserLoginUI.StartLogin();
+    }
+
+
+    public static bool ChoiceHelper(string message, string yesOption, string noOption)
+    {
         while (true)
         {
-            Console.Write("Please select a session number: 1 or 2: \n 1. Morning \n 2. Afternoon\n");
-            if (int.TryParse(Console.ReadLine(), out choice) && choice == 1 || choice == 2)
-            {
-                return choice;
-            }
-            Console.WriteLine("Invalid input. Please try again.");
+            Console.WriteLine($"{message} (y/n):\n y - {yesOption}\n n - {noOption}");
+            string choice = Console.ReadLine()?.Trim().ToLower();
+
+            if (choice == "y") return true;
+            if (choice == "n") return false;
+
+            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
         }
     }
 
 
-    public static int GetBookingQuantity(List<Session> sessions, int choice)
+    public int GetBookingQuantity(Session session) // Get and verify booking quantity
     {
-        int quantity;
         while (true)
         {
             Console.Write("Enter the number of bookings you want to make: ");
-            if (int.TryParse(Console.ReadLine(), out quantity) && quantity > 0)
+            if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
             {
-                if (_logic.CanBookSession(sessions[choice].Id, quantity))
+                if (_logic.CanBookSession(session.Id, quantity))
                 {
                     return quantity;
                 }
                 else
                 {
-                    Console.WriteLine("Not enough available seats.\nPlease choose another quantity.");
+                    Console.WriteLine("Not enough available seats. Please try again.");
                 }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a positive number.");
+            }
+        }
+    }
+
+
+    public static void DisplayDates(List<Session> sessions)
+    {
+        Console.WriteLine("\nAvailable sessions:");
+
+        var orderedGroups = sessions
+            .GroupBy(s => s.Date)   
+            .OrderBy(g => g.Key);   // ascending
+
+        int index = 0;
+        foreach (var group in orderedGroups)
+        {
+            Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
+            var orderedInDay = group.OrderBy(s => s.Time);
+
+            foreach (var s in orderedInDay)
+            {
+                Console.WriteLine(
+                    $"{index++}. Date: {s.Date:yyyy-MM-dd}, " +
+                    $"Time: {s.Time}, " +
+                    $"Available Spots: {s.MaxCapacity - s.CurrentBookings}\n");
             }
         }
     }
@@ -117,11 +114,10 @@ public class ReservationUI
 
     public static int GetDateChoice(List<IGrouping<DateOnly, Session>> groupedByDate)
     {
-        int datachoice;
         while (true)
         {
             Console.Write("Please select a date number: ");
-            if (int.TryParse(Console.ReadLine(), out choice) && choice >= 0 && choice < groupedByDate.Count)
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice < groupedByDate.Count)
             {
                 return choice;
             }
@@ -130,122 +126,86 @@ public class ReservationUI
     }
 
 
-    public static ShowSessionsByDate(List<IGrouping<DateOnly, Session>> groupedByDate, int dateChoice)
+    public static void ShowSessionsByDate(List<IGrouping<DateOnly, Session>> groupedByDate, int dateChoice)
     {
-        Console.WriteLine($"Available Sessions on {groupedByDate[dateChoice].Key:yyyy-MM-dd}:");
+        Console.WriteLine($"\nAvailable Sessions on {groupedByDate[dateChoice].Key:yyyy-MM-dd}:");
         var sessionsOnDate = groupedByDate[dateChoice].ToList();
-        for (int j = 0; j < sessionsOnDate.Count; j++)
+        for (int i = 0; i < sessionsOnDate.Count; i++)
         {
-            var session = sessionsOnDate[j];
-            Console.WriteLine($"{j}. Time: {session.Time}, Available Spots: {session.MaxCapacity - session.CurrentBookings}");
+            var s = sessionsOnDate[i];
+            Console.WriteLine($"{i}. Time: {s.Time}, Available Spots: {s.MaxCapacity - s.CurrentBookings}");
         }
     }
 
 
-    //#########################################################################################################################################
+    public static int GetSessionChoice(List<Session> sessionsOnDate)
+    {
+        while (true)
+        {
+            Console.Write("Select a session number: ");
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice < sessionsOnDate.Count)
+            {
+                return choice;
+            }
+            Console.WriteLine("Invalid input. Please try again.");
+        }
+    }
+
+
+
     public void SelectAndProcessSession(List<Session> sessions)
     {
-        Dictionary<int, int, int> bookProcessPrepare = new Dictionary<int, int>();
-
+        var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
+        Dictionary<int, int> bookingSelections = new(); // sessionId -> quantity
 
         while (true)
         {
-            var groupedByDate = sessions
-            .GroupBy(s => s.Date)
-            .ToList();
-
-
             int dateChoice = GetDateChoice(groupedByDate);
+            var sessionsOnDate = groupedByDate[dateChoice].ToList();
+
             ShowSessionsByDate(groupedByDate, dateChoice);
-            int sessionChoice = GetSessionChoice();//1 or 2  morning or afternoon
-            
+            int sessionChoice = GetSessionChoice(sessionsOnDate);
+            Session selectedSession = sessionsOnDate[sessionChoice];
 
+            int bookingQuantity = GetBookingQuantity(selectedSession);
+            bookingSelections[selectedSession.Id] = bookingQuantity;
 
+            bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop.");
+            if (!another) break;
+        }
 
-            int bookingQuantity = GetBookingQuantity(sessionsChoice, choice);
+        bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
+        if (confirm)
+        {
+            string orderNumber = _logic.GenerateOrderNumber(_customerInfo); // unikue order nr// shopping-car 
 
-            bookProcessPrepare[dateChoice][sessionChoice] = bookingQuantity;
-
-            if (AnOtherSession())
+            foreach (var (sessionId, quantity) in bookingSelections)
             {
-                continue;
+                _logic.CreateBooking(sessionId, quantity, _customerInfo, orderNumber);
             }
-            else
-            {
-                if (ConfirmReservation())
-                {
-                    foreach (var (key, value) in bookProcessPrepare)
-                    {
-                        string orderNumber = _logic.CreateBooking(sessions[key].Id, value, _customerInfo);
-                        // default here
 
-
-
-                        ShowSuccessMessage(orderNumber);
-                        ShowBookingDetails(orderNumber, bookProcessPrepare);
-
-
-                    }
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine("Reservation cancelled.");
-                    return;
-                }
-            }
+            ShowSuccessMessage(orderNumber);
+            ShowBookingDetails("Multiple Orders", bookingSelections);
         }
-    }
-    
-
-    public static bool DateSelect()
-    {
-        while (true)
+        else
         {
-            Console.Write("Do you want to book another session? (y/n): ");
-            string choice = Console.ReadLine()?.Trim().ToLower();
-            if (choice == "y") return true;
-            if (choice == "n") return false;
-            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
+            Console.WriteLine("Reservation cancelled.");
         }
     }
 
-
-    public static bool AnOtherSession()
-    {
-        while (true)
-        {
-            Console.Write("Do you want to book another session? (y/n): ");
-            string choice = Console.ReadLine()?.Trim().ToLower();
-            if (choice == "y") return true;
-            if (choice == "n") return false;
-            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-        }
-    }
-
-    public static bool ConfirmReservation()
-    {
-        while (true)
-        {
-            Console.Write("Are you sure you want to make this reservation? (y/n): ");
-            string choice = Console.ReadLine()?.Trim().ToLower();
-            if (choice == "y") return true;
-            if (choice == "n") return false;
-            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-        }
-    }
 
     public static void ShowBookingDetails(string orderNumber, Dictionary<int, int> bookingDetails)
     {
         Console.WriteLine("---------------------");
         Console.WriteLine($"Order Number: {orderNumber}");
         Console.WriteLine("Booking Details:");
-        foreach (var (key, value) in bookingDetails)
+        foreach (var (sessionId, quantity) in bookingDetails)
         {
-            Console.WriteLine($"Session {key}: {value} bookings");
+            Console.WriteLine($"Session ID {sessionId}: {quantity} bookings");
         }
         Console.WriteLine("---------------------");
     }
+
 
     public static void ShowSuccessMessage(string orderNumber)
     {
