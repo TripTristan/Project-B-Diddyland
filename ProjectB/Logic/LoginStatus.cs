@@ -1,8 +1,8 @@
 public static class LoginStatus
 {
-    public static UserModel? CurrentAccountInfo { get; private set; }
+    public static UserModel? CurrentUserInfo { get; private set; } // wie is ingelogd // current user
 
-    public static void Login(UserModel accountInfo) => CurrentAccountInfo= accountInfo; 
+    public static void Login(UserModel accountInfo) => CurrentUserInfo= accountInfo; 
 
-    public static void Logout() => CurrentAccountInfo = null;
+    public static void Logout() => CurrentUserInfo = null;
 }
