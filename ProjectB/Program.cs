@@ -1,12 +1,36 @@
 ﻿public class Program
 {
-    static void Main()
+    public static void Main()
     {
-        var access = new MenusAccess();
-        var logic = new MenuLogic(access);
+        var menusAccess = new MenusAccess();
+        var menuLogic = new MenuLogic(menusAccess);
+        var orderLogic = new OrderLogic(menuLogic);
 
-        // Start the console UI
-        MenuForm.Run(logic);
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== THEME PARK ===");
+            Console.WriteLine("[1] Order (customer)");
+            Console.WriteLine("[2] Manage Menu (admin)");
+            Console.WriteLine("[0] Exit");
+            Console.Write("Your choice: ");
+            var choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    OrderForm.Run(orderLogic);
+                    break;
+                case "2":
+                    MenuForm.Run(menuLogic);
+                    break;
+                case "0":
+                    return;
+                default:
+                    Console.WriteLine("Unknown option. Press any key...");
+                    Console.ReadKey(true);
+                    break;
+            }
+        }
     }
 }
-
