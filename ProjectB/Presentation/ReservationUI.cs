@@ -1,30 +1,78 @@
+using System.ComponentModel;
+
 public class ReservationUI
 {
-    private readonly ReservasionLogic _logic;
-    private readonly Usermodel _customerInfo;
+    private readonly ReservationLogic _logic;
+    private readonly UserModel _customerInfo;
 
-    public ReservationUI(ReservasionLogic logic, UserModel customerInfo)// customerInfo can be non
+    private const UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
+
+    public ReservationUI(ReservationLogic logic)
     {
-        _logic      = logic;
-        // _customerInfo = _logic.GetCurrentUserInfo();
+        _logic = logic;
     }
 
     public void StartReservation()
     {
         Console.WriteLine("=== Reservation ===");
 
-        List<SessionDto> sessions = _logic.GetAvailableSessions();
+        if (_customerInfo == null)
+        {
+            bool guest = LoginOrNot();
+            if (guest)
+            {
+                LoginCustomer();
+                break;
+            }
+        }
+
+        List<Session> sessions = _logic.GetAvailableSessions();
         if (sessions.Count == 0)
         {
             Console.WriteLine("Sorry, no available sessions at the moment.");
             return;
         }
-        else
+
+        DisplaySessions(sessions);
+        SelectAndProcessSession(sessions);
+    }
+
+    public staticvoid LoginCustomer()
+    {
+        UserLoginUI.StartLogin();
+    }
+
+    public static bool LoginOrNot()
+    {
+        while (true)
         {
-            DisplaySessions(sessions);
-            SelectAndProcessSession(sessions);
+            Console.Write("You are not logged in. Continue as guest? (y/n): ");
+            string choice = Console.ReadLine()?.Trim().ToLower();
+
+            if (choice == "y")
+            {
+                Console.WriteLine("Continuing as guest...");
+                return;
+            }
+            else if (choice == "n")
+            {
+                Console.WriteLine("Reservation cancelled. Please log in to continue.");
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
+            }
         }
     }
+
+
+
+
+
+
+
+
 
     public static void DisplaySessions(List<Session> sessions)
     {
@@ -42,7 +90,7 @@ public class ReservationUI
         while (true)
         {
             Console.Write("Please select a session number: ");
-            if (int.TryParse(Console.ReadLine(), out choice) && choice >= 1 && choice <= sessions.Count)
+            if (int.TryParse(Console.ReadLine(), out choice) && choice >= 0 && choice < sessions.Count)
             {
                 return choice;
             }
@@ -50,7 +98,7 @@ public class ReservationUI
         }
     }
 
-    public static int GetBookingQuantity( List<Session> sessions, int choice)
+    public static int GetBookingQuantity(List<Session> sessions, int choice)
     {
         int quantity;
         while (true)
@@ -59,51 +107,46 @@ public class ReservationUI
             if (int.TryParse(Console.ReadLine(), out quantity) && quantity > 0)
             {
                 var selected = sessions[choice];
-                int newquantity = selected.CurrentBookings + quantity;
+                int newQuantity = selected.CurrentBookings + quantity;
 
-                if (selected.MaxCapacity > newquantity)
+                if (newQuantity <= selected.MaxCapacity)
                 {
                     return quantity;
                 }
                 else
                 {
-                    Console.WriteLine("Selected session is fully or can not so much booked.\n Please choose another session or quantity.");
+                    Console.WriteLine("Not enough available seats. Please choose another quantity.");
                 }
             }
         }
     }
 
-    public static void SelectAndProcessSession(List<Session> sessions)
+    public void SelectAndProcessSession(List<Session> sessions)
     {
         Dictionary<int, int> bookProcessPrepare = new Dictionary<int, int>();
-        
+
         while (true)
         {
             int choice = GetSessionChoice(sessions);
-            int bookingquantity = GetBookingQuantity(sessions, choice);
-            bookProcessPrepare.Add(choice, bookingquantity);
+            int bookingQuantity = GetBookingQuantity(sessions, choice);
+            bookProcessPrepare[choice] = bookingQuantity;
 
-            if (AnOtherSession())
+            if (AnOtherSession()) continue;
+
+            if (ConfirmReservation())
             {
-                continue;
+                foreach (var (key, value) in bookProcessPrepare)
+                {
+                    string orderNumber = _logic.CreateBooking(sessions[key].Id, value, _customerInfo);
+                    ShowSuccessMessage(orderNumber);
+                    ShowBookingDetails(orderNumber, bookProcessPrepare);
+                }
+                return;
             }
             else
             {
-                if (ConfirmReservation)
-                {
-                    foreach (var (key, value) in bookProcessPrepare)
-                    {
-                        // Get a unike order number for each booking
-                        // string orderNumber = _logic.CreateBooking(sessions[key].Id, sessions
-                        ShowSuccessMessage(orderNumber);
-                        ShowBookingDetails(orderNumber, bookProcessPrepare);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Reservation cancelled.");
-                    return;
-                }
+                Console.WriteLine("Reservation cancelled.");
+                return;
             }
         }
     }
@@ -114,19 +157,9 @@ public class ReservationUI
         {
             Console.Write("Do you want to book another session? (y/n): ");
             string choice = Console.ReadLine()?.Trim().ToLower();
-
-            if (choice == "y")
-            {
-                return true;
-            }
-            else if (choice == "n")
-            {
-                return false;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-            }
+            if (choice == "y") return true;
+            if (choice == "n") return false;
+            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
         }
     }
 
@@ -136,32 +169,20 @@ public class ReservationUI
         {
             Console.Write("Are you sure you want to make this reservation? (y/n): ");
             string choice = Console.ReadLine()?.Trim().ToLower();
-            if (choice == "y")
-            {
-                return true;
-            }
-            else if (choice == "n")
-            {
-                return false;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-            }
+            if (choice == "y") return true;
+            if (choice == "n") return false;
+            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
         }
     }
 
     public static void ShowBookingDetails(string orderNumber, Dictionary<int, int> bookingDetails)
     {
-
         Console.WriteLine("---------------------");
         Console.WriteLine($"Order Number: {orderNumber}");
-
         Console.WriteLine("Booking Details:");
         foreach (var (key, value) in bookingDetails)
         {
             Console.WriteLine($"Session {key}: {value} bookings");
-            // bookingDate
         }
         Console.WriteLine("---------------------");
     }
@@ -171,5 +192,4 @@ public class ReservationUI
         Console.WriteLine("Reservation successful! Thank you for booking with us.");
         Console.WriteLine($"Order Number: {orderNumber}");
     }
-    
 }
