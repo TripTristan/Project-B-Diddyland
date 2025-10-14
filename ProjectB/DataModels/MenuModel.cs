@@ -5,6 +5,7 @@ public class MenuModel
     public string Drink { get; set; } = "";
     public double Price { get; set; }
 
+    public MenuModel() { }
     public MenuModel(int menuId, string food, string drink, double price)
     {
         MenuID = menuId;

@@ -3,7 +3,7 @@ using Dapper;
 
 public class ResMenuAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
 
     public void Link(ResMenuModel resMenu)
     {

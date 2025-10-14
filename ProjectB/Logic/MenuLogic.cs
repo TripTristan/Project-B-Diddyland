@@ -9,7 +9,7 @@ public class MenuLogic
 
     public IEnumerable<MenuModel> GetAll() => _access.GetAll();
 
-    public void AddItem(string? food, string? drink, double price)
+    public string AddItem(string? food, string? drink, double price)
     {
         food ??= "";        // Set defaullt value
         drink ??= "";
@@ -31,10 +31,10 @@ public class MenuLogic
         return "Item added successfully!";
     }
 
-    public void AddFood(string name, double price) => AddItem(name, "", price);
-    public void AddDrink(string name, double price) => AddItem("", name, price);
+    public string AddFood(string name, double price) => AddItem(name, "", price);
+    public string AddDrink(string name, double price) => AddItem("", name, price);
 
-    public void RemoveItem(int menuId)
+    public string RemoveItem(int menuId)
     {
         var existing = _access.GetById(menuId);
         if (existing == null)       // Item not found
