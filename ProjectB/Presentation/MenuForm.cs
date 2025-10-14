@@ -23,7 +23,7 @@ public static class MenuForm
                 nameParts.Add(m.Drink!);
 
             var label = nameParts.Count > 0 ? string.Join(" / ", nameParts) : "(Unnamed)";
-            sb.AppendLine($"#{m.MenuID,-3} {label,-30} €{m.Price:0.00}");
+            sb.AppendLine($"#{m.ID,-3} {label,-30} €{m.Price:0.00}");
         }
 
         sb.AppendLine("============================");
