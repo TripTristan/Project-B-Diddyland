@@ -7,6 +7,12 @@ public class AttractieLogic
     public IEnumerable<AttractieModel> GetAll() => _repo.GetAll();
     public AttractieModel? Get(int id) => _repo.GetById(id);
 
+    public void Add(AttractieModel m)
+    {
+        Validate(m);
+        _repo.Insert(m);
+    }
+
     private static void Validate(AttractieModel m)
     {
         if (string.IsNullOrWhiteSpace(m.Name))
