@@ -3,7 +3,7 @@ using Dapper;
 
 public class AttractiesAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
 
     public void Insert(AttractieModel attractie)
     {
