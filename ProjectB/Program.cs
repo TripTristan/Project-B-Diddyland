@@ -15,7 +15,7 @@ class Program
         var menuLogic      = new MenuLogic(menusRepo);
         var orderLogic     = new OrderLogic(menuLogic);
 
-        // --- Main loop ---
+        // Main loop
         while (true)
         {
             Console.Clear();
@@ -24,6 +24,7 @@ class Program
             Console.WriteLine("1) Attractions");
             Console.WriteLine("2) Menu management");
             Console.WriteLine("3) Orders");
+            Console.WriteLine("4) Register");
             Console.WriteLine("0) Quit");
             Console.WriteLine();
 
@@ -35,18 +36,19 @@ class Program
                 switch (choice)
                 {
                     case "1":
-                        // Opens the attractions CRUD menu you provided
                         AttractieMenu.Start(attractieLogic);
                         break;
 
                     case "2":
-                        // Opens the menu admin UI (add/remove food/drinks)
                         MenuForm.Run(menuLogic);
                         break;
 
                     case "3":
-                        // Opens the ordering flow with cart and checkout
                         OrderForm.Run(orderLogic);
+                        break;
+
+                    case "4":
+                        UserRegister.Register();
                         break;
 
                     case "0":
@@ -66,7 +68,6 @@ class Program
         }
     }
 
-    // --- Small console helpers (kept local to Program.cs) ---
     static void WriteHeader(string text)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
