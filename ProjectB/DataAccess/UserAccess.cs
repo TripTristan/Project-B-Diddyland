@@ -29,16 +29,18 @@ static class UserAccess
         DBC.Connection.Execute(sql, new { account.Id });
     }
 
-    public static int HighestId()
+    public static int NextId()
     {
         try
         {
-            string sql = $"SELECT MAX(Id) FROM {Table}";
-            return DBC.Connection.QuerySingleOrDefault<int>(sql);
+            string sql = $"SELECT IFNULL(MAX(Id), 0) + 1 FROM {Table}";
+            return DBC.Connection.ExecuteScalar<int>(sql);
         }
         catch (Exception e)
         {
-            return 0;
+            Console.WriteLine("Error getting next ID: " + e.Message);
+            return 1;
         }
     }
+
 }
