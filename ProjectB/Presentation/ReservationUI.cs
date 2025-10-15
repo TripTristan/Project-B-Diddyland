@@ -28,6 +28,11 @@ public class ReservationUI
             {
                 LoginCustomer();
             }
+            else
+            {
+                Console.WriteLine("Continuing as guest.");
+               // can here email in //
+            }
         }
 
         List<Session> sessions = _logic.GetAvailableSessions();
@@ -153,10 +158,10 @@ public class ReservationUI
 
 
 
-    public void SelectAndProcessSession(List<Session> sessions)
+    public void SelectAndProcessSession(List<Session> sessions) 
     {
         var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
-        Dictionary<int, int> bookingSelections = new(); // sessionId -> quantity
+         Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> quantity
 
         while (true)
         {
@@ -168,48 +173,111 @@ public class ReservationUI
             Session selectedSession = sessionsOnDate[sessionChoice];
 
             int bookingQuantity = GetBookingQuantity(selectedSession);
-            bookingSelections[selectedSession.Id] = bookingQuantity;
 
-            bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop.");
+            // age for every ticket
+            List<int> ages = new();
+            for (int i = 0; i < bookingQuantity; i++)
+            {
+                while (true && ages.Count < bookingQuantity)
+                {
+                    Console.Write($"Enter age for ticket {i + 1}: ");
+                    if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
+                        ages.Add(age);
+                    else
+                    {
+                        Console.WriteLine("Invalid input. Please try again.");
+                    }
+                }
+            }
+
+            bookingSelections[selectedSession.Id] = ages;
+
+            bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
             if (!another) break;
         }
+
 
         bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
         if (confirm)
         {
-            string orderNumber = _logic.GenerateOrderNumber(_customerInfo); // unikue order nr// shopping-car 
+            string orderNumber = _logic.GenerateOrderNumber(_customerInfo);
+            decimal totalPrice = 0m; // for discount calculation
 
-            foreach (var (sessionId, quantity) in bookingSelections)
+            foreach (var (sessionId, ages) in bookingSelections)
             {
-                _logic.CreateBooking(sessionId, quantity, _customerInfo, orderNumber);
+                foreach (int age in ages)
+                {
+                    decimal singlePrice = _logic.CreateSingleTicketBooking(sessionId, age, _customerInfo, orderNumber);
+                    totalPrice += singlePrice;
+                }
             }
+            ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
 
-            ShowSuccessMessage(orderNumber);
-            ShowBookingDetails("Multiple Orders", bookingSelections);
+            
+            bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
+            if (payment)
+            {
+                PaymentUI.StartPayment(orderNumber, _customerInfo);
+                ShowSuccessMessage(orderNumber);
+                ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
+            }
+            else
+            {
+                Console.WriteLine("Payment cancelled. Your reservation is not confirmed.");
+            
+            }
+            ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
+
         }
         else
         {
             Console.WriteLine("Reservation cancelled.");
+            // go back to main menu // Maybe
+            return;
         }
     }
 
 
-    public static void ShowBookingDetails(string orderNumber, Dictionary<int, int> bookingDetails)
+    public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
     {
         Console.WriteLine("---------------------");
         Console.WriteLine($"Order Number: {orderNumber}");
         Console.WriteLine("Booking Details:");
-        foreach (var (sessionId, quantity) in bookingDetails)
+
+        int child = 0;
+        int oudman = 0;
+        int normal = 0;
+
+        Dictionary<int, List<int>> sessionCount = new();
+
+        foreach (var (sessionId, ages) in bookingSelections)
         {
-            Console.WriteLine($"Session ID {sessionId}: {quantity} bookings");
+            foreach (int age in ages)
+            {
+                if (age < 12) child++;
+                else if (age >= 65) oudman++;
+                else normal++;
+            }
+            sessionCount[sessionId] = [child, oudman, normal];
+            child = 0;
+            oudman = 0;
+            normal = 0;
         }
-        Console.WriteLine("---------------------");
+
+        foreach (var (sessionId, ages) in bookingSelections)
+        {
+            Console.WriteLine($"Session ID: {sessionId}");
+            Console.WriteLine($"  Child Tickets: {sessionCount[sessionId][0]}");
+            Console.WriteLine($"  Senior Tickets: {sessionCount[sessionId][1]}");
+            Console.WriteLine($"  Adult Tickets: {sessionCount[sessionId][2]}");
+        }
+
     }
 
 
     public static void ShowSuccessMessage(string orderNumber)
     {
         Console.WriteLine("Reservation successful! Thank you for booking with us.");
-        Console.WriteLine($"Order Number: {orderNumber}");
     }
+
 }

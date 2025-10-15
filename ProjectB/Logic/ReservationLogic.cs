@@ -55,17 +55,24 @@ public class ReservationLogic
         session.CurrentBookings += quantity;
         _sessionRepo.UpdateSession(session);
 
-        Booking booking = new Booking
+        decimal basePrice = session.PricePerPerson;
+        var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
+
+        ResevationModel booking = new ResevationModel
         {
             OrderNumber = orderNumber,
             SessionId = sessionId,
-            Quantity = quantity,
+            Quantity = 1,
+            BookingDate = DateTime.Now,
             Customer = customer,
-            BookingDate = DateTime.Now
+            OriginalPrice = basePrice,
+            Discount = discount,
+            FinalPrice = finalPrice
         };
 
         _bookingRepo.AddBooking(booking);
-        return orderNumber;
+        Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (discount: {discount * 100}%)");
+        return finalPrice;
     }
 
 
@@ -80,5 +87,19 @@ public class ReservationLogic
             return $"ORD-{customerInfo.Id}-{customerInfo.Username}-{DateTime.Now:yyyyMMddHHmmss}-{randomNumber}-{Guid.NewGuid().ToString()[..4]}";
         }
         return $"ORD-{DateTime.Now:yyyyMMddHHmmss}-GUEST-{randomNumber}-{Guid.NewGuid().ToString()[..4]}";
+    }
+
+
+    public (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
+    {
+        decimal discount = 0m;
+
+        if (age <= 12)
+            discount = 0.5m;  // 50% off for children
+        else if (age >= 65)
+            discount = 0.3m;  // 30% off for seniors
+
+        decimal finalPrice = basePrice * (1 - discount);
+        return (discount, finalPrice);
     }
 }
