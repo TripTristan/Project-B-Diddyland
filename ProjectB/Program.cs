@@ -1,2 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿public class Program
+{
+    public static void Main(string[] args)
+    {
+        var repo = new AttractiesAccess();
+        var service = new AttractieLogic(repo);
+        AttractieMenu.Start(service);
+    }
+}

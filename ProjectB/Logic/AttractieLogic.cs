@@ -15,7 +15,7 @@ public class AttractieLogic
 
     public void Update(AttractieModel m)
     {
-        if (m.AttractieID <= 0) throw new ArgumentException("Missing AttractieID for update.");
+        if (m.ID <= 0) throw new ArgumentException("Missing ID for update.");
         Validate(m);
         _repo.Update(m);
     }
