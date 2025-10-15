@@ -24,6 +24,14 @@ public class AttractiesAccess
         return _connection.QueryFirstOrDefault<AttractieModel>(sql, new { AttractieID = id });
     }
 
+    public void Update(AttractieModel attractie)
+    {
+        const string sql = @"UPDATE Attractie
+                             SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity
+                             WHERE AttractieID = @AttractieID";
+        _connection.Execute(sql, attractie);
+    }
+
     public void Delete(int id)
     {
         const string sql = "DELETE FROM Attractie WHERE AttractieID = @AttractieID";

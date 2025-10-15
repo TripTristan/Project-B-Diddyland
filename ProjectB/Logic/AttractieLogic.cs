@@ -13,6 +13,19 @@ public class AttractieLogic
         _repo.Insert(m);
     }
 
+    public void Update(AttractieModel m)
+    {
+        if (m.AttractieID <= 0) throw new ArgumentException("Missing AttractieID for update.");
+        Validate(m);
+        _repo.Update(m);
+    }
+
+    public void Delete(int id)
+    {
+        if (id <= 0) throw new ArgumentException("Invalid id.");
+        _repo.Delete(id);
+    }
+
     private static void Validate(AttractieModel m)
     {
         if (string.IsNullOrWhiteSpace(m.Name))
