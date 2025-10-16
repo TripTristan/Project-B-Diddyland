@@ -31,6 +31,7 @@ class Program
             Console.WriteLine("5) Reservation");
             Console.WriteLine("6) Login");
             Console.WriteLine("7) Logout");
+            Console.WriteLine("8) Map");
             Console.WriteLine("0) Quit");
             Console.WriteLine();
 
@@ -84,6 +85,10 @@ class Program
                             new UserLogoutUI().Start();
                         }
                         Pause();
+                        break;
+
+                    case "8":
+                        ParkMap.ShowInteractive();
                         break;
 
                     case "0":
