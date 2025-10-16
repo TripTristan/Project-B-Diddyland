@@ -8,12 +8,12 @@ class Program
     static void Main()
     {
         var attractiesRepo = new AttractiesAccess();
-        var menusRepo      = new MenusAccess();
+        var menusRepo = new MenusAccess();
 
         // Logic layers
         var attractieLogic = new AttractieLogic(attractiesRepo);
-        var menuLogic      = new MenuLogic(menusRepo);
-        var orderLogic     = new OrderLogic(menuLogic);
+        var menuLogic = new MenuLogic(menusRepo);
+        var orderLogic = new OrderLogic(menuLogic);
 
         // Main loop
         while (true)
@@ -21,10 +21,16 @@ class Program
             Console.Clear();
             WriteHeader("Diddyland – Main Menu");
 
+            if (LoginStatus.CurrentUserInfo != null)
+                Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username}");
+
             Console.WriteLine("1) Attractions");
             Console.WriteLine("2) Menu management");
             Console.WriteLine("3) Orders");
             Console.WriteLine("4) Register");
+            Console.WriteLine("5) Reservation");
+            Console.WriteLine("6) Login");
+            Console.WriteLine("7) Logout");
             Console.WriteLine("0) Quit");
             Console.WriteLine();
 
@@ -51,6 +57,35 @@ class Program
                         UserRegister.Register();
                         break;
 
+                    case "5":
+                        AppFactory.CreateReservationUI().StartReservation();
+                        Pause();
+                        break;
+
+                    case "6":
+                        if (LoginStatus.CurrentUserInfo != null)
+                        {
+                            Warn("You are already logged in.");
+                        }
+                        else
+                        {
+                            AppFactory.CreateLoginUI().StartLogin();
+                        }
+                        Pause();
+                        break;
+
+                    case "7":
+                        if (LoginStatus.CurrentUserInfo == null)
+                        {
+                            Warn("No user is currently logged in.");
+                        }
+                        else
+                        {
+                            new UserLogoutUI().Start();
+                        }
+                        Pause();
+                        break;
+
                     case "0":
                         return;
 
@@ -66,35 +101,35 @@ class Program
                 Pause();
             }
         }
-    }
 
-    static void WriteHeader(string text)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(text);
-        Console.ResetColor();
-        Console.WriteLine(new string('=', text.Length));
-        Console.WriteLine();
-    }
+        static void WriteHeader(string text)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(text);
+            Console.ResetColor();
+            Console.WriteLine(new string('=', text.Length));
+            Console.WriteLine();
+        }
 
-    static void Warn(string msg)
-    {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(msg);
-        Console.ResetColor();
-    }
+        static void Warn(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(msg);
+            Console.ResetColor();
+        }
 
-    static void Error(string msg)
-    {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(msg);
-        Console.ResetColor();
-    }
+        static void Error(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(msg);
+            Console.ResetColor();
+        }
 
-    static void Pause()
-    {
-        Console.WriteLine();
-        Console.Write("Press Enter to continue...");
-        Console.ReadLine();
+        static void Pause()
+        {
+            Console.WriteLine();
+            Console.Write("Press Enter to continue...");
+            Console.ReadLine();
+        }
     }
 }

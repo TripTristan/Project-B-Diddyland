@@ -1,5 +1,8 @@
 public class UserLogoutUI
 {
+    private readonly LogoutLogic _logic = new();
+    
+    public void Start() => ShowLogoutMenu();
 
     private void ShowLogoutMenu()
     {

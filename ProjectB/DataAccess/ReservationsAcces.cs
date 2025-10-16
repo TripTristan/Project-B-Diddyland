@@ -1,13 +1,10 @@
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
 public class ReservationsAccess
 {
-    private readonly List<Booking> _bookings = new List<Booking>();
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
-
+    private readonly List<ReservationModel> _bookings = new();
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland2.db");
 
     public void AddBooking(ReservationModel booking)
     {
@@ -17,7 +14,7 @@ public class ReservationsAccess
             INSERT INTO Bookings 
             (OrderNumber, SessionId, Quantity, BookingDate, OriginalPrice, Discount, FinalPrice, CustomerId)
             VALUES 
-            (@OrderNumber, @SessionId, @Quantity, @BookingDate, @OriginalPrice, @Discount, @FinalPrice, @CustomerId)
+            (@OrderNumber, @SessionId, @Quantity, @BookingDate, @OriginalPrice, @Discount, @FinalPrice, @CustomerId);
         ";
 
         _connection.Execute(sql, new
@@ -35,6 +32,5 @@ public class ReservationsAccess
         Console.WriteLine($"[DB] Added ticket for {booking.Customer?.Username ?? "Guest"} ({booking.OrderNumber})");
     }
 
-    public List<Booking> GetAllBookings() => _bookings;
-
+    public List<ReservationModel> GetAllBookings() => _bookings;
 }

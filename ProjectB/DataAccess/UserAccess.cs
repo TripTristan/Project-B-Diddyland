@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-static class UserAccess
+public class UserAccess
 {
     public const string Table = "Account";
 
@@ -15,6 +15,12 @@ static class UserAccess
     {
         string sql = $"SELECT * FROM {Table} WHERE email = @Email";
         return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
+    }
+
+    public UserModel? GetByUsername(string username)
+    {
+        const string sql = @"SELECT * FROM Account WHERE Username = @Username;";
+        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
     }
 
     public static void Update(UserModel account)
