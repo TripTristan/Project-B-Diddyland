@@ -3,7 +3,7 @@ using Dapper;
 
 public class AttractiesAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
 
     public void Insert(AttractieModel attractie)
     {
@@ -20,13 +20,21 @@ public class AttractiesAccess
 
     public AttractieModel? GetById(int id)
     {
-        const string sql = "SELECT * FROM Attractie WHERE AttractieID = @AttractieID";
-        return _connection.QueryFirstOrDefault<AttractieModel>(sql, new { AttractieID = id });
+        const string sql = "SELECT * FROM Attractie WHERE ID = @ID";
+        return _connection.QueryFirstOrDefault<AttractieModel>(sql, new { ID = id });
+    }
+
+    public void Update(AttractieModel attractie)
+    {
+        const string sql = @"UPDATE Attractie
+                             SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity
+                             WHERE ID = @ID";
+        _connection.Execute(sql, attractie);
     }
 
     public void Delete(int id)
     {
-        const string sql = "DELETE FROM Attractie WHERE AttractieID = @AttractieID";
-        _connection.Execute(sql, new { AttractieID = id });
+        const string sql = "DELETE FROM Attractie WHERE ID = @ID";
+        _connection.Execute(sql, new { ID = id });
     }
 }

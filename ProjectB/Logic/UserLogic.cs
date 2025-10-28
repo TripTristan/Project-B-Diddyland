@@ -109,7 +109,7 @@ public static class UserLogic
 
     public static void Register(string name, string email, string dateOfBirth, int height, string phone, string password)
     {
-        UserModel registeredAccount = new UserModel(UserAccess.HighestId(), name, email, dateOfBirth, height, phone, password);
+        UserModel registeredAccount = new UserModel(UserAccess.NextId(), name, email, dateOfBirth, height, phone, password);
         UserAccess.Write(registeredAccount);
     }
 }

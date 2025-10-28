@@ -3,7 +3,7 @@ using Dapper;
 
 public class MenusAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
 
     public void Insert(MenuModel menu)
     {
@@ -18,15 +18,15 @@ public class MenusAccess
         return _connection.Query<MenuModel>(sql);
     }
 
-    public MenuModel? GetById(int menuId)
+    public MenuModel? GetById(int id)
     {
-        const string sql = "SELECT * FROM Menu WHERE MenuID = @MenuID";
-        return _connection.QueryFirstOrDefault<MenuModel>(sql, new { MenuID = menuId });
+        const string sql = "SELECT * FROM Menu WHERE ID = @ID";
+        return _connection.QueryFirstOrDefault<MenuModel>(sql, new { ID = id });
     }
 
-    public void Delete(int menuId)
+    public void Delete(int id)
     {
-        const string sql = "DELETE FROM Menu WHERE MenuID = @MenuID";
-        _connection.Execute(sql, new { MenuID = menuId });
+        const string sql = "DELETE FROM Menu WHERE ID = @ID";
+        _connection.Execute(sql, new { ID = id });
     }
 }
