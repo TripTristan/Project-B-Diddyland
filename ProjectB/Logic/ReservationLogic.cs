@@ -55,7 +55,7 @@ public class ReservationLogic
         session.CurrentBookings += quantity;
         _sessionRepo.UpdateSession(session);
 
-        decimal basePrice = session.PricePerPerson;
+        // decimal basePrice = session.PricePerPerson;
         var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
 
         ResevationModel booking = new ResevationModel

@@ -161,7 +161,7 @@ public class ReservationUI
     public void SelectAndProcessSession(List<Session> sessions) 
     {
         var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
-         Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> quantity
+        Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> quantity
 
         while (true)
         {
@@ -217,7 +217,7 @@ public class ReservationUI
             bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
             if (payment)
             {
-                PaymentUI.StartPayment(orderNumber, _customerInfo);
+                // PaymentUI.StartPayment(orderNumber, _customerInfo);
                 ShowSuccessMessage(orderNumber);
                 ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
             }
@@ -238,7 +238,7 @@ public class ReservationUI
     }
 
 
-    public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
+    public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingSelections, decimal totalPrice)
     {
         Console.WriteLine("---------------------");
         Console.WriteLine($"Order Number: {orderNumber}");
