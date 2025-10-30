@@ -3,44 +3,51 @@ using Dapper;
 
 public class UserAccess
 {
+    DBC DATABASE = new();
+
     public const string Table = "Account";
 
-    public static void Write(UserModel account)
+    public void Write(UserModel account)
     {
         string sql = $"INSERT INTO {Table} (ID, Email, Password, Username, Phone, HeightInCM, DateOfBirth, Admin) VALUES (@Id, @Email, @Password, @Name, @Phone, @Height, @DateOfBirth, 0);";
-        DBC.Connection.Execute(sql, account);
+        DATABASE.Connection.Execute(sql, account);
+        DATABASE.CloseConnection();
     }
 
-    public static UserModel? GetByEmail(string email)
+    public UserModel? GetByEmail(string email)
     {
         string sql = $"SELECT * FROM {Table} WHERE email = @Email";
-        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
+        return DATABASE.Connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
     }
 
     public UserModel? GetByUsername(string username)
     {
         const string sql = @"SELECT * FROM Account WHERE Username = @Username;";
-        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
+        return DATABASE.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
     }
 
-    public static void Update(UserModel account)
+    public void Update(UserModel account)
     {
         string sql = $"UPDATE {Table} SET email = @EmailAddress, password = @Password, fullname = @FullName WHERE id = @Id";
-        DBC.Connection.Execute(sql, account);
+        DATABASE.Connection.Execute(sql, account);
+        DATABASE.CloseConnection();
+
     }
 
-    public static void Delete(UserModel account)
+    public void Delete(UserModel account)
     {
         string sql = $"DELETE FROM {Table} WHERE id = @Id";
-        DBC.Connection.Execute(sql, new { account.Id });
+        DATABASE.Connection.Execute(sql, new { account.Id });
+        DATABASE.CloseConnection();
+
     }
 
-    public static int NextId()
+    public int NextId()
     {
         try
         {
             string sql = $"SELECT IFNULL(MAX(Id), 0) + 1 FROM {Table}";
-            return DBC.Connection.ExecuteScalar<int>(sql);
+            return DATABASE.Connection.ExecuteScalar<int>(sql);
         }
         catch (Exception e)
         {

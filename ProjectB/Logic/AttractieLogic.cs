@@ -8,10 +8,22 @@ public class AttractieLogic
     public AttractieModel? Get(int id) => _repo.GetById(id);
 
     public void Add(AttractieModel m)
+{
+    try
     {
         Validate(m);
         _repo.Insert(m);
     }
+    catch (Exception ex)
+    {
+        // Log the exception to help with debugging
+        Console.WriteLine($"Error occurred while adding the attraction: {ex.Message}");
+        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+        throw new ApplicationException("An error occurred while adding the attraction.", ex);
+    }
+}
+
+
 
     public void Update(AttractieModel m)
     {

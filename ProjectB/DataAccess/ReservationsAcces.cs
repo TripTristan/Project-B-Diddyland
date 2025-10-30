@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 public class ReservationsAccess
 {
     private readonly List<ReservationModel> _bookings = new();
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland2.db");
+    DBC db = new();
 
     public void AddBooking(ReservationModel booking)
     {
@@ -17,7 +17,7 @@ public class ReservationsAccess
             (@OrderNumber, @SessionId, @Quantity, @BookingDate, @OriginalPrice, @Discount, @FinalPrice, @CustomerId);
         ";
 
-        _connection.Execute(sql, new
+        db.Connection.Execute(sql, new
         {
             booking.OrderNumber,
             booking.SessionId,

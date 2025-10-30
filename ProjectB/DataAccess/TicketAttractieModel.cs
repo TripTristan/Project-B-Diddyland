@@ -3,24 +3,24 @@ using Dapper;
 
 public class TicketAttractieAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
+    DBC db = new();
 
     public void Link(TicketAttractieModel ta)
     {
         const string sql = @"INSERT INTO TicketAttractie (TicketID, AttractieID)
                              VALUES (@TicketID, @AttractieID)";
-        _connection.Execute(sql, ta);
+        db.Connection.Execute(sql, ta);
     }
 
     public IEnumerable<TicketAttractieModel> GetAll()
     {
         const string sql = "SELECT * FROM TicketAttractie";
-        return _connection.Query<TicketAttractieModel>(sql);
+        return db.Connection.Query<TicketAttractieModel>(sql);
     }
 
     public void Delete(int id)
     {
         const string sql = "DELETE FROM TicketAttractie WHERE ID = @ID";
-        _connection.Execute(sql, new { ID = id });
+        db.Connection.Execute(sql, new { ID = id });
     }
 }
