@@ -2,22 +2,18 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public class ReservationUI
+    public static class ReservationUI
     {
-        private readonly ReservationLogic _logic;
-        private readonly UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
-
-        public ReservationUI(ReservationLogic logic)
-        {
-            _logic = logic;
-        }
+        private static UserModel? _customerInfo;
 
 
-        public void StartReservation()
-        {
+
+        public static void StartReservation()
+    {
+            _customerInfo = LoginStatus.CurrentUserInfo;
             Console.WriteLine("=== Reservation ===");
 
-            if (_customerInfo == null)
+            if (_customerInfo == LoginStatus.guest)
             {
                 bool guest = ChoiceHelper(
                     "You are not logged in. Continue as guest?",
@@ -26,7 +22,7 @@
                 );
                 if (!guest)
                 {
-                    LoginCustomer();
+                    UserLoginUI.StartLogin();
                 }
                 else
                 {
@@ -35,7 +31,7 @@
                 }
             }
 
-            List<Session> sessions = _logic.GetAvailableSessions();
+            List<Session> sessions = ReservationLogic.GetAvailableSessions();
             if (sessions.Count == 0)
             {
                 Console.WriteLine("No available sessions.");
@@ -47,13 +43,6 @@
         }
 
 
-        public static void LoginCustomer()
-        {
-            var userRepo   = new UserAccess();          
-            var loginLogic = new LoginLogic(userRepo);  
-            new UserLoginUI(loginLogic).StartLogin();
-
-        }
 
 
         public static bool ChoiceHelper(string message, string yesOption, string noOption)
@@ -71,14 +60,14 @@
         }
 
 
-        public int GetBookingQuantity(Session session) // Get and verify booking quantity
+        public static int GetBookingQuantity(Session session) // Get and verify booking quantity
         {
             while (true)
             {
                 Console.Write("Enter the number of bookings you want to make: ");
                 if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
                 {
-                    if (_logic.CanBookSession(session.Id, quantity))
+                    if (ReservationLogic.CanBookSession(session.Id, quantity))
                     {
                         return quantity;
                     }
@@ -114,7 +103,7 @@
                     Console.WriteLine(
                         $"{index++}. Date: {s.Date:yyyy-MM-dd}, " +
                         $"Time: {s.Time}, " +
-                        $"Available Spots: {s.MaxCapacity - s.CurrentBookings}\n");
+                        $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}\n");
                 }
             }
         }
@@ -140,7 +129,7 @@
             for (int i = 0; i < sessionsOnDate.Count; i++)
             {
                 var s = sessionsOnDate[i];
-                Console.WriteLine($"{i}. Time: {s.Time}, Available Spots: {s.MaxCapacity - s.CurrentBookings}");
+                Console.WriteLine($"{i}. Time: {s.Time}, Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
             }
         }
 
@@ -161,37 +150,36 @@
 
 
 
-        public void SelectAndProcessSession(List<Session> sessions) 
+        public static void SelectAndProcessSession(List<Session> sessions) 
         {
             var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
             Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> quantity
+            int dateChoice = GetDateChoice(groupedByDate);
+            var sessionsOnDate = groupedByDate[dateChoice].ToList();
+
+            ShowSessionsByDate(groupedByDate, dateChoice);
+            int sessionChoice = GetSessionChoice(sessionsOnDate);
+            Session selectedSession = sessionsOnDate[sessionChoice];
+            int bookingQuantity = GetBookingQuantity(selectedSession);
 
             while (true)
             {
-                int dateChoice = GetDateChoice(groupedByDate);
-                var sessionsOnDate = groupedByDate[dateChoice].ToList();
-
-                ShowSessionsByDate(groupedByDate, dateChoice);
-                int sessionChoice = GetSessionChoice(sessionsOnDate);
-                Session selectedSession = sessionsOnDate[sessionChoice];
-
-                int bookingQuantity = GetBookingQuantity(selectedSession);
-
-                // age for every ticket
                 List<int> ages = new();
-                for (int i = 0; i < bookingQuantity; i++)
+                // age for every ticket
+                // for (int i = 0; i < bookingQuantity; i++)
+                // {
+                while (ages.Count < bookingQuantity)
                 {
-                    while (true && ages.Count < bookingQuantity)
+                    Console.Write($"Enter age for ticket {ages.Count + 1}: ");
+                    if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
+                        ages.Add(age);
+
+                    else
                     {
-                        Console.Write($"Enter age for ticket {i + 1}: ");
-                        if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
-                            ages.Add(age);
-                        else
-                        {
-                            Console.WriteLine("Invalid input. Please try again.");
-                        }
+                        Console.WriteLine("Invalid input. Please try again.");
                     }
                 }
+                // }
 
                 bookingSelections[selectedSession.Id] = ages;
 
@@ -201,43 +189,41 @@
 
 
             bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
-            if (confirm)
+        if (confirm)
+        {
+            string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
+            decimal totalPrice = 0; // for discount calculation
+
+            foreach (int age in bookingSelections[selectedSession.Id])
             {
-                string orderNumber = _logic.GenerateOrderNumber(_customerInfo);
-                decimal totalPrice = 0m; // for discount calculation
+                Console.WriteLine("part1");
+                decimal singlePrice = ReservationLogic.CreateSingleTicketBooking(selectedSession.Id, age, _customerInfo, orderNumber, bookingQuantity);
+                totalPrice += singlePrice;
+            }
 
-                foreach (var (sessionId, ages) in bookingSelections)
-                {
-                    foreach (int age in ages)
-                    {
-                        decimal singlePrice = _logic.CreateSingleTicketBooking(sessionId, age, _customerInfo, orderNumber);
-                        totalPrice += singlePrice;
-                    }
-                }
+            ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
+
+            bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
+            if (payment)
+            {
+                PaymentUI.StartPayment(orderNumber, _customerInfo);
+                ShowSuccessMessage(orderNumber);
                 ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-
-                
-                bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
-                if (payment)
-                {
-                    PaymentUI.StartPayment(orderNumber, _customerInfo);
-                    ShowSuccessMessage(orderNumber);
-                    ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-                }
-                else
-                {
-                    Console.WriteLine("Payment cancelled. Your reservation is not confirmed.");
-                
-                }
-                ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-
             }
             else
             {
-                Console.WriteLine("Reservation cancelled.");
-                // go back to main menu // Maybe
-                return;
+                Console.WriteLine("Payment cancelled. Your reservation is not confirmed.");
+
             }
+            ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
+
+        }
+        else
+        {
+            Console.WriteLine("Reservation cancelled.");
+            // go back to main menu // Maybe
+            return;
+        }
         }
 
 

@@ -1,15 +1,8 @@
-public class LoginLogic
+public static class LoginLogic
 {
-    private readonly UserAccess _repository;
-
-    public LoginLogic(UserAccess repository)
+    public static bool AccountVerify(string username, string password)
     {
-        _repository = repository;
-    }
-
-    public bool AccountVerify(string username, string password)
-    {
-        var account = _repository.GetByUsername(username); 
+        UserModel account = UserAccess.GetByUsername(username.ToLower()); 
         if (account == null) return false;
         if (account.Password != password) return false;
 

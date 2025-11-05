@@ -30,12 +30,12 @@ public static class MenuForm
         return sb.ToString();
     }
 
-    public static void Run(MenuLogic logic)
+    public static void Run()
     {
         while (true)
         {
             Console.Clear();
-            Console.WriteLine(FormatMenu(logic.GetAll())); // only run this for non amdin users
+            Console.WriteLine(FormatMenu(MenuLogic.GetAll())); // only run this for non amdin users
             Console.WriteLine();
             Console.WriteLine("Choose an action:");
             Console.WriteLine("[1] Add FOOD");
@@ -48,13 +48,13 @@ public static class MenuForm
             switch (choice)
             {
                 case "1":
-                    AddFoodUI(logic);
+                    AddFoodUI();
                     break;
                 case "2":
-                    AddDrinkUI(logic);
+                    AddDrinkUI();
                     break;
                 case "3":
-                    RemoveItemUI(logic);
+                    RemoveItemUI();
                     break;
                 case "0":
                     return;
@@ -65,35 +65,35 @@ public static class MenuForm
         }
     }
 
-    private static void AddFoodUI(MenuLogic logic)
+    private static void AddFoodUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add FOOD ===");
         var name = PromptNonEmpty("Food name: ");
         var price = PromptPrice("Price (€): ");
 
-        var result = logic.AddFood(name, price);
+        var result = MenuLogic.AddFood(name, price);
         Pause(result + " Press any key...");
     }
 
-    private static void AddDrinkUI(MenuLogic logic)
+    private static void AddDrinkUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add DRINK ===");
         var name = PromptNonEmpty("Drink name: ");
         var price = PromptPrice("Price (€): ");
 
-        var result = logic.AddDrink(name, price);
+        var result = MenuLogic.AddDrink(name, price);
         Pause(result + " Press any key...");
     }
 
-    private static void RemoveItemUI(MenuLogic logic)
+    private static void RemoveItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Remove item ===");
         var id = PromptInt("Menu ID to remove: ");
 
-        var result = logic.RemoveItem(id);
+        var result = MenuLogic.RemoveItem(id);
         Pause(result + " Press any key...");
     }
 

@@ -1,15 +1,9 @@
-public class MenuLogic
+public static class MenuLogic
 {
-    private readonly MenusAccess _access;
 
-    public MenuLogic(MenusAccess access)
-    {
-        _access = access;
-    }
+    public static IEnumerable<MenuModel> GetAll() => MenusAccess.GetAll();
 
-    public IEnumerable<MenuModel> GetAll() => _access.GetAll();
-
-    public string AddItem(string? food, string? drink, double price)
+    public static string AddItem(string? food, string? drink, double price)
     {
         food ??= "";        // Set defaullt value
         drink ??= "";
@@ -27,20 +21,20 @@ public class MenuLogic
             Price = price
         };
 
-        _access.Insert(model);
+        MenusAccess.Insert(model);
         return "Item added successfully!";
     }
 
-    public string AddFood(string name, double price) => AddItem(name, "", price);
-    public string AddDrink(string name, double price) => AddItem("", name, price);
+    public static string AddFood(string name, double price) => AddItem(name, "", price);
+    public static string AddDrink(string name, double price) => AddItem("", name, price);
 
-    public string RemoveItem(int menuId)
+    public static string RemoveItem(int menuId)
     {
-        var existing = _access.GetById(menuId);
+        var existing = MenusAccess.GetById(menuId);
         if (existing == null)       // Item not found
             return $"Menu item with ID {menuId} not found.";
 
-        _access.Delete(menuId);
+        MenusAccess.Delete(menuId);
         return "Item removed successfully.";
     }
 

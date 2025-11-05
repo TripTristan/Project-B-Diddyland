@@ -1,11 +1,6 @@
-public class UserLoginUI
+public static class UserLoginUI
 {
-    private readonly LoginLogic _logic;
-
-    public UserLoginUI(LoginLogic logic) => _logic = logic;
-
-
-    public void StartLogin()
+    public static void StartLogin()
     {
         Console.WriteLine("=== Customer Login  ===");
 
@@ -35,7 +30,7 @@ public class UserLoginUI
 
 
 
-    private bool LoginAgain()
+    private static bool LoginAgain()
     {
         Console.Write("Try again? (y/n): ");
         string choice = Console.ReadLine()?.Trim().ToLower();
@@ -51,17 +46,17 @@ public class UserLoginUI
     }
 
 
-    private bool UserLogin()
+    private static bool UserLogin()
     {
         string username = Input_Read("Username: ");
         string password = Input_Read("Password: ");
 
-        bool successOrFailure = _logic.AccountVerify(username, password); 
+        bool successOrFailure = LoginLogic.AccountVerify(username, password); 
         return successOrFailure;
     }
 
     
-    private string Input_Read(string text)
+    private static string Input_Read(string text)
     {
         string input;
         do

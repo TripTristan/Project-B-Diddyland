@@ -1,18 +1,14 @@
-public class AttractieLogic
+public static class AttractieLogic
 {
-    private readonly AttractiesAccess _repo;
+    public static IEnumerable<AttractieModel> GetAll() => AttractiesAccess.GetAll();
+    public static AttractieModel? Get(int id) => AttractiesAccess.GetById(id);
 
-    public AttractieLogic(AttractiesAccess repo) => _repo = repo;
-
-    public IEnumerable<AttractieModel> GetAll() => _repo.GetAll();
-    public AttractieModel? Get(int id) => _repo.GetById(id);
-
-    public void Add(AttractieModel m)
+    public static void Add(AttractieModel m)
 {
     try
     {
         Validate(m);
-        _repo.Insert(m);
+        AttractiesAccess.Insert(m);
     }
     catch (Exception ex)
     {
@@ -25,17 +21,17 @@ public class AttractieLogic
 
 
 
-    public void Update(AttractieModel m)
+    public static void Update(AttractieModel m)
     {
         if (m.ID <= 0) throw new ArgumentException("Missing ID for update.");
         Validate(m);
-        _repo.Update(m);
+        AttractiesAccess.Update(m);
     }
 
-    public void Delete(int id)
+    public static void Delete(int id)
     {
         if (id <= 0) throw new ArgumentException("Invalid id.");
-        _repo.Delete(id);
+        AttractiesAccess.Delete(id);
     }
 
     private static void Validate(AttractieModel m)

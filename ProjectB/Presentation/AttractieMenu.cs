@@ -1,10 +1,7 @@
 public class AttractieMenu
 {
-    private static AttractieLogic _service = default!;
-
-    public static void Start(AttractieLogic service)
+    public static void Start()
     {
-        _service = service;
         RunMenu();
     }
     
@@ -51,7 +48,7 @@ public class AttractieMenu
     {
         Header("All attractions");
 
-        var items = _service.GetAll().ToList();
+        var items = AttractieLogic.GetAll().ToList();
         if (!items.Any())
         {
             Info("No attractions yet.");
@@ -70,7 +67,7 @@ public class AttractieMenu
     {
         Header("View attraction");
         var id = ReadInt("Enter ID", min: 1);
-        var m = _service.Get(id);
+        var m = AttractieLogic.Get(id);
         if (m == null) { Warn($"Attraction with ID {id} not found."); return; }
         PrintOne(m);
     }
@@ -86,7 +83,7 @@ public class AttractieMenu
             Capacity = ReadInt("Capacity", min: 1, max: 5000),
         };
 
-        _service.Add(m);
+        AttractieLogic.Add(m);
         Success("Added.");
     }
 
@@ -94,7 +91,7 @@ public class AttractieMenu
     {
         Header("Edit attraction");
         var id = ReadInt("Enter ID to edit", min: 1);
-        var existing = _service.Get(id);
+        var existing = AttractieLogic.Get(id);
         if (existing == null) { Warn($"Attraction with ID {id} not found."); return; }
 
         Console.WriteLine("Press Enter to keep the current value shown in [brackets].");
@@ -109,7 +106,7 @@ public class AttractieMenu
         existing.MinHeightInCM = minH ?? existing.MinHeightInCM;
         existing.Capacity = cap ?? existing.Capacity;
 
-        _service.Update(existing);
+        AttractieLogic.Update(existing);
         Success("Updated.");
     }
 
@@ -117,7 +114,7 @@ public class AttractieMenu
     {
         Header("Delete attraction");
         var id = ReadInt("Enter ID to delete", min: 1);
-        var m = _service.Get(id);
+        var m = AttractieLogic.Get(id);
         if (m == null) { Warn($"Attraction with ID {id} not found."); return; }
 
         PrintOne(m);
@@ -125,7 +122,7 @@ public class AttractieMenu
         var confirm = Console.ReadLine()?.Trim().ToLowerInvariant();
         if (confirm == "y" || confirm == "yes")
         {
-            _service.Delete(id);
+            AttractieLogic.Delete(id);
             Success("Deleted.");
         }
         else

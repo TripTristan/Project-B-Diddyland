@@ -1,24 +1,18 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class DBC
+public static class DBC
 {
-    public readonly SqliteConnection Connection;
-    public DBC()
-    {
-        Connection = new("Data Source=C:/Users/ahmad/Desktop/School/Project B/Project-B-Diddyland/ProjectB/DataSources/diddyland.db");
-    }
+    public static readonly SqliteConnection Connection = new("Data Source=C:/Users/ahmad/Desktop/School/Project B/Project-B-Diddyland/ProjectB/DataSources/diddyland.db");
 
-    public void CloseConnection()
+
+    public static void CloseConnection()
 {
-    var connection = new SqliteConnection("Data Source=DataSources/diddyland.db;");
     
     try
     {
-        connection.Open();
+        Connection.Open();
         Console.WriteLine("Database connection opened.");
-
-        // Perform your database operations here
 
     }
     catch (Exception ex)
@@ -27,8 +21,7 @@ public class DBC
     }
     finally
     {
-        // Close the connection when done
-        connection.Close();
+        Connection.Close();
         Console.WriteLine("Database connection closed.");
     }
 }

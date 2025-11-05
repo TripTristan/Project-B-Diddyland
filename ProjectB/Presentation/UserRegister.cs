@@ -21,7 +21,7 @@ static class UserRegister
             if (!VName)
             {
                 Console.WriteLine("Please enter your username: ");
-                Name = Console.ReadLine();
+                Name = Console.ReadLine().ToLower();
                 VName = UserLogic.IsNameValid(Name);
             }
 

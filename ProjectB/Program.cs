@@ -7,13 +7,6 @@ class Program
 {
     static void Main()
     {
-        var attractiesRepo = new AttractiesAccess();
-        var menusRepo = new MenusAccess();
-
-        // Logic layers
-        var attractieLogic = new AttractieLogic(attractiesRepo);
-        var menuLogic = new MenuLogic(menusRepo);
-        var orderLogic = new OrderLogic(menuLogic);
 
         // Main loop
         while (true)
@@ -22,7 +15,7 @@ class Program
             WriteHeader("Diddyland – Main Menu");
 
             if (LoginStatus.CurrentUserInfo != null)
-                Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username}");
+                Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Name}");
 
             Console.WriteLine("1) Attractions");
             Console.WriteLine("2) Menu management");
@@ -43,15 +36,15 @@ class Program
                 switch (choice)
                 {
                     case "1":
-                        AttractieMenu.Start(attractieLogic);
+                        AttractieMenu.Start();
                         break;
 
                     case "2":
-                        MenuForm.Run(menuLogic);
+                        MenuForm.Run();
                         break;
 
                     case "3":
-                        OrderForm.Run(orderLogic);
+                        OrderForm.Run();
                         break;
 
                     case "4":
@@ -59,24 +52,24 @@ class Program
                         break;
 
                     case "5":
-                        AppFactory.CreateReservationUI().StartReservation();
+                        ReservationUI.StartReservation();
                         Pause();
                         break;
 
                     case "6":
-                        if (LoginStatus.CurrentUserInfo != null)
+                        if (LoginStatus.CurrentUserInfo != LoginStatus.guest)
                         {
                             Warn("You are already logged in.");
                         }
                         else
                         {
-                            AppFactory.CreateLoginUI().StartLogin();
+                            UserLoginUI.StartLogin();
                         }
                         Pause();
                         break;
 
                     case "7":
-                        if (LoginStatus.CurrentUserInfo == null)
+                        if (LoginStatus.CurrentUserInfo == LoginStatus.guest)
                         {
                             Warn("No user is currently logged in.");
                         }

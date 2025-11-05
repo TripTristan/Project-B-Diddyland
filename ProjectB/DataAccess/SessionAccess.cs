@@ -3,33 +3,37 @@ using System.Linq;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-public class SessionAccess
+public static class SessionAccess
 {
-    DBC db = new();
 
-    public List<Session> GetAllSessions()
+    public static List<Session> GetAllSessions()
     {
-        return db.Connection.Query<Session>("SELECT * FROM Sessions").ToList();
+        return DBC.Connection.Query<Session>("SELECT * FROM Sessions").ToList();
     }
 
-    public Session? GetSessionById(int id)
+    public static Session? GetSessionById(int id)
     {
-        return db.Connection.QueryFirstOrDefault<Session>(
+        return DBC.Connection.QueryFirstOrDefault<Session>(
             "SELECT * FROM Sessions WHERE Id = @Id", new { Id = id });
     }
 
-    public void UpdateSession(Session session)
+    public static void UpdateSession(Session session)
     {
-        db.Connection.Execute(
+        DBC.Connection.Execute(
             @"UPDATE Sessions
               SET CurrentBookings = @CurrentBookings
               WHERE Id = @Id",
             session);
     }
-        public void Insert(Session session)
+    public static void Insert(Session session)
     {
         const string sql = @"INSERT INTO Sessions (Date, Time, MaxCapacity, CurrentBookings)
                              VALUES (@Date, @Time, @MaxCapacity, @CurrentBookings)";
-        db.Connection.Execute(sql, session);
+        DBC.Connection.Execute(sql, session);
+    }
+    
+    public static int GetCapacityBySession(Session sesh)
+    {
+        return AttractiesAccess.GetById(sesh.AttractionID).Capacity;
     }
 }

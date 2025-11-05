@@ -2,12 +2,12 @@ using System.Text;
 
 public static class OrderForm
 {
-    public static void Run(OrderLogic logic)
+    public static void Run()
     {
         while (true)
         {
             Console.Clear();
-            Console.WriteLine(MenuForm.FormatMenu(logic.GetAllMenuItems()));
+            Console.WriteLine(MenuForm.FormatMenu(OrderLogic.GetAllMenuItems()));
             Console.WriteLine("Choose an order action:");
             Console.WriteLine("[1] Add item to cart");
             Console.WriteLine("[2] View cart");
@@ -20,16 +20,16 @@ public static class OrderForm
             switch (choice)
             {
                 case "1":
-                    AddItemUI(logic);
+                    AddItemUI();
                     break;
                 case "2":
-                    ViewCartUI(logic);
+                    ViewCartUI();
                     break;
                 case "3":
-                    RemoveItemUI(logic);
+                    RemoveItemUI();
                     break;
                 case "4":
-                    FinalizeUI(logic);
+                    FinalizeUI();
                     break;
                 case "0":
                     return;
@@ -40,43 +40,43 @@ public static class OrderForm
         }
     }
 
-    private static void AddItemUI(OrderLogic logic)
+    private static void AddItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add item to cart ===");
         var id = PromptInt("Enter Menu ID: ");
         var qty = PromptInt("Quantity: ");
-        var result = logic.AddToCart(id, qty);
+        var result = OrderLogic.AddToCart(id, qty);
         Pause(result + " Press any key...");
     }
 
-    private static void RemoveItemUI(OrderLogic logic)
+    private static void RemoveItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Remove item from cart ===");
-        if (logic.IsCartEmpty())
+        if (OrderLogic.IsCartEmpty())
         {
             Pause("Cart is empty. Press any key...");
             return;
         }
 
-        PrintCart(logic);
+        PrintCart();
         var id = PromptInt("Enter Menu ID to remove: ");
-        var result = logic.RemoveFromCart(id);
+        var result = OrderLogic.RemoveFromCart(id);
         Pause(result + " Press any key...");
     }
 
-    private static void ViewCartUI(OrderLogic logic)
+    private static void ViewCartUI()
     {
         Console.Clear();
         Console.WriteLine("=== Cart ===");
-        if (logic.IsCartEmpty())
+        if (OrderLogic.IsCartEmpty())
         {
             Pause("Your cart is empty. Press any key...");
             return;
         }
 
-        PrintCart(logic);
+        PrintCart();
         Console.WriteLine();
         Console.WriteLine("[1] Change quantity");
         Console.WriteLine("[0] Back");
@@ -86,22 +86,22 @@ public static class OrderForm
         {
             var id = PromptInt("Menu ID to update: ");
             var qty = PromptInt("New quantity: ");
-            var msg = logic.UpdateQuantity(id, qty);
+            var msg = OrderLogic.UpdateQuantity(id, qty);
             Pause(msg + " Press any key...");
         }
     }
 
-    private static void FinalizeUI(OrderLogic logic)
+    private static void FinalizeUI()
     {
         Console.Clear();
         Console.WriteLine("=== Finalize Order ===");
-        if (logic.IsCartEmpty())
+        if (OrderLogic.IsCartEmpty())
         {
             Pause("Your cart is empty. Add items before finalizing. Press any key...");
             return;
         }
 
-        PrintCart(logic);
+        PrintCart();
         Console.WriteLine();
         Console.Write("Confirm order? (Y/N): ");
         var confirm = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
@@ -111,7 +111,7 @@ public static class OrderForm
             return;
         }
 
-        var summary = logic.FinalizeOrder();
+        var summary = OrderLogic.FinalizeOrder();
         Console.Clear();
         Console.WriteLine("=== Order Confirmed ===");
         Console.WriteLine($"Time: {summary.Timestamp:G}");
@@ -128,9 +128,9 @@ public static class OrderForm
         Pause("Thank you! Press any key...");
     }
 
-    private static void PrintCart(OrderLogic logic)
+    private static void PrintCart()
     {
-        var cart = logic.GetCart();
+        var cart = OrderLogic.GetCart();
         var lines = cart.Select(c =>
         {
             var label = CartLine.BuildLabel(c.Item);
@@ -150,7 +150,7 @@ public static class OrderForm
         foreach (var l in lines)
             sb.AppendLine($"{l.ID,-4} {TrimPad(l.Label, 30),-30} {l.Quantity,4} €{l.Unit,7:0.00} €{l.Subtotal,7:0.00}");
         sb.AppendLine("------------------------------------------------------------");
-        sb.AppendLine($"TOTAL: €{logic.GetTotal():0.00}");
+        sb.AppendLine($"TOTAL: €{OrderLogic.GetTotal():0.00}");
         Console.WriteLine(sb.ToString());
     }
 

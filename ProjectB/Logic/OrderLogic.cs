@@ -1,20 +1,14 @@
-public class OrderLogic
+public static class OrderLogic
 {
-    private readonly MenuLogic _menuLogic;
-    private readonly List<CartLine> _cart = new();
+    private static readonly List<CartLine> _cart = new();
 
-    public OrderLogic(MenuLogic menuLogic)
-    {
-        _menuLogic = menuLogic;
-    }
+    public static IEnumerable<MenuModel> GetAllMenuItems() => MenuLogic.GetAll();
+    public static IReadOnlyList<CartLine> GetCart() => _cart;
 
-    public IEnumerable<MenuModel> GetAllMenuItems() => _menuLogic.GetAll();
-    public IReadOnlyList<CartLine> GetCart() => _cart;
-
-    public string AddToCart(int menuId, int quantity)
+    public static string AddToCart(int menuId, int quantity)
     {
         if (quantity <= 0) return "Quantity must be at least 1.";
-        var item = _menuLogic.GetAll().FirstOrDefault(m => m.ID == menuId);
+        var item = MenuLogic.GetAll().FirstOrDefault(m => m.ID == menuId);
         if (item == null) return $"Menu item with ID {menuId} not found.";
         var existing = _cart.FirstOrDefault(c => c.Item.ID == menuId);
         if (existing == null)
@@ -28,7 +22,7 @@ public class OrderLogic
         return $"Added {quantity} × \"{CartLine.BuildLabel(item)}\" to cart.";
     }
 
-    public string RemoveFromCart(int menuId)
+    public static string RemoveFromCart(int menuId)
     {
         var existing = _cart.FirstOrDefault(c => c.Item.ID == menuId);
         if (existing == null) return $"Item with ID {menuId} is not in the cart.";
@@ -36,7 +30,7 @@ public class OrderLogic
         return "Item removed from cart.";
     }
 
-    public string UpdateQuantity(int menuId, int quantity)
+    public static string UpdateQuantity(int menuId, int quantity)
     {
         if (quantity <= 0) return "Quantity must be at least 1.";
         var existing = _cart.FirstOrDefault(c => c.Item.ID == menuId);
@@ -45,10 +39,10 @@ public class OrderLogic
         return "Quantity updated.";
     }
 
-    public double GetTotal() => _cart.Sum(c => c.LineTotal);
-    public bool IsCartEmpty() => !_cart.Any();
+    public static double GetTotal() => _cart.Sum(c => c.LineTotal);
+    public static bool IsCartEmpty() => !_cart.Any();
 
-    public OrderSummary FinalizeOrder()
+    public static OrderSummary FinalizeOrder()
     {
         var lines = _cart.Select(c => new OrderLineSnapshot(
             c.Item.ID,
@@ -67,31 +61,3 @@ public class OrderLogic
     }
 }
 
-public class CartLine
-{
-    public MenuModel Item { get; }
-    public int Quantity { get; set; }
-    public double LineTotal => Item.Price * Quantity;
-
-    public CartLine(MenuModel item, int quantity)
-    {
-        Item = item;
-        Quantity = quantity;
-    }
-
-    public static string BuildLabel(MenuModel m)
-    {
-        var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(m.Food)) parts.Add(m.Food!);
-        if (!string.IsNullOrWhiteSpace(m.Drink)) parts.Add(m.Drink!);
-        return parts.Count > 0 ? string.Join(" / ", parts) : "(Unnamed)";
-    }
-}
-
-public record OrderLineSnapshot(int ID, string Food, string Drink, double Price, int Quantity)
-{
-    public string Label => CartLine.BuildLabel(new MenuModel(ID, Food, Drink, Price));
-    public double Subtotal => Price * Quantity;
-}
-
-public record OrderSummary(DateTime Timestamp, DateTime PickupTime, List<OrderLineSnapshot> Lines, double Total);
