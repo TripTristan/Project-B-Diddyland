@@ -2,7 +2,7 @@ public class UserModel
 {
     public int Id { get; set; }
     public string Name { get; set; }
-    public string Username => Name;
+    public string Username { get; set; }
     public string Email { get; set; }
     public string DateOfBirth { get; set; }
     public int Height { get; set; }
@@ -20,6 +20,7 @@ public class UserModel
 
     public UserModel(int id, string name, string email, string dateOfBirth, int height, string phone, string password, int admin = 0)
     {
+        Username = name;
         Name = name;
         Email = email;
         DateOfBirth = dateOfBirth;
