@@ -112,4 +112,15 @@ public static class UserLogic
         UserModel registeredAccount = new UserModel(UserAccess.NextId(), name, email, dateOfBirth, height, phone, password);
         UserAccess.Write(registeredAccount);
     }
+
+    public static bool IsAdmin(UserModel user)
+    {
+        return user != null && user.Id == 1;
+    }
+
+    public static bool IsSuperAdmin(UserModel user)
+    {
+        return user != null && user.Id == 2;
+    }
+
 }
