@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 public class ReservationsAccess
 {
     private readonly List<ReservationModel> _bookings = new();
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland2.db");
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
 
     public void AddBooking(ReservationModel booking)
     {

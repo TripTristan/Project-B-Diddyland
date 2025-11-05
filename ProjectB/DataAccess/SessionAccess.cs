@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 
 public class SessionAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland2.db");
+    private readonly SqliteConnection _connection = new($"Data Source=DataSources/diddyland.db");
 
     public List<Session> GetAllSessions()
     {
