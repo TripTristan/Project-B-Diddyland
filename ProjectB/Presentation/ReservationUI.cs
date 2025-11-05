@@ -30,8 +30,7 @@
                 }
                 else
                 {
-                    Console.WriteLine("Continuing as guest.");
-                // can here email in //
+                    Console.WriteLine("Continuing as guest.");//
                 }
             }
 
@@ -49,8 +48,8 @@
 
         public static void LoginCustomer()
         {
-            var userRepo   = new UserAccess();          
-            var loginLogic = new LoginLogic(userRepo);  
+            var userRepo = new UserAccess();
+            var loginLogic = new LoginLogic(userRepo);
             new UserLoginUI(loginLogic).StartLogin();
 
         }
@@ -279,4 +278,4 @@
             Console.WriteLine("Reservation successful! Thank you for booking with us.");
         }
 
-    }
+}
