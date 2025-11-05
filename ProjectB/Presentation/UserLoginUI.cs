@@ -1,11 +1,8 @@
 public class UserLoginUI
 {
-    private readonly Loginlogic _logic;
+    private readonly LoginLogic _logic;
 
-    public UserLoginUI(Loginlogic logic)
-    {
-        _logic = logic;
-    }
+    public UserLoginUI(LoginLogic logic) => _logic = logic;
 
 
     public void StartLogin()

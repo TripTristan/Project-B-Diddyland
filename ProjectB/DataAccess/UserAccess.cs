@@ -1,52 +1,52 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class UsersAccess
+public class UserAccess
 {
-    private readonly SqliteConnection _connection = new($"Data Source=DataSources/project.db");
+    public const string Table = "Account";
 
-    public void Insert(UserModel user)
+    public static void Write(UserModel account)
     {
-        const string sql = @"INSERT INTO Account (Admin, FirstName, LastName, Email, Password, HeightInCM, DateOfBirth)
-                             VALUES (@Admin, @FirstName, @LastName, @Email, @Password, @HeightInCM, @DateOfBirth)";
-        _connection.Execute(sql, user);
+        string sql = $"INSERT INTO {Table} (ID, Email, Password, Username, Phone, HeightInCM, DateOfBirth, Admin) VALUES (@Id, @Email, @Password, @Name, @Phone, @Height, @DateOfBirth, 0);";
+        DBC.Connection.Execute(sql, account);
     }
 
-    public UserModel? GetByEmail(string email)
+    public static UserModel? GetByEmail(string email)
     {
-        const string sql = "SELECT * FROM Account WHERE Email = @Email";
-        return _connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
+        string sql = $"SELECT * FROM {Table} WHERE email = @Email";
+        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
     }
 
     public UserModel? GetByUsername(string username)
     {
-        const string sql = "SELECT * FROM Account WHERE Username = @Username";
-        return _connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
+        const string sql = @"SELECT * FROM Account WHERE Username = @Username;";
+        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
     }
 
-
-    public IEnumerable<UserModel> GetAll()
+    public static void Update(UserModel account)
     {
-        const string sql = "SELECT * FROM Account";
-        return _connection.Query<UserModel>(sql);
+        string sql = $"UPDATE {Table} SET email = @EmailAddress, password = @Password, fullname = @FullName WHERE id = @Id";
+        DBC.Connection.Execute(sql, account);
     }
 
-    public void Update(UserModel user)
+    public static void Delete(UserModel account)
     {
-        const string sql = @"UPDATE Account SET 
-                             FirstName = @FirstName,
-                             LastName = @LastName,
-                             Email = @Email,
-                             Password = @Password,
-                             HeightInCM = @HeightInCM,
-                             DateOfBirth = @DateOfBirth
-                             WHERE AccountID = @AccountID";
-        _connection.Execute(sql, user);
+        string sql = $"DELETE FROM {Table} WHERE id = @Id";
+        DBC.Connection.Execute(sql, new { account.Id });
     }
 
-    public void Delete(int accountId)
+    public static int NextId()
     {
-        const string sql = "DELETE FROM Account WHERE AccountID = @AccountID";
-        _connection.Execute(sql, new { AccountID = accountId });
+        try
+        {
+            string sql = $"SELECT IFNULL(MAX(Id), 0) + 1 FROM {Table}";
+            return DBC.Connection.ExecuteScalar<int>(sql);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error getting next ID: " + e.Message);
+            return 1;
+        }
     }
+
 }

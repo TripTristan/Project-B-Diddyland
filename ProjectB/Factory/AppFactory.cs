@@ -1,18 +1,18 @@
 public static class AppFactory
 {
-    // userLoginUI >>> LoginLogics >>> userAccess
     public static UserLoginUI CreateLoginUI()
     {
-        var repo = new UsersAccess();
-        var logic = new Loginlogic(repo);
+        var repo = new UserAccess();           
+        var logic = new LoginLogic(repo);       
         var ui = new UserLoginUI(logic);
         return ui;
     }
 
     public static ReservationUI CreateReservationUI()
     {
-        var repo = new ReservationAccess();
-        var logic = new ReservationLogic(repo);
+        var sessionRepo = new SessionAccess();
+        var bookingRepo = new ReservationsAccess(); 
+        var logic = new ReservationLogic(sessionRepo, bookingRepo);
         var ui = new ReservationUI(logic);
         return ui;
     }
