@@ -54,9 +54,13 @@ class Program
                     {
                         GuestMenu.Run();
                     }
-                    else if (role == (int)UserRole.Admin || role == (int)UserRole.SuperAdmin)
+                    else if (role == (int)UserRole.Admin)
                     {
                         AdminMenu.Run();
+                    }
+                    else if (role == (int)UserRole.SuperAdmin)
+                    {
+                        SuperAdminMenu.Run();
                     }
                     else
                     {

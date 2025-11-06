@@ -1,16 +1,15 @@
 using System;
 
-static class AdminMenu
+static class SuperAdminMenu
 {
     public static void Run()
     {
         while (LoginStatus.CurrentUserInfo != null &&
-               LoginStatus.CurrentUserInfo.Role == (int)UserRole.Admin)
+               LoginStatus.CurrentUserInfo.Role == (int)UserRole.SuperAdmin)
         {
             Console.Clear();
-
-            UiHelpers.WriteHeader("Diddyland – Admin Dashboard");
-            Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Admin)");
+            UiHelpers.WriteHeader("Diddyland – Super Admin Dashboard");
+            Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Super Admin)");
             Console.WriteLine();
 
             Console.WriteLine("1) Attractions");
