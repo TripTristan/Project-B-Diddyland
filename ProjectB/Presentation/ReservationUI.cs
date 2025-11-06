@@ -2,6 +2,7 @@
     using System.Collections.Generic;
     using System.Linq;
 using System.Security.Cryptography;
+using Microsoft.VisualBasic;
 
 public class ReservationUI
 {
@@ -258,96 +259,56 @@ public class ReservationUI
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static void ShowBookingDetails(876string orderNumber, Dictionary<int, Dictionary<int, List<int>>> bookingSelections, decimal totalPrice)
+    public static void ShowBookingDetails(
+        string orderNumber,
+        Dictionary<int, Dictionary<int, List<int>>> bookingSelections,
+        List<IGrouping<DateTime, Session>> groupedByDate,  // Add this to show actual dates
+        Dictionary<int, List<(decimal discount, decimal finalPrice)>> agePricing,  // Add this for ticket details
+        Dictionary<string, decimal> discountDescriptions,  // Add this for offer discounts
+        decimal totalFinalPrice)
     {
+        Console.WriteLine("\n===================== BOOKING SUMMARY =====================");
+        Console.WriteLine($"Order Number: {orderNumber}");
+        Console.WriteLine("-----------------------------------------------------------");
 
-        Console.WriteLine("Booking Details:");
-        Console.WriteLine("---------------------");
-        Console.WriteLine($"Order nummer: {orderNumber}");
-
-        foreach (var (dateChoice, inner) in bookingSelections)
+        foreach (var (dateChoice, sessionBookings) in bookingSelections)
         {
-            Console.WriteLine($"Date: {dateChoice}");
-            foreach (var (sessionId, ages) in inner)
+            DateTime actualDate = groupedByDate[dateChoice].Key;
+            Console.WriteLine($"\nDate: {actualDate:dddd, MMMM dd, yyyy}");
+
+            foreach (var (sessionId, ages) in sessionBookings)
             {
-                Console.WriteLine($"Session ID: {sessionId}");
+                // Count ticket types
+                int childCount = ages.Count(age => age < 12);
+                int seniorCount = ages.Count(age => age >= 65);
+                int adultCount = ages.Count(age => age >= 12 && age < 65);
 
+                Console.WriteLine($"\n  Session ID: {sessionId}");
+                if (childCount > 0) Console.WriteLine($"    Child Tickets (0-11): {childCount}");
+                if (adultCount > 0) Console.WriteLine($"    Adult Tickets (12-64): {adultCount}");
+                if (seniorCount > 0) Console.WriteLine($"    Senior Tickets (65+): {seniorCount}");
 
-
-            }
-
-
-
-
-
-
-
-            // ################################
-            Console.WriteLine("---------------------");
-            Console.WriteLine($"Order Number: {orderNumber}");
-            Console.WriteLine("Booking Details:");
-
-            foreach
-
-
-
-            var sessionCount = new Dictionary<int, List<int>>();
-
-            foreach (var (sessionId, ages) in bookingDetails)
-            {
-                int child = 0, senior = 0, adult = 0;
-                foreach (int age in ages)
+                if (agePricing.TryGetValue(sessionId, out var ticketPrices))
                 {
-                    if (age < 12) child++;
-                    else if (age >= 65) senior++;
-                    else adult++;
+                    Console.WriteLine($"    Session Subtotal: {ticketPrices.Sum(t => t.finalPrice):C}");
                 }
-                sessionCount[sessionId] = new List<int> { child, senior, adult };
             }
-
-            foreach (var (sessionId, _) in bookingDetails)
-            {
-                Console.WriteLine($"Session ID: {sessionId}");
-                Console.WriteLine($"  Child Tickets:  {sessionCount[sessionId][0]}");
-                Console.WriteLine($"  Senior Tickets: {sessionCount[sessionId][1]}");
-                Console.WriteLine($"  Adult Tickets:  {sessionCount[sessionId][2]}");
-            }
-
-            Console.WriteLine($"Total Price: {totalPrice:C}");
         }
+
+        if (discountDescriptions?.Any() == true)
+        {
+            Console.WriteLine("\n-----------------------------------------------------------");
+            Console.WriteLine("Applied Discounts:");
+            foreach (var (description, amount) in discountDescriptions)
+            {
+                Console.WriteLine($"  {description}: -{amount:C}");
+            }
+        }
+
+        Console.WriteLine("\n-----------------------------------------------------------");
+        Console.WriteLine($"TOTAL AMOUNT: {totalFinalPrice:C}");
+        Console.WriteLine("===========================================================\n");
+    }
 
 
 
