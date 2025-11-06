@@ -22,20 +22,20 @@ public class ReservationLogic
         return session.CurrentBookings + quantity <= session.MaxCapacity;
     }
 
-    // Called once per ticket from UI:
-    public decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber)
+    // hier only age discount Calculate
+    public (decimal, decimal, decimal) CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int ticketQuantity)
     {
         var session = _sessionRepo.GetSessionById(sessionId)
-                     ?? throw new ArgumentException("Invalid session ID.");
+                    ?? throw new ArgumentException("Invalid session ID.");
 
         if (session.CurrentBookings + 1 > session.MaxCapacity)
             throw new InvalidOperationException("Not enough available seats.");
 
-        // price & discount
         decimal basePrice = session.PricePerPerson;
-        var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
+        string Ticketnr = generateTicketNumber(sessionId, );
 
-        // persist ticket
+        var (discount, baseprice, finalPrice) = CalculateAgePricePerTicket(age); 
+
         var booking = new ReservationModel
         {
             OrderNumber = orderNumber,
@@ -50,13 +50,49 @@ public class ReservationLogic
 
         _bookingRepo.AddBooking(booking);
 
-        // update capacity
         session.CurrentBookings += 1;
         _sessionRepo.UpdateSession(session);
 
-        Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (discount: {discount * 100}%)");
-        return finalPrice;
+        Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (Age discount: {discount * 100:F0}%)");
+        return (discount, basePrice, finalPrice);
     }
+
+    public (decimal discount, decimal basePrice, decimal finalPrice)CalculateAgePricePerTicket(int age)
+    {
+        decimal basePrice = _bookingRepo.GetBasisTicketPrice();
+        OfferManagementLogic offerLogic = new OfferManagementLogic();
+        decimal ageDiscount = offerLogic.CalculateRuleTypeAageDiscount(age);
+        decimal finalPrice = basePrice * (1 - ageDiscount);
+        return (ageDiscount,basePrice, finalPrice);
+    }
+
+    public (Dictionary<string, decimal> discount, decimal TicketQuantityDiscount, decimal TotalPricesOrder )CalculateOfferDiscountedPrice(int totalQuantityofTicket, decimal vtotalPrice, UserModel? customerInfo)
+    {
+        DateTime? bd = customerInfo == null
+            ? null
+            : DateTime.TryParseExact(customerInfo.DateOfBirth, "dd-MM-yyyy",
+                                    CultureInfo.InvariantCulture,
+                                    DateTimeStyles.None, out var tmp)
+            ? tmp
+            : null;
+
+        Dictionary<string, decimal> discount = OfferManagementLogic.ApplyOffers(
+                                    new OfferAccess().GetAll(),
+                                    "",
+                                    totalQuantityofTicket,
+                                    customerInfo,
+                                    bd);
+
+        decimal offerDiscount = discount.Values.Sum();                   
+        
+        decimal totalfinalPrice = vtotalPrice * (1 - offerDiscount);
+
+
+        return (discount, offerDiscount, totalfinalPrice);
+    }
+    
+        
+    
 
     public string GenerateOrderNumber(UserModel? customerInfo)
     {
@@ -70,13 +106,16 @@ public class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-    public (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
-    {
-        decimal discount = 0m;
-        if (age <= 12) discount = 0.5m;     // children
-        else if (age >= 65) discount = 0.3m; // seniors
 
-        decimal finalPrice = basePrice * (1 - discount);
-        return (discount, finalPrice);
+    //#############################################################################################################
+    private (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
+    {
+        decimal ageDiscount = 0m;
+        if (age <= 12) ageDiscount = 0.5m;
+        else if (age >= 65) ageDiscount = 0.3m;
+
+        decimal final = basePrice * (1 - bestDiscount);
+        return (bestDiscount, final);
     }
+    //#############################################################################################################
 }
