@@ -11,7 +11,8 @@ static class GuestMenu
             Console.WriteLine("1) Map");
             Console.WriteLine("2) Orders");
             Console.WriteLine("3) Reservations");
-            Console.WriteLine("4) Logout");
+            Console.WriteLine("4) Fastpass");
+            Console.WriteLine("5) Logout"); 
             Console.WriteLine();
 
             Console.Write("Choose an option: ");
@@ -33,9 +34,14 @@ static class GuestMenu
                     break;
 
                 case "4":
+                    FastPassUI.Run(LoginStatus.CurrentUserInfo);
+                    UiHelpers.Pause();
+                    break; 
+
+                case "5":
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
-                    return; 
+                    return;
 
                 default:
                     UiHelpers.Warn("Unknown option.");
