@@ -13,7 +13,7 @@ static class GuestMenu
             Console.WriteLine("3) Reservations");
             Console.WriteLine("4) Fastpass");
             Console.WriteLine("5) Profile");
-            Console.WriteLine("6) Order History"); ;
+            Console.WriteLine("6) Booking History"); ;
             Console.WriteLine("7) Logout");
             Console.WriteLine();
 

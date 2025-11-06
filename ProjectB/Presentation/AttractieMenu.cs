@@ -55,7 +55,7 @@ public class AttractieMenu
             return;
         }
 
-        Console.WriteLine($"{Pad("ID",5)}  {Pad("Name",25)}  {Pad("Type",15)}  {Pad("Min(cm)",8)}  {Pad("Capacity",8)}");
+        Console.WriteLine($"{Pad("ID",5)}  {Pad("Name",25)}  {Pad("Type",15)}  {Pad("Min(cm)",8)}  {Pad("MaxCapacity",8)}");
         Console.WriteLine(new string('-', 70));
         foreach (var m in items)
         {
@@ -80,7 +80,7 @@ public class AttractieMenu
             Name = ReadRequired("Name"),
             Type = ReadRequired("Type"),
             MinHeightInCM = ReadInt("Min height (cm)", min: 0, max: 300),
-            Capacity = ReadInt("Capacity", min: 1, max: 5000),
+            Capacity = ReadInt("MaxCapacity", min: 1, max: 5000),
         };
 
         AttractieLogic.Add(m);
@@ -99,7 +99,7 @@ public class AttractieMenu
         var name = ReadOptional($"Name [{existing.Name}]");
         var type = ReadOptional($"Type [{existing.Type}]");
         var minH = ReadOptionalInt($"Min height (cm) [{existing.MinHeightInCM}]", 0, 300);
-        var cap  = ReadOptionalInt($"Capacity [{existing.Capacity}]", 1, 5000);
+        var cap  = ReadOptionalInt($"MaxCapacity [{existing.Capacity}]", 1, 5000);
 
         existing.Name = string.IsNullOrWhiteSpace(name) ? existing.Name : name.Trim();
         existing.Type = string.IsNullOrWhiteSpace(type) ? existing.Type : type.Trim();
@@ -138,7 +138,7 @@ public class AttractieMenu
         Console.WriteLine($"Name:        {m.Name}");
         Console.WriteLine($"Type:        {m.Type}");
         Console.WriteLine($"Min height:  {m.MinHeightInCM} cm");
-        Console.WriteLine($"Capacity:    {m.Capacity}");
+        Console.WriteLine($"MaxCapacity:    {m.Capacity}");
         Console.WriteLine();
     }
 

@@ -18,7 +18,7 @@ public static class FastPassUI
 
         Console.WriteLine("Select an attraction:");
         foreach (var a in attractions)
-            Console.WriteLine($"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, Capacity: {a.Capacity})");
+            Console.WriteLine($"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})");
 
         int attractionId = ReadInt("\nEnter attraction ID: ", id => attractions.Any(a => a.ID == id), "Invalid attraction ID.");
 
