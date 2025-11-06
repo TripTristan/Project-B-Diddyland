@@ -45,16 +45,43 @@ public static class BookingHistoryUI
 
     private static void PrintBooking(BookingModel b)
     {
+        // Use OriginalPrice as the booking date (temporary fix)
+        string formattedDate = FormatDateFromOriginalPrice(b.OriginalPrice);
+
         Console.WriteLine($"Order Number : {b.OrderNumber}");
-        Console.WriteLine($"Session ID   : {b.SessionId}");
         Console.WriteLine($"Quantity     : {b.Quantity}");
-        Console.WriteLine($"Booking Date : {b.BookingDate}");
-        Console.WriteLine($"Original     : {FormatCurrencyOrRaw(b.OriginalPrice)}");
-        Console.WriteLine($"Discount     : {FormatCurrencyOrRaw(b.Discount)}");
-        Console.WriteLine($"Final        : {FormatCurrencyOrRaw(b.FinalPrice)}");
-        if (b.CustomerId.HasValue)
-            Console.WriteLine($"CustomerId   : {b.CustomerId.Value}");
+        Console.WriteLine($"Booking Date : {formattedDate}");
+        Console.WriteLine($"Final        : {FormatCurrencyOrRaw(b.Discount)}");
         Console.WriteLine("------------------------------------------------\n");
+    }
+
+    private static string FormatDateFromOriginalPrice(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return "";
+
+        // Remove any hyphen and whitespace
+        raw = raw.Replace("-", "").Trim();
+
+        // Expected pattern: ddMMyyyyHHmm or ddMMyyyy
+        if (raw.Length >= 8)
+        {
+            try
+            {
+                string day = raw.Substring(0, 2);
+                string month = raw.Substring(2, 2);
+                string year = raw.Substring(4, 4);
+                // Format as yyyy-MM-dd
+                return $"{year}-{month}-{day}";
+            }
+            catch
+            {
+                // fallback: return as-is if substring fails
+                return raw;
+            }
+        }
+
+        return raw;
     }
 
     private static string FormatCurrencyOrRaw(string value)
