@@ -1,0 +1,146 @@
+public static class ProfilePage
+    {
+        private static readonly UserUpdateLogic _service = new();
+        public static void Show(int currentUserId)
+        {
+            while (true)
+            {
+                Console.Clear();
+                var user = _service.GetById(currentUserId);
+                if (user == null)
+                {
+                    Console.WriteLine("Profile not found.");
+                    Pause();
+                    return;
+                }
+
+                RenderProfile(user);
+
+                Console.WriteLine();
+                Console.WriteLine("Options:  [E]dit   [B]ack");
+                Console.Write("Choose: ");
+                var choice = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
+
+                if (choice == "B")
+                    return;
+
+                if (choice == "E")
+                {
+                    var edited = EditFlow(user);
+                    if (edited != null)
+                    {
+                        var (ok, error) = _service.UpdateProfile(edited);
+                        if (ok)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Profile updated successfully.");
+                            Pause();
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine($"{error}");
+                            Pause();
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void RenderProfile(UserModel user)
+        {
+            Console.WriteLine("=== Your Profile ===");
+            Console.WriteLine($"Id          : {user.Id}");
+            Console.WriteLine($"Username    : {user.Name}");
+            Console.WriteLine($"Email       : {user.Email}");
+            Console.WriteLine($"DateOfBirth : {user.DateOfBirth}");
+            Console.WriteLine($"Height (cm) : {user.Height}");
+            Console.WriteLine($"Phone       : {user.Phone}");
+            Console.WriteLine($"Role        : {user.Admin}");
+        }
+
+        private static UserModel? EditFlow(UserModel current)
+        {
+            Console.Clear();
+            Console.WriteLine("=== Edit Profile ===");
+            Console.WriteLine("Press ENTER to keep the current value.");
+            Console.WriteLine();
+
+            var draft = new UserModel
+            {
+                Id = current.Id,
+                Name = Prompt($"Username", current.Name),
+                Email = Prompt($"Email", current.Email),
+                DateOfBirth = Prompt($"Date of Birth (dd-mm-yyyy)", current.DateOfBirth),
+                Height = PromptInt($"Height in cm", current.Height),
+                Phone = Prompt($"Phone (+########### or 06########)", current.Phone),
+                Password = PromptHiddenWithFallback("Password (leave empty to keep current)", current.Password),
+                Admin = current.Admin
+            };
+
+            Console.WriteLine();
+            Console.Write("Save changes? [Y]es  [N]o: ");
+            var save = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
+            if (save == "Y")
+            {
+                return draft;
+            }
+
+            Console.WriteLine("Canceled. No changes were saved.");
+            Pause();
+            return null;
+        }
+
+        private static string Prompt(string label, string current)
+        {
+            Console.Write($"{label} [{current}]: ");
+            var input = Console.ReadLine();
+            return string.IsNullOrWhiteSpace(input) ? current : input.Trim();
+        }
+
+        private static int PromptInt(string label, int current)
+        {
+            Console.Write($"{label} [{current}]: ");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input)) return current;
+
+            if (int.TryParse(input.Trim(), out var val)) return val;
+
+            Console.WriteLine("Invalid number. Keeping current value.");
+            return current;
+        }
+
+        private static string PromptHiddenWithFallback(string label, string fallback)
+        {
+            Console.Write($"{label}: ");
+            var input = ReadPassword();
+            return string.IsNullOrEmpty(input) ? fallback : input;
+        }
+
+        private static string ReadPassword()
+        {
+            var pwd = string.Empty;
+            ConsoleKeyInfo key;
+            while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+            {
+                if (key.Key == ConsoleKey.Backspace && pwd.Length > 0)
+                {
+                    pwd = pwd[..^1];
+                    Console.Write("\b \b");
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    pwd += key.KeyChar;
+                    Console.Write("*");
+                }
+            }
+            Console.WriteLine();
+            return pwd;
+        }
+
+        private static void Pause()
+        {
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey(true);
+        }
+    }

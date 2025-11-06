@@ -13,6 +13,13 @@ public static class UserAccess
         DBC.CloseConnection();
     }
 
+    public static UserModel? GetById(int id)
+    {
+        string sql = $"SELECT Id, Username AS Name, Email, DateOfBirth, HeightInCM AS Height, Phone, Password, Admin " +
+                        $"FROM {Table} WHERE Id = @Id;";
+        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Id = id });
+    }
+
     public static UserModel? GetByEmail(string email)
     {
         string sql = $"SELECT * FROM {Table} WHERE email = @Email";
@@ -32,7 +39,18 @@ public static class UserAccess
 
     public static void Update(UserModel account)
     {
-        string sql = $"UPDATE {Table} SET email = @EmailAddress, password = @Password, fullname = @FullName WHERE id = @Id";
+        string sql = $@"
+                UPDATE {Table}
+                SET Email = @Email,
+                    Password = @Password,
+                    Username = @Name,
+                    Phone = @Phone,
+                    HeightInCM = @Height,
+                    DateOfBirth = @DateOfBirth,
+                    Admin = @Admin
+                WHERE Id = @Id;";
+            DBC.Connection.Execute(sql, account);
+            DBC.CloseConnection();
         DBC.Connection.Execute(sql, account);
         DBC.CloseConnection();
 
