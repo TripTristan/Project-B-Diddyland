@@ -99,8 +99,9 @@ class Program
                 Pause();
             }
         }
+    }
 
-        static void WriteHeader(string text)
+        public static void WriteHeader(string text)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(text);
@@ -109,25 +110,24 @@ class Program
             Console.WriteLine();
         }
 
-        static void Warn(string msg)
+        public static void Warn(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(msg);
             Console.ResetColor();
         }
 
-        static void Error(string msg)
+        public static void Error(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(msg);
             Console.ResetColor();
         }
 
-        static void Pause()
+        public static void Pause()
         {
             Console.WriteLine();
             Console.Write("Press Enter to continue...");
             Console.ReadLine();
         }
-    }
 }

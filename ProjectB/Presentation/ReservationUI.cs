@@ -6,9 +6,9 @@
     {
         private static UserModel? _customerInfo;
 
+    public static int week = 0;
 
-
-        public static void StartReservation()
+    public static void StartReservation()
     {
             _customerInfo = LoginStatus.CurrentUserInfo;
             Console.WriteLine("=== Reservation ===");
@@ -32,32 +32,32 @@
             }
 
             List<Session> sessions = ReservationLogic.GetAvailableSessions();
-            if (sessions.Count == 0)
-            {
-                Console.WriteLine("No available sessions.");
-                return;
-            }
-
-            DisplayDates(sessions);
-            SelectAndProcessSession(sessions);
-        }
-
-
-
-
-        public static bool ChoiceHelper(string message, string yesOption, string noOption)
+        if (sessions.Count == 0)
         {
-            while (true)
-            {
-                Console.WriteLine($"{message} (y/n):\n y - {yesOption}\n n - {noOption}");
-                string choice = Console.ReadLine()?.Trim().ToLower();
-
-                if (choice == "y") return true;
-                if (choice == "n") return false;
-
-                Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-            }
+            Console.WriteLine("No available sessions.");
+            return;
         }
+
+        WeekBrowser(sessions);
+        SelectAndProcessSession(sessions);
+    }
+
+
+
+
+    public static bool ChoiceHelper(string message, string yesOption, string noOption)
+    {
+        while (true)
+        {
+            Console.WriteLine($"{message} (y/n):\n y - {yesOption}\n n - {noOption}");
+            string choice = Console.ReadLine()?.Trim().ToLower();
+
+            if (choice == "y") return true;
+            if (choice == "n") return false;
+
+            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
+        }
+    }
 
 
         public static int GetBookingQuantity(Session session) // Get and verify booking quantity
@@ -84,29 +84,46 @@
         }
 
 
-        public static void DisplayDates(List<Session> sessions)
+        public static void DisplayDates(List<Session> sessions, DateTime startOfWeek, DateTime endOfWeek)
+{
+    Console.WriteLine("\nAvailable sessions:");
+
+    var orderedGroups = sessions
+        .Where(s =>
         {
-            Console.WriteLine("\nAvailable sessions:");
+           
+            DateTime sessionDate;
+            bool isValidDate = DateTime.TryParse(s.Date, out sessionDate); 
+            return isValidDate && sessionDate >= startOfWeek && sessionDate < endOfWeek;
+        })
+        .GroupBy(s => DateTime.Parse(s.Date))  
+        .OrderBy(g => g.Key);  
 
-            var orderedGroups = sessions
-                .GroupBy(s => s.Date)   
-                .OrderBy(g => g.Key);   // ascending
+    int seshid = 1;
+        foreach (var group in orderedGroups)
+        {
+            var orderedInDay = group.OrderBy(s => s.Time);
 
-            int index = 0;
-            foreach (var group in orderedGroups)
+
+            Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
+            Console.WriteLine($"{seshid * (week + 1)}) ");
+            foreach (var s in orderedInDay)
             {
-                Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
-                var orderedInDay = group.OrderBy(s => s.Time);
-
-                foreach (var s in orderedInDay)
-                {
-                    Console.WriteLine(
-                        $"{index++}. Date: {s.Date:yyyy-MM-dd}, " +
-                        $"Time: {s.Time}, " +
-                        $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}\n");
-                }
+                DateTime sessionDate = DateTime.Parse(s.Date);
+                Console.WriteLine(
+                    $"Date: {sessionDate:yyyy-MM-dd}, " +
+                    $"Time: {s.Time}, " +
+                    $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
             }
+
+            Console.WriteLine();
+            seshid++;
         }
+    Program.WriteHeader($"      < {week} >      ");
+    Console.WriteLine($"0) This week\n1) View next week\n2) View last week");
+}
+
+
 
 
         public static int GetDateChoice(List<IGrouping<string, Session>> groupedByDate)
@@ -179,12 +196,13 @@
                         Console.WriteLine("Invalid input. Please try again.");
                     }
                 }
-                // }
+            // }
 
-                bookingSelections[selectedSession.Id] = ages;
+            bookingSelections[selectedSession.Id] = ages;
 
-                bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
-                if (!another) break;
+                // bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
+                // if (!another) 
+                break;
             }
 
 
@@ -260,9 +278,62 @@
 
 
 
-        public static void ShowSuccessMessage(string orderNumber)
+    public static void ShowSuccessMessage(string orderNumber)
+    {
+        Console.WriteLine("Reservation successful! Thank you for booking with us.");
+    }
+
+    public static void WeekBrowser(List<Session> sessions)
+    {
+    week = 0;  // Initialize starting week (current week)
+    int choice = 1;
+
+    while (choice != 0)
+    {
+        Console.Clear();
+        
+
+        // Calculate the start and end date for the current week
+        DateTime currentDate = DateTime.Now;
+        DateTime startOfWeek = currentDate.AddDays(week * 7 - (int)currentDate.DayOfWeek);  // Calculate the start of the current week
+        DateTime endOfWeek = startOfWeek.AddDays(7);  // End of the week is 7 days after start
+
+        // Display the sessions for the calculated week
+        DisplayDates(sessions, startOfWeek, endOfWeek);
+
+        bool validInput = int.TryParse(Console.ReadLine(), out choice);
+        if (!validInput)
         {
-            Console.WriteLine("Reservation successful! Thank you for booking with us.");
+            Console.WriteLine("Invalid input. Please enter a number.");
+            continue;
         }
+
+        // Switch block for user choices
+        switch (choice)
+        {
+            case 1:
+                week++;  // Move to next week
+                break;
+            case 2:
+                if (week > 0)
+                {
+                    week--;  // Move to previous week
+                }
+                else
+                {
+                        Console.WriteLine("You can't book into the past");
+                    
+                }
+                break;
+            case 0:
+                break;
+            default:
+                Console.WriteLine("Invalid choice. Please choose a valid option.");
+                break;
+        }
+    }
+}
+
+
 
     }
