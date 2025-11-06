@@ -18,7 +18,8 @@ static class AdminMenu
             Console.WriteLine("3) Orders");
             Console.WriteLine("4) Reservations");
             Console.WriteLine("5) Map");
-            Console.WriteLine("6) Logout");
+            Console.WriteLine("6) Manage Complaints");
+            Console.WriteLine("7) Logout");
             Console.WriteLine("0) Quit");
             Console.WriteLine();
 
@@ -49,6 +50,11 @@ static class AdminMenu
                     break;
 
                 case "6":
+                    AdminComplaintsPage.Show();
+                    UiHelpers.Pause();
+                    break;
+
+                case "7":
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
                     return;

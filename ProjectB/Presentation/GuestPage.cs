@@ -13,8 +13,9 @@ static class GuestMenu
             Console.WriteLine("3) Reservations");
             Console.WriteLine("4) Fastpass");
             Console.WriteLine("5) Profile");
-            Console.WriteLine("6) Booking History"); ;
-            Console.WriteLine("7) Logout");
+            Console.WriteLine("6) Booking History");
+            Console.WriteLine("7) Customer Complaints");
+            Console.WriteLine("8) Logout");
             Console.WriteLine();
 
             Console.Write("Choose an option: ");
@@ -49,8 +50,13 @@ static class GuestMenu
                     BookingHistoryUI.Display(LoginStatus.CurrentUserInfo.Username);
                     UiHelpers.Pause();
                     break;
-
+                
                 case "7":
+                    CustomerHelpPage.Show();
+                    UiHelpers.Pause();
+                    break;
+
+                case "8":
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
                     return;

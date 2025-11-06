@@ -33,8 +33,60 @@ public static class UserAccess
     }
     public static string? GetNameById(int id)
     {
-    const string sql = @"SELECT Username FROM Account WHERE Id = @Id;";
-    return DBC.Connection.QueryFirstOrDefault<string>(sql, new { Id = id });
+        const string sql = @"SELECT Username FROM Account WHERE Id = @Id;";
+        return DBC.Connection.QueryFirstOrDefault<string>(sql, new { Id = id });
+    }
+
+    public static IEnumerable<UserModel> GetAllUsers()
+    {
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            string sql = $"SELECT Id, Username AS Name, Email, DateOfBirth, HeightInCM AS Height, Phone, Password, Admin FROM {Table};";
+            IEnumerable<UserModel> users = DBC.Connection.Query<UserModel>(sql);
+            return users;
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
+    }
+
+    public static void SetRole(int id, int roleLevel)
+    {
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            string sql = $"UPDATE {Table} SET Admin = @Role WHERE ID = @Id;";
+            DBC.Connection.Execute(sql, new { Id = id, Role = roleLevel });
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
+    }
+    
+    public static void DeleteUser(int id)
+    {
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            string sql = $"DELETE FROM {Table} WHERE ID = @Id;";
+            DBC.Connection.Execute(sql, new { Id = id });
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static void Update(UserModel account)

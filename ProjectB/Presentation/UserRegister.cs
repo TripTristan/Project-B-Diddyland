@@ -2,89 +2,77 @@ static class UserRegister
 {
     public static string Register()
     {
-        bool VDateOfBirth = false;
-        bool VPassword = false;
-        bool VHeight = false;
-        bool VEmail = false;
-        bool VPhone = false;
-        bool VName = false;
-
-        string DateOfBirth = "";
-        string Password = "";
-        string Email = "";
-        string Phone = "";
         string Name = "";
+        string Email = "";
+        string DateOfBirth = "";
+        string Phone = "";
+        string Password = "";
         int Height = 0;
 
-        while (!VName || !VEmail || !VDateOfBirth || !VHeight || !VPhone || !VPassword)
+        do
         {
-            if (!VName)
+            Console.Write("Please enter your username: ");
+            Name = Console.ReadLine();
+            if (!UserLogic.IsNameValid(Name))
             {
-                Console.WriteLine("Please enter your username: ");
-                Name = Console.ReadLine().ToLower();
-                VName = UserLogic.IsNameValid(Name);
+                Console.WriteLine("Invalid name! (No numbers or special characters allowed)\n");
             }
+        } while (!UserLogic.IsNameValid(Name));
 
-            if (!VEmail)
+        do
+        {
+            Console.Write("Please enter your email: ");
+            Email = Console.ReadLine();
+            if (!UserLogic.IsEmailValid(Email))
             {
-                Console.WriteLine("Please enter your email: ");
-                Email = Console.ReadLine();
-                VEmail = UserLogic.IsEmailValid(Email);
+                Console.WriteLine("Invalid email format! Please try again.\n");
             }
+        } while (!UserLogic.IsEmailValid(Email));
 
-            if (!VDateOfBirth)
+        do
+        {
+            Console.Write("Please enter your date of birth (dd-mm-yyyy): ");
+            DateOfBirth = Console.ReadLine();
+            if (!UserLogic.IsDateOfBirthValid(DateOfBirth))
             {
-                Console.WriteLine("Please enter a your date of birth (dd-mm-yyyy): ");
-                DateOfBirth = Console.ReadLine();
-                VDateOfBirth = UserLogic.IsDateOfBirthValid(DateOfBirth);
+                Console.WriteLine("Invalid date! Please use dd-mm-yyyy format.\n");
             }
+        } while (!UserLogic.IsDateOfBirthValid(DateOfBirth));
 
-            if (!VHeight)
+        do
+        {
+            Console.Write("Please enter your height in whole centimeters (e.g., 175): ");
+            string heightInput = Console.ReadLine();
+
+            if (!int.TryParse(heightInput, out Height) || !UserLogic.IsHeightValid(Height))
             {
-                Console.WriteLine("Please enter your height in whole centimeters (175 cm): ");
-                try
-                {
-                    Height = Int32.Parse(Console.ReadLine());
-                    VHeight = UserLogic.IsHeightValid(Height);
-                }
-                catch (Exception e)
-                {
-                    VHeight = false;
-                }
+                Console.WriteLine("Invalid height! Please enter a valid number in cm.\n");
             }
+        } while (!UserLogic.IsHeightValid(Height));
 
-            if (!VPhone)
+        do
+        {
+            Console.Write("Please enter your phone number: ");
+            Phone = Console.ReadLine();
+            if (!UserLogic.IsPhoneValid(Phone))
             {
-                Console.WriteLine("Please enter your phone number: ");
-                Phone = Console.ReadLine();
-                VPhone = UserLogic.IsPhoneValid(Phone);
+                Console.WriteLine("Invalid phone number format! Please try again.\n");
             }
+        } while (!UserLogic.IsPhoneValid(Phone));
 
-            if (!VPassword)
+        do
+        {
+            Console.Write("Please enter a valid password (8–16 chars, symbol, capital letter, small letter, and a number): ");
+            Password = Console.ReadLine();
+            if (!UserLogic.IsPasswordValid(Password))
             {
-                Console.WriteLine("Please enter a valid password (8-16 chars, symbol, capital letter, small letter and a number): ");
-                Password = Console.ReadLine();
-                VPassword = UserLogic.IsPasswordValid(Password);
+                Console.WriteLine("Invalid password! Please follow the password rules.\n");
             }
-
-            Console.Clear();
-            Console.WriteLine("The following info is invalid");
-
-        }
+        } while (!UserLogic.IsPasswordValid(Password));
 
         Console.Clear();
         UserLogic.Register(Name, Email, DateOfBirth, Height, Phone, Password);
-        return $"Welcome {Name}!\nYou have successfully registered your account.";
 
-        
+        return $"Welcome {Name}!\nYou have successfully registered your account.";
     }
 }
-
-
-/*
-Presentation Layer
-
- Display registration form.
- Required fields should be name, age, email, height, and optionally phone & address.
- Show success or error messages on submit.
- */

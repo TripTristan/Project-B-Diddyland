@@ -17,7 +17,9 @@ static class SuperAdminMenu
             Console.WriteLine("3) Orders");
             Console.WriteLine("4) Reservations");
             Console.WriteLine("5) Map");
-            Console.WriteLine("6) Logout");
+            Console.WriteLine("6) Manage Admins");
+            Console.WriteLine("7) Manage Complaints");
+            Console.WriteLine("8) Logout");
             Console.WriteLine("0) Quit");
             Console.WriteLine();
 
@@ -48,6 +50,15 @@ static class SuperAdminMenu
                     break;
 
                 case "6":
+                    ManageAdmins.Show();
+                    break;
+
+                case "7":
+                    AdminComplaintsPage.Show();
+                    break;
+                
+
+                case "8":
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
                     return;
