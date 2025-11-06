@@ -5,5 +5,5 @@ public static class LoginStatus
 
     public static void Login(UserModel accountInfo) => CurrentUserInfo = accountInfo; 
 
-    public static void Logout() => CurrentUserInfo = guest;
+    public static void Logout() => CurrentUserInfo = null;
 }

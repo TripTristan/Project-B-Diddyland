@@ -1,133 +1,112 @@
-﻿// Program.cs
-using System;
-using System.Globalization;
-using System.Text;
+﻿enum UserRole
+{
+    User = 0,        
+    Admin = 1,
+    SuperAdmin = 2
+}
 
 class Program
 {
     static void Main()
-    {
-
-        // Main loop
+    {   
+        LoginStatus.Logout();
+        
         while (true)
         {
-            Console.Clear();
-            WriteHeader("Diddyland – Main Menu");
-
-            if (LoginStatus.CurrentUserInfo != null)
-                Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Name}");
-
-            Console.WriteLine("1) Attractions");
-            Console.WriteLine("2) Menu management");
-            Console.WriteLine("3) Orders");
-            Console.WriteLine("4) Register");
-            Console.WriteLine("5) Reservation");
-            Console.WriteLine("6) Login");
-            Console.WriteLine("7) Logout");
-            Console.WriteLine("8) Map");
-            Console.WriteLine("0) Quit");
-            Console.WriteLine();
-
-            Console.Write("Choose an option: ");
-            var choice = Console.ReadLine()?.Trim();
-
             try
             {
-                switch (choice)
+                if (LoginStatus.CurrentUserInfo == null)
                 {
-                    case "1":
-                        AttractieMenu.Start();
-                        break;
+                    ShowSplash();
+                    Console.Write("Choose an option: ");
+                    var choice = Console.ReadLine()?.Trim();
 
-                    case "2":
-                        MenuForm.Run();
-                        break;
-
-                    case "3":
-                        OrderForm.Run();
-                        break;
-
-                    case "4":
-                        UserRegister.Register();
-                        break;
-
-                    case "5":
-                        ReservationUI.StartReservation();
-                        Pause();
-                        break;
-
-                    case "6":
-                        if (LoginStatus.CurrentUserInfo != LoginStatus.guest)
-                        {
-                            Warn("You are already logged in.");
-                        }
-                        else
-                        {
+                    switch (choice)
+                    {
+                        case "1": 
                             UserLoginUI.StartLogin();
-                        }
-                        Pause();
-                        break;
+                            UiHelpers.Pause();
+                            break;
 
-                    case "7":
-                        if (LoginStatus.CurrentUserInfo == LoginStatus.guest)
-                        {
-                            Warn("No user is currently logged in.");
-                        }
-                        else
-                        {
-                            new UserLogoutUI().Start();
-                        }
-                        Pause();
-                        break;
+                        case "2": 
+                            UserRegister.Register();
+                            UiHelpers.Pause();
+                            break;
 
-                    case "8":
-                        ParkMap.ShowInteractive();
-                        break;
+                        case "3": 
+                            EnsureGuestSession();
+                            GuestMenu.Run();
+                            break;
 
-                    case "0":
-                        return;
+                        case "0": 
+                            return;
 
-                    default:
-                        Warn("Unknown option.");
-                        Pause();
-                        break;
+                        default:
+                            UiHelpers.Warn("Unknown option.");
+                            UiHelpers.Pause();
+                            break;
+                    }
+                }
+                else
+                {
+                    var role = LoginStatus.CurrentUserInfo.Role;
+                    if (role == (int)UserRole.User)
+                    {
+                        GuestMenu.Run();
+                    }
+                    else if (role == (int)UserRole.Admin || role == (int)UserRole.SuperAdmin)
+                    {
+                        AdminMenu.Run();
+                    }
+                    else
+                    {
+                        UiHelpers.Warn("Unknown role. Logging out for safety.");
+                        new UserLogoutUI().Start();
+                        UiHelpers.Pause();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Error(ex.Message);
-                Pause();
+                UiHelpers.Error(ex.Message);
+                UiHelpers.Pause();
             }
         }
 
-        static void WriteHeader(string text)
+        static void ShowSplash()
         {
+            Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(text);
+            Console.WriteLine(@"
+________  .___________  ________ _____.___.____       _____    _______  ________   
+\______ \ |   \______ \ \______ \\__  |   |    |     /  _  \   \      \ \______ \  
+ |    |  \|   ||    |  \ |    |  \/   |   |    |    /  /_\  \  /   |   \ |    |  \ 
+ |    `   \   ||    `   \|    `   \____   |    |___/    |    \/    |    \|    `   \
+/_______  /___/_______  /_______  / ______|_______ \____|__  /\____|__  /_______  /
+        \/            \/        \/\/              \/       \/         \/        \/ 
+");
             Console.ResetColor();
-            Console.WriteLine(new string('=', text.Length));
+            Console.WriteLine("===================================================================================");
+            Console.WriteLine("1) Login");
+            Console.WriteLine("2) Register");
+            Console.WriteLine("3) Continue as Guest");
+            Console.WriteLine("0) Quit");
             Console.WriteLine();
         }
 
-        static void Warn(string msg)
+        static void EnsureGuestSession()
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(msg);
-            Console.ResetColor();
-        }
-
-        static void Error(string msg)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(msg);
-            Console.ResetColor();
-        }
-
-        static void Pause()
-        {
-            Console.WriteLine();
-            Console.Write("Press Enter to continue...");
-            Console.ReadLine();
+            LoginStatus.Login(new UserModel
+            {
+                Id = 0,
+                Name = "Guest",
+                Email = "guest@local",
+                DateOfBirth = "",
+                Height = 0,
+                Phone = "",
+                Password = "",
+                Admin = 0 
+            });
         }
     }
 }
