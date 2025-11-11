@@ -15,13 +15,6 @@ public class ReservationUI
         // string UserName = _logic.GetCurrentUserInfo();
 
 
-
-
-
-
-
-
-
         Booking newBooking = new Booking(customerId);
         _logic.CreateBooking(newBooking);
     }

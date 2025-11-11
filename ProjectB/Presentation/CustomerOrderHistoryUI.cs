@@ -12,7 +12,7 @@ public class CustomerOrderHistoryUI
         Console.WriteLine("=== Order History ===");
 
         var tree = _logic.GetCustomerOrdersGroupedByYearMonth(CustomerContext.CurrentId);
-        if (!tree.Any())
+        if (!tree.Any()) // no orders
         {
             Console.WriteLine("No orders found.");
             return;
