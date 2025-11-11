@@ -81,11 +81,30 @@ public static class OfferManagementUI
         Console.Write($"Discount % ({o.Discount * 100}): "); var d = Console.ReadLine(); if (decimal.TryParse(d, out var dd)) o.Discount = dd / 100m;
         Console.Write($"StartDate yyyy-MM-dd ({o.StartDate:yyyy-MM-dd}): "); var s = Console.ReadLine(); if (DateTime.TryParse(s, out var sd)) o.StartDate = sd;
         Console.Write($"EndDate yyyy-MM-dd ({o.EndDate:yyyy-MM-dd}): "); var e = Console.ReadLine(); if (DateTime.TryParse(e, out var ed)) o.EndDate = ed;
+
+        
         Console.Write($"CustomerOnly y/n ({"yn"[o.TargetOnlyCustomers ? 1 : 0]}): "); var c = Console.ReadLine(); if (!string.IsNullOrWhiteSpace(c)) o.TargetOnlyCustomers = c == "y";
         Console.Write("Min quantity in same order: "); var q = Console.ReadLine(); if (int.TryParse(q, out var qq)) o.Rules = new List<OfferRuleModel> { new() { RuleType = "Quantity", RuleValue = qq } };
+        Console.WriteLine("Do you want to activate this offer now? y/n "); var s = Console.ReadLine(); if (!string.IsNullOrWhiteSpace(s)) o.IsActive = s == "y";
         return o;
     }
+
+
+    public static bool ChoiceHelper(string message, string yesOption, string noOption)
+    {
+        while (true)
+        {
+            Console.WriteLine($"{message} (y/n):\n y - {yesOption}\n n - {noOption}");
+            string choice = Console.ReadLine()?.Trim().ToLower();
+
+            if (choice == "y") return true;
+            if (choice == "n") return false;
+
+            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
+        }
+    }
     
+
 
 
 }
