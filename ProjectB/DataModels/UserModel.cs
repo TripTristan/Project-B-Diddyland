@@ -9,6 +9,7 @@ public class UserModel
     public int Height { get; set; }
     public string Phone { get; set; }
     public string Password { get; set; }
+    public string Role { get; set; } = "User"; // Default role is User, can be "Admin"
     // public string Address { get; set; }
 
     public UserModel() { }
