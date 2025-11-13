@@ -37,7 +37,8 @@ public class CustomerOrderHistoryLogic
                        Months = yg.GroupBy(o => o.BookingDate.Substring(5, 2).ParseToInt())
                    })
                    .OrderBy(x => x.Year)
-                   .Select(x => x.Months.OrderBy(mg => mg.Key)) as IEnumerable<IGrouping<int, IGrouping<int, ReservationModel>>;
+                   .Select(x => x.Months.OrderBy(mg => mg.Key))
+                   .SelectMany(x => x);
     }
 
 }

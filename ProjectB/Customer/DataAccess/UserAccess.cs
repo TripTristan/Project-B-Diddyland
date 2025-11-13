@@ -49,4 +49,14 @@ public class UserAccess
         }
     }
 
+    public UserModel? GetAdminByUsername(string username)
+    {
+        const string sql = @"
+            SELECT a.*, 
+                   CASE WHEN a.Admin = 1 THEN 'Admin' ELSE 'User' END as Role 
+            FROM Account a 
+            WHERE a.Username = @Username AND a.Admin = 1;";
+            
+        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
+    }
 }

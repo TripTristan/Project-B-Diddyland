@@ -1,12 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using ProjectB.DataModels;
+using ProjectB.Customer.DataAccess;
+using ProjectB.Services;
+
 public class ReservationLogic
 {
     private readonly SessionAccess _sessionRepo;
     private readonly ReservationsAccess _bookingRepo;
+    private readonly DiscountService _discountService;
+    private readonly OfferAccess _offerAccess;
 
-    public ReservationLogic(SessionAccess sessionRepo, ReservationsAccess bookingRepo)
+    public ReservationLogic(
+        SessionAccess sessionRepo, 
+        ReservationsAccess bookingRepo,
+        DiscountService discountService,
+        OfferAccess offerAccess)
     {
-        _sessionRepo = sessionRepo;
-        _bookingRepo = bookingRepo;
+        _sessionRepo = sessionRepo ?? throw new ArgumentNullException(nameof(sessionRepo));
+        _bookingRepo = bookingRepo ?? throw new ArgumentNullException(nameof(bookingRepo));
+        _discountService = discountService ?? throw new ArgumentNullException(nameof(discountService));
+        _offerAccess = offerAccess ?? throw new ArgumentNullException(nameof(offerAccess));
     }
 
     public List<Session> GetAvailableSessions()
@@ -22,73 +38,95 @@ public class ReservationLogic
         return session.CurrentBookings + quantity <= session.MaxCapacity;
     }
 
-    // hier only age discount Calculate
-    public (decimal, decimal, decimal) CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int ticketQuantity)
+    public async Task<ReservationResult> CreateBooking(
+        int sessionId, 
+        List<TicketOrder> tickets, 
+        UserModel? customer, 
+        string? promoCode = null)
     {
         var session = _sessionRepo.GetSessionById(sessionId)
-                    ?? throw new ArgumentException("Invalid session ID.");
+            ?? throw new ArgumentException("Invalid session ID.");
 
-        if (session.CurrentBookings + 1 > session.MaxCapacity)
+        if (session.CurrentBookings + tickets.Count > session.MaxCapacity)
             throw new InvalidOperationException("Not enough available seats.");
 
-        decimal basePrice = session.PricePerPerson;
-        string Ticketnr = generateTicketNumber(sessionId, );
-
-        var (discount, baseprice, finalPrice) = CalculateAgePricePerTicket(age); 
+        string orderNumber = GenerateOrderNumber(customer);
+        
+        decimal subtotal = tickets.Sum(t => t.Price);
+        decimal discount = await _discountService.CalculateTotalDiscount(
+            tickets, 
+            promoCode, 
+            customer, 
+            orderNumber);
+        
+        decimal finalPrice = Math.Max(0, subtotal - discount);
 
         var booking = new ReservationModel
         {
             OrderNumber = orderNumber,
             SessionId = sessionId,
-            Quantity = 1,
+            Quantity = tickets.Count,
             BookingDate = DateTime.Now,
             Customer = customer,
-            OriginalPrice = basePrice,
+            OriginalPrice = subtotal,
             Discount = discount,
-            FinalPrice = finalPrice
+            FinalPrice = finalPrice,
+            Tickets = tickets.Select(t => new TicketModel
+            {
+                Age = t.Age,
+                Price = t.Price,
+                Discount = t.Discount
+            }).ToList()
         };
 
         _bookingRepo.AddBooking(booking);
 
-        session.CurrentBookings += 1;
+        session.CurrentBookings += tickets.Count;
         _sessionRepo.UpdateSession(session);
 
-        Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (Age discount: {discount * 100:F0}%)");
-        return (discount, basePrice, finalPrice);
-    }
+        if (discount > 0 && !string.IsNullOrEmpty(promoCode))
+        {
+            var offer = await _offerAccess.FindPromoCodeOffer(promoCode);
+            if (offer != null)
+            {
+                await _offerAccess.RecordOfferUsageAsync(new OfferUsageModel
+                {
+                    OfferId = offer.Id,
+                    OrderNumber = orderNumber,
+                    CustomerId = customer?.Id,
+                    UsedAt = DateTime.Now
+                });
+            }
+        }
 
-    public (decimal discount, decimal basePrice, decimal finalPrice)CalculateAgePricePerTicket(int age)
-    {
-        decimal basePrice = _bookingRepo.GetBasisTicketPrice();
-        OfferManagementLogic offerLogic = new OfferManagementLogic();
-        decimal ageDiscount = offerLogic.CalculateRuleTypeAageDiscount(age);
-        decimal finalPrice = basePrice * (1 - ageDiscount);
-        return (ageDiscount,basePrice, finalPrice);
-    }
-
-    public (Dictionary<string, decimal> discount, decimal TicketQuantityDiscount, decimal TotalPricesOrder )CalculateOfferDiscountedPrice(int totalQuantityofTicket, decimal vtotalPrice, UserModel? customerInfo)
-    {
-        DateTime? bd = customerInfo == null
-            ? null
-            : DateTime.TryParseExact(customerInfo.DateOfBirth, "dd-MM-yyyy",
-                                    CultureInfo.InvariantCulture,
-                                    DateTimeStyles.None, out var tmp)
-            ? tmp
-            : null;
-
-        Dictionary<string, decimal> discount = OfferManagementLogic.ApplyOffers(
-                                    new OfferAccess().GetAll(),
-                                    "",
-                                    totalQuantityofTicket,
-                                    customerInfo,
-                                    bd);
-
-        decimal offerDiscount = discount.Values.Sum();                   
+        Console.WriteLine($"Booking created. Order number: {orderNumber}, Total: {finalPrice:C} (Discount: {discount:C})");
         
-        decimal totalfinalPrice = vtotalPrice * (1 - offerDiscount);
+        return new ReservationResult
+        {
+            Success = true,
+            OrderNumber = orderNumber,
+            Subtotal = subtotal,
+            Discount = discount,
+            Total = finalPrice,
+            Message = "Booking created successfully"
+        };
+    }
 
-
-        return (discount, offerDiscount, totalfinalPrice);
+    public async Task<decimal> CalculateTotalPrice(
+        List<TicketOrder> tickets, 
+        UserModel? customer, 
+        string? promoCode = null)
+    {
+        decimal subtotal = tickets.Sum(t => t.Price);
+        string tempOrderNumber = "TEMP_" + Guid.NewGuid().ToString("N").Substring(0, 10);
+        
+        decimal discount = await _discountService.CalculateTotalDiscount(
+            tickets, 
+            promoCode, 
+            customer, 
+            tempOrderNumber);
+            
+        return Math.Max(0, subtotal - discount);
     }
     
         
@@ -105,17 +143,4 @@ public class ReservationLogic
 
         return $"ORD-GUEST-{suffix}";
     }
-
-
-    //#############################################################################################################
-    private (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
-    {
-        decimal ageDiscount = 0m;
-        if (age <= 12) ageDiscount = 0.5m;
-        else if (age >= 65) ageDiscount = 0.3m;
-
-        decimal final = basePrice * (1 - bestDiscount);
-        return (bestDiscount, final);
-    }
-    //#############################################################################################################
 }

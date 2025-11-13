@@ -72,7 +72,7 @@ public class ReservationUI
     }
 
 
-    public int GetBookingQuantity(Session session) // Get and verify booking quantity
+    public int GetBookingQuantity(Session session)
     {
         while (true)
         {
@@ -102,7 +102,7 @@ public class ReservationUI
 
         var orderedGroups = sessions
             .GroupBy(s => s.Date)   
-            .OrderBy(g => g.Key);   // ascending
+            .OrderBy(g => g.Key);
 
         int index = 0;
         foreach (var group in orderedGroups)
@@ -245,7 +245,6 @@ public class ReservationUI
                                                                                                                     _customerInfo);
 
 
-        // ShowBookingDetails(discountDes, AgeDic, orderNumber, bookingSelections, totalfinalPrice);
 
         bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
         if (payment)
