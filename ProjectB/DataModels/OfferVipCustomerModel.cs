@@ -1,5 +1,6 @@
 public class OfferVipCustomerModel : OfferBaseCustomerModel
 {
+    public int FreeTicketAfterTickets { get; private set; } = 5; 
     public OfferVipCustomerModel(
         int id,
         string name,
@@ -11,7 +12,8 @@ public class OfferVipCustomerModel : OfferBaseCustomerModel
         bool targetOnlyOnlineLoginCustomers,
         List<OfferRuleModel> rules,
         int daysBeforeExpiry,
-        decimal vipExclusiveDiscount )
+        decimal vipExclusiveDiscount,
+        int freeTicketAfterTickets )
         : base(
               id,
               name,
@@ -22,8 +24,10 @@ public class OfferVipCustomerModel : OfferBaseCustomerModel
               isActive,
               targetOnlyOnlineLoginCustomers,
               rules,
-              daysBeforeExpiry )
-    {}
+              daysBeforeExpiry)
+    {
+        FreeTicketAfterTickets = freeTicketAfterTickets;
+    }
 
 }
     
