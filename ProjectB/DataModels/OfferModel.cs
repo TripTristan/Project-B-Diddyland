@@ -10,7 +10,6 @@ public class OfferModel
     public int? DaysBeforeExpiry { get; set; } = 0;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-    public int? DaysBeforeExpiry { get; set; } = 0;
 
     public OfferModel(
         int id,
@@ -22,7 +21,7 @@ public class OfferModel
         bool isActive,
         bool targetOnlyOnlineLoginCustomers,
         List<OfferRuleModel> rules,
-        int daysBeforeExpiry )
+        int? daysBeforeExpiry )
     {
         Id = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
