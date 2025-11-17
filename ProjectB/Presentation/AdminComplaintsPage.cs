@@ -64,35 +64,103 @@ static class AdminComplaintsPage
 
     private static void FilterByCategory()
     {
-        Console.Write("Enter category: ");
-        string? category = Console.ReadLine();
-        List<ComplaintModel> complaints = ComplaintsAccess.Filter(category: category);
-        Console.Clear();
-        UiHelpers.WriteHeader($"Complaints in category: {category}");
+    Console.Clear();
+    UiHelpers.WriteHeader("Filter Complaints by Category");
+
+    Console.WriteLine("Available categories:");
+    Console.WriteLine("1) Complaint about food");
+    Console.WriteLine("2) Complaint about staff or service");
+    Console.WriteLine("3) Complaint about safety");
+    Console.WriteLine("4) Complaint about organization");
+    Console.WriteLine();
+
+    Console.Write("Enter category number (1–4): ");
+    string? input = Console.ReadLine();
+    string? category = null;
+
+    switch (input)
+    {
+        case "1":
+            category = "Complaint about food";
+            break;
+        case "2":
+            category = "Complaint about staff or service";
+            break;
+        case "3":
+            category = "Complaint about safety";
+            break;
+        case "4":
+            category = "Complaint about organization";
+            break;
+        default:
+            UiHelpers.Warn("Invalid choice. Please enter a number between 1 and 4.");
+            UiHelpers.Pause();
+            return;
+    }
+
+    List<ComplaintModel> complaints = ComplaintsAccess.Filter(category: category);
+
+    Console.Clear();
+    UiHelpers.WriteHeader($"Complaints in category: {category}");
+
+    if (complaints.Count == 0)
+    {
+        Console.WriteLine("No complaints found for this category.");
+    }
+    else
+    {
         foreach (ComplaintModel c in complaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Status}");
             Console.WriteLine($"    {c.Description}");
             Console.WriteLine();
         }
-        UiHelpers.Pause();
     }
+
+    UiHelpers.Pause();
+    }
+
 
     private static void FilterByUser()
     {
-        Console.Write("Enter username: ");
-        string? username = Console.ReadLine();
-        List<ComplaintModel> complaints = ComplaintsAccess.Filter(username: username);
-        Console.Clear();
-        UiHelpers.WriteHeader($"Complaints by {username}");
-        foreach (ComplaintModel c in complaints)
-        {
-            Console.WriteLine($"[{c.Id}] {c.Category} - {c.Status}");
-            Console.WriteLine($"    {c.Description}");
-            Console.WriteLine();
-        }
+    List<string> usernames = UserAccess.GetAllUsernames()
+                                       .Distinct()
+                                       .OrderBy(u => u)
+                                       .ToList();
+
+    Console.Clear();
+    UiHelpers.WriteHeader("Select a Username");
+
+    for (int i = 0; i < usernames.Count; i++)
+        Console.WriteLine($"{i + 1}. {usernames[i]}");
+
+    Console.Write("\nEnter number: ");
+    string? input = Console.ReadLine();
+
+    if (!int.TryParse(input, out int choice) || choice < 1 || choice > usernames.Count)
+    {
+        UiHelpers.Warn("Invalid choice.");
         UiHelpers.Pause();
+        return;
     }
+
+    string selectedUser = usernames[choice - 1];
+
+    List<ComplaintModel> complaints = ComplaintsAccess.Filter(username: selectedUser);
+
+    Console.Clear();
+    UiHelpers.WriteHeader($"Complaints by {selectedUser}");
+
+    foreach (ComplaintModel c in complaints)
+    {
+        Console.WriteLine($"[{c.Id}] {c.Category} - {c.Status}");
+        Console.WriteLine($"    {c.Description}");
+        Console.WriteLine();
+    }
+
+    UiHelpers.Pause();
+    }
+
 
     private static void FilterByStatus()
     {

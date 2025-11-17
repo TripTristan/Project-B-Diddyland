@@ -130,4 +130,22 @@ public static class UserAccess
         }
     }
 
+        public static List<string> GetAllUsernames()
+    {
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            string sql = $"SELECT Username FROM {Table};";
+            List<string> usernames = DBC.Connection.Query<string>(sql).AsList();
+            return usernames;
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
+    }
+
 }
