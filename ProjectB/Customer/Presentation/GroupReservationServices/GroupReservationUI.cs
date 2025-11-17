@@ -14,7 +14,13 @@ public class GroupReservationUI
 
 
         var groupType = SelectGroupType();
-        if (groupType == GroupType.None) return;
+        if (groupType == GroupType.None){
+            Console.WriteLine("\nYou have cancelled the reservation.");
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
+
 
         var (orgName, contactPerson, contactEmail, contactPhone, groupSize) = GetGroupInformation();
 
@@ -27,18 +33,22 @@ public class GroupReservationUI
             return;
         }
 
-        var showtime = SelectShowtime(groupSize);
-        if (showtime == null) return;
+        var session = SelectShowtime(groupSize);
+        if (session == null) return;
 
-        var reservation = _service.CreateReservation(
+        // not login Customer
+        GroupReservationDetails reservation = _service.CreateReservation(
             groupType,
             orgName,
             contactPerson,
-            groupSize,
-            showtime.Id,
+            contactPhone,
             contactEmail,
-            contactPhone
+            groupSize,
+            session
         );
+
+
+
 
         // 6. Show reservation details
         DisplayReservationDetails(reservation);
@@ -151,8 +161,10 @@ public class GroupReservationUI
         Console.Clear();
         Console.WriteLine("=== Available Showtimes ===\n");
         Console.WriteLine($"Group size: {groupSize} people\n");
-
-        Console.WriteLine("\n0. Back");
+        foreach (var showtime in showtimes)
+        {
+            Console.WriteLine($"{showtimes.IndexOf(showtime) + 1}. {showtime.Time}");
+        }
 
         while (true)
         {
@@ -241,7 +253,7 @@ public class GroupReservationUI
                 continue;
             }
 
-            if (type == GroupType.None) return; // Go back
+            if (type == GroupType.None) return; // Nove is selected to go back 
 
             try
             {
@@ -273,27 +285,42 @@ public class GroupReservationUI
         Console.Write("Phone number: ");
         var contactNumber = Console.ReadLine();
 
-        Console.Write($"Group size (minimum {30} people): ");
+        Console.Write("Email address: ");
+        var email = Console.ReadLine();
+
+        var minimalTypeGroupSize = _service.getMinimalGroupSize(type);
+
+        Console.Write($"Group size (minimum {minimalTypeGroupSize} people): ");
         if (!int.TryParse(Console.ReadLine(), out int size) || !_service.ValidateGroupSize(size))
         {
-            throw new Exception($"Group size cannot be less than 30 people");
+            throw new Exception($"Group size cannot be less than {minimalTypeGroupSize} people");
         }
 
-        // Create reservation
-        return _service.CreateReservation(type, orgName, contactPerson, contactNumber, size);
+        return _service.CreateReservation(type, orgName, contactPerson, contactNumber, size ,email);
+        
     }
 
     private bool ConfirmReservation(GroupReservationDetails details)
     {
+        var discount = _service.getDiscount(details.GroupType);
+        var totalPrice = _service.GetTotalPrice(details.GroupType, details.GroupSize, discount);
+        details.Discount = discount;
+        details.TotalPrice = totalPrice;
+
+
+        Console.Clear();
         Console.WriteLine("\n=== Reservation Confirmation ===");
         Console.WriteLine($"Group Type: {details.GroupType}");
         Console.WriteLine($"Name: {details.OrganizationName}");
         Console.WriteLine($"Contact: {details.ContactPerson}");
         Console.WriteLine($"Number of people: {details.GroupSize}");
+
+
+        // Console.WriteLine($"Discount: {details.Discount}%");
         Console.WriteLine($"Total Price: {details.TotalPrice:C2}");
 
-        // Show terms and conditions
         var terms = _service.GetDisclaimerTerms(details.GroupType);
+
         if (terms.Count > 0)
         {
             Console.WriteLine("\n=== Terms and Conditions ===");
@@ -334,7 +361,7 @@ public class GroupReservationUI
         if (details.GroupType == GroupType.School)
         {
             Console.WriteLine("\n=== Next Steps ===");
-            Console.WriteLine("Please submit required documents within 10 days to: group@example.com");
+            Console.WriteLine("Please submit required documents within 10 days to: xxxxxxxx@gmail.com");
         }
     }
 }

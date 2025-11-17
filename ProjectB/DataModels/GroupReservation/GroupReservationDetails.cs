@@ -8,15 +8,18 @@ public class GroupReservationModel : ReservationModel
         DateTime bookingDate,
         decimal originalPrice,
         decimal discount,
-        decimal finalPrice) :
-        base(orderNumber,
+        decimal finalPrice,
+        bool paymentStatus) :
+        base(
+        orderNumber,
         sessionId,
         quantity,
         customer,
         bookingDate,
         originalPrice,
         discount,
-        finalPrice)
+        finalPrice,
+        paymentStatus)
     { }
 }
 
