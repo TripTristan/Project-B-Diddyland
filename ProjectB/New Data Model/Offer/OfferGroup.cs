@@ -8,7 +8,7 @@ public class OfferGroup : OfferBase
     public GroupType GroupType { get; set; }
 
      public OfferVIP(
-        string offerNr,
+        string nr,
         string name, 
         string description, 
         decimal discount, 
@@ -20,7 +20,7 @@ public class OfferGroup : OfferBase
         int? min,
         GroupType groupType) 
         : base(
-            offerNr,
+            nr,
             name, 
             description, 
             discount, 

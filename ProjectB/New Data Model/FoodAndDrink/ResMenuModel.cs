@@ -1,14 +1,14 @@
-public class ResMenuModel
+public class ResMenu
 {
     public int ID { get; set; } // Primary Key// Database Generated
-    public int ReservationID { get; set; }
+    public string Nr { get; set; }
     public int MenuID { get; set; }
     public int Quantity { get; set; }
 
 
-    public ResMenuModel( int reservationID, int menuID, int quantity)
+    public ResMenu(string nr, int menuID, int quantity)
     {
-        ReservationID = reservationID;
+        Nr = nr;
         MenuID = menuID;
         Quantity = quantity;
     }

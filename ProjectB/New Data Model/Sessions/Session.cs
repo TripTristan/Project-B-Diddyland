@@ -2,7 +2,7 @@ public class Session
 {
     public int Id { get; set; } // Primary Key// Database Generated
 
-    public string SessionNr { get; set; }
+    public string Nr{ get; set; }
     public string Date { get; set; }  
     public SessionTime Time { get; set; }
     public decimal BasisPrice { get; set; }
@@ -10,7 +10,7 @@ public class Session
     public int CurrentBookings { get; set; }
     public bool IsActive { get; set; }
 
-    public Session(string sessionNr, 
+    public Session(string nr, 
                     string date, 
                     SessionTime time, 
                     decimal basisPrice, 
@@ -18,7 +18,7 @@ public class Session
                     int currentBookings, 
                     bool isActive)
     {
-        SessionNr = sessionNr;
+        Nr = nr;
         Date = date;
         Time = time;
         BasisPrice = basisPrice;

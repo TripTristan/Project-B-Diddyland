@@ -6,7 +6,7 @@ public class OfferBase
     //............................
     
     public int Id { get; set; } // Primary Key// Database Generated
-    public string OfferNr { get; set; }
+    public string Nr { get; set; }
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
     public decimal Discount { get; set; }
@@ -20,7 +20,7 @@ public class OfferBase
 
 
     public OfferBase( 
-        string offerNr,
+        string nr,
         string name, 
         string description, 
         decimal discount, 
@@ -31,7 +31,7 @@ public class OfferBase
         bool isActive, 
         int? daysBeforeExpiry)
     {
-        OfferNr = offerNr;
+        Nr = nr;
         Name = name;
         Description = description ?? "";
         Discount = discount;

@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using ProjectB.DataModels;
-
 public static class PaymentUI
 {
     public static void StartPayment(
-        string orderNumber, 
+        string orderNumber,
         Dictionary<int, Dictionary<int, List<int>>> bookingSelections,
-        List<IGrouping<string, Session>> groupedByDate,
+        List<IGrouping<DateTime, Session>> groupedByDate,
         Dictionary<string, decimal> discountDescriptions,
-        decimal totalFinalPrice)
+        decimal totalFinalPrice,
+        UserModel customer,
+        IPaymentService paymentService)
     {
         var paymentMethods = new Dictionary<string, string>
         {
@@ -33,7 +29,7 @@ public static class PaymentUI
                 discountDescriptions,
                 totalFinalPrice
             );
-            
+
             DisplayCustomerInfo(customer);
 
             Console.WriteLine("\n=== Payment Method ===");
@@ -41,32 +37,32 @@ public static class PaymentUI
             Console.WriteLine("2. iDEAL");
             Console.WriteLine("3. PayPal");
             Console.Write("\nSelect payment method (1-3, or 'Q' to cancel): ");
-            
+
             var input = Console.ReadLine()?.Trim();
-            
+
             if (input?.Equals("Q", StringComparison.OrdinalIgnoreCase) == true)
             {
                 Console.WriteLine("\nPayment cancelled by user.");
-                Thread.Sleep(1500); // Wait for 1.5 seconds
+                Thread.Sleep(1000);
                 return;
             }
 
-            if (paymentMethods.TryGetValue(input, out var selectedMethod))
+            if (input != null && paymentMethods.TryGetValue(input, out var selectedMethod))
             {
                 Console.WriteLine($"\nYou have selected: {selectedMethod}");
-                ProcessPayment(orderNumber, selectedMethod, customer, totalFinalPrice);
+                ProcessPayment(orderNumber, selectedMethod, customer, totalFinalPrice, paymentService, bookingSelections, groupedByDate);
                 break;
             }
 
             Console.WriteLine("\n Invalid selection. Please try again.");
-            Thread.Sleep(1500);
+            Thread.Sleep(1000);
         }
     }
 
     private static void DisplayBookingSummary(
         string orderNumber,
         Dictionary<int, Dictionary<int, List<int>>> bookingSelections,
-        List<IGrouping<string, Session>> groupedByDate,
+        List<IGrouping<DateTime, Session>> groupedByDate,
         Dictionary<string, decimal> discountDescriptions,
         decimal totalFinalPrice)
     {
@@ -75,28 +71,33 @@ public static class PaymentUI
         Console.WriteLine($"Booking Date: {DateTime.Now:dd-MM-yyyy}");
         Console.WriteLine("-----------------------------------------------------------");
 
-        foreach (var (dateChoice, sessionBookings) in bookingSelections)
+        foreach (var (groupIndex, sessionBookings) in bookingSelections)
         {
-            var dateGroup = groupedByDate[dateChoice];
-            
-            if (!DateTime.TryParse(dateGroup.Key, out var sessionDate))
+            if (groupIndex < 0 || groupIndex >= groupedByDate.Count)
             {
-                Console.WriteLine("\n Warning: Could not parse session date. Using current date instead.");
-                sessionDate = DateTime.Today;
+                Console.WriteLine("\n Warning: date group index out of range.");
+                continue;
             }
-            
+
+            var dateGroup = groupedByDate[groupIndex];
+            var sessionDate = dateGroup.Key;
+
             Console.WriteLine($"\nDate: {sessionDate:dddd, MMMM dd, yyyy}");
 
             foreach (var (sessionId, ages) in sessionBookings)
             {
                 var session = dateGroup.FirstOrDefault(s => s.Id == sessionId);
-                if (session == null) continue;
+                if (session == null)
+                {
+                    Console.WriteLine($"  Session ID {sessionId} not found for this date.");
+                    continue;
+                }
 
                 int childCount = ages.Count(age => age < 12);
                 int seniorCount = ages.Count(age => age >= 65);
                 int adultCount = ages.Count(age => age >= 12 && age < 65);
 
-                Console.WriteLine($"\n  Session: {session.Time} - {session.Name}");
+                Console.WriteLine($"\n  Session: {session.Time:hh\\:mm} - {session.Name} (ID: {session.Id})");
                 if (childCount > 0) Console.WriteLine($"    Child Tickets (0-11): {childCount}");
                 if (adultCount > 0) Console.WriteLine($"    Adult Tickets (12-64): {adultCount}");
                 if (seniorCount > 0) Console.WriteLine($"    Senior Tickets (65+): {seniorCount}");
@@ -129,19 +130,26 @@ public static class PaymentUI
         Console.WriteLine($"Phone: {customer.Phone}");
     }
 
-    private static void ProcessPayment(string orderNumber, string paymentMethod, UserModel customer, decimal totalAmount)
+    private static void ProcessPayment(
+        string orderNumber,
+        string paymentMethod,
+        UserModel customer,
+        decimal totalAmount,
+        IPaymentService paymentService,
+        Dictionary<int, Dictionary<int, List<int>>> bookingSelections, // shoping cart
+        List<IGrouping<DateTime, Session>> groupedByDate)
     {
         Console.WriteLine($"\nProcessing payment of {totalAmount:C} via {paymentMethod}...");
-        
+
         Console.Write("Processing");
         for (int i = 0; i < 3; i++)
         {
-            Thread.Sleep(500);
+            Thread.Sleep(400);
             Console.Write(".");
         }
         Console.WriteLine("\n");
 
-        bool paymentSuccessful = SimulatePaymentProcessing();
+        bool paymentSuccessful = paymentService.ProcessPayment(orderNumber, customer, totalAmount, paymentMethod);
 
         if (paymentSuccessful)
         {
@@ -149,6 +157,18 @@ public static class PaymentUI
             Console.WriteLine("Your tickets have been booked and will be sent to your email.");
             Console.WriteLine($"Confirmation number: {GenerateConfirmationNumber()}");
 
+            foreach (var (groupIndex, sessionBookings) in bookingSelections)
+            {
+                var group = groupedByDate[groupIndex];
+                foreach (var (sessionId, ages) in sessionBookings)
+                {
+                    var session = group.FirstOrDefault(s => s.Id == sessionId);
+                    if (session != null)
+                    {
+                        session.CurrentBookings += ages.Count;
+                    }
+                }
+            }
         }
         else
         {

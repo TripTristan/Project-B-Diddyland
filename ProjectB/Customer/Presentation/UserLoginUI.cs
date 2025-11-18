@@ -1,74 +1,56 @@
 public class UserLoginUI
 {
-    private readonly LoginLogic _logic;
+    private readonly ILoginLogic _logic;
+    public UserLoginUI(ILoginLogic logic) => _logic = logic;
 
-    public UserLoginUI(LoginLogic logic) => _logic = logic;
 
-
-    public void StartLogin()
+    public UserModel? StartLogin()
     {
         Console.WriteLine("=== Customer Login  ===");
 
         while (true)
         {
-            bool success = UserLogin();
+            string username = Input_Read("Username: ");
+            string password = Input_Read("Password: ");
 
-            if (success)
+            var user = _logic.Authenticate(username, password);
+            if (user != null)
             {
                 Console.WriteLine("Login successful!");
-
-                break;
+                Thread.Sleep(500);
+                return user;
             }
-            else
-            {
-                Console.WriteLine("Invalid username or password.");
-                Console.WriteLine("Please try again.");
 
-                if (!LoginAgain())
-                {
-                    Console.WriteLine("Exiting login process.");
-                    break;
-                }
+            Console.WriteLine("Invalid username or password.");
+            if (!LoginAgain())
+            {
+                Console.WriteLine("Exiting login process.");
+                return null;
             }
         }
     }
 
-
-
     private bool LoginAgain()
     {
         Console.Write("Try again? (y/n): ");
-        string choice = Console.ReadLine()?.Trim().ToLower();
-        
-        do
+        string? choice = Console.ReadLine()?.Trim().ToLower();
+        while (true)
         {
             if (choice == "y") return true;
             if (choice == "n") return false;
-
             Console.Write("Invalid input. Please enter 'y' or 'n': ");
             choice = Console.ReadLine()?.Trim().ToLower();
-        } while (true);
+        }
     }
 
-
-    private bool UserLogin()
-    {
-        string username = Input_Read("Username: ");
-        string password = Input_Read("Password: ");
-
-        bool successOrFailure = _logic.AccountVerify(username, password); 
-        return successOrFailure;
-    }
-
-    
     private string Input_Read(string text)
     {
-        string input;
+        string? input;
         do
         {
             Console.Write(text);
             input = Console.ReadLine()?.Trim();
         } while (string.IsNullOrEmpty(input));
-        return input;
+        return input!;
     }
 }

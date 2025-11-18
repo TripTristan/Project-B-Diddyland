@@ -6,6 +6,7 @@ public class OfferVIP : OfferBase
     //............................
 
     public OfferVIP(
+        string nr,
         string name, 
         string description, 
         decimal discount, 
@@ -15,6 +16,7 @@ public class OfferVIP : OfferBase
         bool targetOnlyOnlineLoginCustomers, 
         int? daysBeforeExpiry) 
         : base(
+            nr,
             name, 
             description, 
             discount, 
