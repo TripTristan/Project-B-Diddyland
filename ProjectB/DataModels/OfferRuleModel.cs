@@ -1,29 +1,33 @@
-public class OfferRuleModel
+using Newtonsoft.Json;
+namespace ProjectB.DataModels
 {
-    public int Id { get; set; }
-    public int OfferId { get; set; }
-    public string RuleType { get; set; } = ""; 
-    public string RuleValue { get; set; } = "";
-    public string Description { get; set; } = "";
-
-    // RuleValue te convert to object
-    // RuleType = "Quantity", IntValue 
-    // RuleType = "PromoCode", StringValue
-    // RuleType = "Birthday", DateTimeValue
-    public T GetRuleValue<T>() where T : class
+    public class OfferRuleModel
     {
-        try
-        {
-            return JsonConvert.DeserializeObject<T>(RuleValue);
-        }
-        catch
-        {
-            return null;
-        }
-    }
+        public int Id { get; set; }
+        public int OfferId { get; set; }
+        public RuleType RuleType { get; set; } = RuleType.Quantity;
+        public string RuleValue { get; set; } = "";
+        public string Description { get; set; } = "";
 
-    public void SetRuleValue<T>(T value)
-    {
-        RuleValue = JsonConvert.SerializeObject(value);
+        // RuleValue te convert to object
+        // RuleType = "Quantity", IntValue 
+        // RuleType = "PromoCode", StringValue
+        // RuleType = "Birthday", DateTimeValue
+        public T GetRuleValue<T>() where T : class
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(RuleValue);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public void SetRuleValue<T>(T value)
+        {
+            RuleValue = JsonConvert.SerializeObject(value);
+        }
     }
 }

@@ -1,12 +1,11 @@
 public class OfferVIP : OfferBase
 {
-    // OfferVip Table in Database 
+    // OfferVip Table # Database 
     // ..........................
     // Offer only for VIP Customers
     //............................
 
     public OfferVIP(
-        int id, 
         string name, 
         string description, 
         decimal discount, 
@@ -16,7 +15,6 @@ public class OfferVIP : OfferBase
         bool targetOnlyOnlineLoginCustomers, 
         int? daysBeforeExpiry) 
         : base(
-            id, 
             name, 
             description, 
             discount, 

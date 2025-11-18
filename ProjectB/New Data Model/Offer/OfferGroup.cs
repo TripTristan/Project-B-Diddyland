@@ -1,6 +1,6 @@
 public class OfferGroup : OfferBase
 {
-    // OfferGroup Table in Database 
+    // OfferGroup Table # Database 
     // ..........................
     // Offer Group for Regular Customers and free Customer
     //............................
@@ -8,7 +8,6 @@ public class OfferGroup : OfferBase
     public GroupType GroupType { get; set; }
 
      public OfferVIP(
-        int id, 
         string name, 
         string description, 
         decimal discount, 
@@ -19,7 +18,6 @@ public class OfferGroup : OfferBase
         int? daysBeforeExpiry,
         GroupType groupType) 
         : base(
-            id, 
             name, 
             description, 
             discount, 

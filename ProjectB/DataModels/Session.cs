@@ -5,6 +5,5 @@ public class Session
     public string Time { get; set; } = "";
     public int MaxCapacity { get; set; }
     public int CurrentBookings { get; set; }
-
-    public decimal PricePerPerson { get; set; }  
+    public decimal PricePerPerson { get; set; }  // baseprice now
 }
