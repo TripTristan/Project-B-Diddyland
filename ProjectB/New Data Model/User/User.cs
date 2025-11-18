@@ -2,8 +2,10 @@
 public class User
 {
     public int Id { get; set; } // Primary Key// Database Generated
-    public string Username { get; set; }
-    public string PhoneNumber { get; set; }
+
+    public string UserNr { get; set; }
+    public string Name { get; set; }
+    public string PhoneNr { get; set; }
     public string Email { get; set; }
     public string DateOfBirth { get; set; }
     public string Address { get; set; }
@@ -17,8 +19,9 @@ public class User
     //  Default role is User, can be "Admin"
     // public string Address { get; set; }
 
-    public User(string username, 
-                string phoneNumber,
+    public User(string userNr, 
+                string name, 
+                string phoneNr,
                 string email,
                 string dateOfBirth,
                 string address,
@@ -26,8 +29,9 @@ public class User
                 string password
             )
     {
-        Username = username;
-        PhoneNumber = phoneNumber;
+        UserNr = userNr;
+        Name = name;
+        PhoneNr = phoneNumber;
         Email = email;
         DateOfBirth = dateOfBirth;
         Address = address;

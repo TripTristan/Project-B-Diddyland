@@ -8,24 +8,28 @@ public class OfferGroup : OfferBase
     public GroupType GroupType { get; set; }
 
      public OfferVIP(
+        string offerNr,
         string name, 
         string description, 
         decimal discount, 
         DateTime startDate, 
         DateTime endDate, 
         bool isActive, 
-        bool targetOnlyOnlineLoginCustomers, 
         int? daysBeforeExpiry,
+        int? max,
+        int? min,
         GroupType groupType) 
         : base(
+            offerNr,
             name, 
             description, 
             discount, 
             startDate, 
             endDate, 
             isActive, 
-            targetOnlyOnlineLoginCustomers, 
-            daysBeforeExpiry)
+            daysBeforeExpiry,
+            max,
+            min)
     {
         GroupType = groupType;
     }

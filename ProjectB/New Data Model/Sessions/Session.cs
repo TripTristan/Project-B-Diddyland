@@ -1,20 +1,24 @@
 public class Session
 {
     public int Id { get; set; } // Primary Key// Database Generated
-    public string Date { get; set; } = "";   
+
+    public string SessionNr { get; set; }
+    public string Date { get; set; }  
     public SessionTime Time { get; set; }
     public decimal BasisPrice { get; set; }
     public int MaxCapacity { get; set; }
     public int CurrentBookings { get; set; }
     public bool IsActive { get; set; }
 
-    public Session(string date, 
+    public Session(string sessionNr, 
+                    string date, 
                     SessionTime time, 
                     decimal basisPrice, 
                     int maxCapacity, 
                     int currentBookings, 
                     bool isActive)
     {
+        SessionNr = sessionNr;
         Date = date;
         Time = time;
         BasisPrice = basisPrice;

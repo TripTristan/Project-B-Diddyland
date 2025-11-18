@@ -35,11 +35,27 @@ public class GroupReservationUI
             Console.ReadKey();
             return;
         }
+        
+        var availableSessions = _service.GetAvailableSessions(groupSize);
+        if (!availableSessions.Any())
+        {
+            Console.WriteLine("\nSorry, there are currently no available sessions suitable for your group.");
+            Console.WriteLine("If you would like to know more, please contact our customer service directly.");
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
 
-        var session = SelectShowtime(groupSize);
-        if (session == null) return;
+        Console.WriteLine("\nAvailable sessions:");
+        for (int i = 0; i < availableSessions.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {availableSessions[i].Time}");
+        }
 
-        // not login Customer 
+        SessionModel session = SelectSession(groupSize);
+
+
+        // not login Customer // not finished
         GroupReservationDetails reservation = _service.CreateReservation(
             groupType,
             orgName,
@@ -136,7 +152,7 @@ public class GroupReservationUI
         return (orgName, contactPerson, email, phone, groupSize);
     }
 
-    private Showtime SelectShowtime(int groupSize)
+    private Showtime SelectSession(int groupSize)
     {
         var showtimes = _service.GetAvailableShowtimes(groupSize);
 

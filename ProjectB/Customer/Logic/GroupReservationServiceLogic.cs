@@ -1,11 +1,10 @@
 public class GroupReservationService
 {
-    private const int MIN_GROUP_SIZE = 20; // 20 minimum group size // For all group types
-    private const decimal TICKET_PRICE = 40m;
+    private static const int MIN_GROUP_SIZE = 20; // 20 minimum group size // For all group types
+    private static const decimal TICKET_PRICE = 40m;
 
-    private readonly UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
-    
-    private readonly IReservationRepository _repository;
+    private static readonly UserModel? _customerInfo = LoginStatus.CurrentUserInfo;
+    private static readonly IReservationRepository _repository;
 
     public GroupReservationService(IReservationRepository repository)
     {
@@ -31,13 +30,28 @@ public class GroupReservationService
             : ValidationResult.Fail($"The group size must be at least {MIN_GROUP_SIZE} people");
     }
 
-    public List<SessionModel> GetAvailableShowtimes(int groupSize)
+    public List<SessionModel> GetAvailableSessions(int groupSize)
     {
-        return _availableShowtimes
+        List<SessionModel> _availableSessions = _repository.GetAvailableSessions(groupSize);
+        return _availableSessions
             .Where(s => s.AvailableSeats >= groupSize)
             .OrderBy(s => s.Time)
             .ToList();
     }
+
+    public SessionModel SelectSession(int groupSize)
+    {
+        return _repository.GetSessionById(id);
+    }
+     // Console.Write("\nPlease select a session (1-{availableSessions.Count}): ");
+        // if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= availableSessions.Count)
+        // {
+        //     return availableSessions[choice - 1];
+        // }
+        // Console.WriteLine("Invalid selection. Please try again.");
+        // return null;
+
+    
 
     public (decimal totalBase, decimal totalFinal) CalculateTotalPrice(int groupSize, decimal discountForGroupSize, decimal basePriceUnit)
     {
