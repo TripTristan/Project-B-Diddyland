@@ -30,7 +30,7 @@ public class OfferAccess
                 const string rs = @"
                     INSERT INTO OfferRule(OfferId, RuleType, RuleValue)
                     VALUES(@OfferId, @RuleType, @RuleValue)";
-                conn.Execute(rs, r, transaction);
+                conn.Execute(rs, new { OfferId = r.OfferId, RuleType = r.RuleType.ToString(), RuleValue = r.RuleValue }, transaction);
             }
 
             transaction.Commit();
@@ -71,7 +71,7 @@ public class OfferAccess
                 r.OfferId = offer.Id;
                 conn.Execute(
                     "INSERT INTO OfferRule(OfferId, RuleType, RuleValue) VALUES(@OfferId, @RuleType, @RuleValue)", 
-                    r, transaction);
+                    new { OfferId = r.OfferId, RuleType = r.RuleType.ToString(), RuleValue = r.RuleValue }, transaction);
             }
 
             transaction.Commit();
@@ -137,9 +137,30 @@ public class OfferAccess
         return o;
     }
 
-    private IEnumerable<OfferRuleModel> GetRules(SqliteConnection conn, int offerId) =>
-        conn.Query<OfferRuleModel>(
-            "SELECT * FROM OfferRule WHERE OfferId = @offerId", new { offerId });
+    private IEnumerable<OfferRuleModel> GetRules(SqliteConnection conn, int offerId)
+    {
+        var rows = conn.Query("SELECT * FROM OfferRule WHERE OfferId = @offerId", new { offerId });
+        foreach (var row in rows)
+        {
+            ProjectB.DataModels.RuleType parsed = ProjectB.DataModels.RuleType.Quantity;
+            try
+            {
+                var rt = (row.RuleType ?? "").ToString();
+                if (!string.IsNullOrWhiteSpace(rt) && System.Enum.TryParse<ProjectB.DataModels.RuleType>(rt, out var val))
+                    parsed = val;
+            }
+            catch { }
+
+            yield return new OfferRuleModel
+            {
+                Id = (int)row.Id,
+                OfferId = (int)row.OfferId,
+                RuleType = parsed,
+                RuleValue = (string)row.RuleValue,
+                Description = row.Description == null ? "" : row.Description.ToString()
+            };
+        }
+    }
 
     public bool UsageExists(int offerId, string orderNumber)
     {

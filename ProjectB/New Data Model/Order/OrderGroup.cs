@@ -5,13 +5,13 @@ public class OrderGroup : OrderBase
     public decimal GroupDiscount { get; set; }
     
     public OrderGroup(
-        string orderNumber,
+        string nr,
         int customerId,
         DateTime orderDate,
         decimal subtotal,
         GroupType groupType,
         int groupSize,
-        decimal groupDiscount) : base ( orderNumber,
+        decimal groupDiscount) : base ( nr,
                                         customerId,
                                         orderDate,
                                         subtotal){

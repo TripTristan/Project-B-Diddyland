@@ -15,6 +15,8 @@ class Program
         var menuLogic = new MenuLogic(menusRepo);
         var orderLogic = new OrderLogic(menuLogic);
 
+        UserModel? currentUser = null;
+
         // Main loop
         while (true)
         {
@@ -59,7 +61,7 @@ class Program
                         break;
 
                     case "5":
-                        AppFactory.CreateReservationUI().StartReservation();
+                        AppFactory.CreateReservationUI().StartReservation(currentUser);
                         Pause();
                         break;
 

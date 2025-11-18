@@ -25,8 +25,12 @@ namespace ProjectB.Services
                 return 0m;
 
             var offers = _offerAccess.GetAllActiveOffers(DateTime.Now).Result.ToList();
+
             if (!offers.Any())
+            {
                 return 0m;
+            }
+        
 
             decimal totalDiscount = 0m;
             decimal subtotal = tickets.Sum(t => t.Price);
@@ -61,11 +65,11 @@ namespace ProjectB.Services
 
         private decimal CalculateAgeDiscount(int age, List<OfferModel> offers)
         {
-            var ageOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleTypes.Age));
+            var ageOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleType.Age));
             
             foreach (var offer in ageOffers)
             {
-                foreach (var rule in offer.Rules.Where(r => r.RuleType == RuleTypes.Age))
+                foreach (var rule in offer.Rules.Where(r => r.RuleType == RuleType.Age))
                 {
                     var parameters = rule.GetRuleValue<AgeRuleParameters>();
                     if (parameters != null)
@@ -83,11 +87,11 @@ namespace ProjectB.Services
 
         private decimal CalculateQuantityDiscount(int ticketCount, List<OfferModel> offers)
         {
-            var quantityOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleTypes.Quantity));
+            var quantityOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleType.Quantity));
             
             foreach (var offer in quantityOffers.OrderByDescending(o => o.Discount))
             {
-                foreach (var rule in offer.Rules.Where(r => r.RuleType == RuleTypes.Quantity))
+                foreach (var rule in offer.Rules.Where(r => r.RuleType == RuleType.Quantity))
                 {
                     var parameters = rule.GetRuleValue<QuantityRuleParameters>();
                     if (parameters != null && ticketCount >= parameters.MinQuantity)
@@ -105,11 +109,11 @@ namespace ProjectB.Services
             string orderNumber, 
             List<OfferModel> offers)
         {
-            var promoOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleTypes.PromoCode));
+            var promoOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleType.PromoCode));
             
             foreach (var offer in promoOffers)
             {
-                foreach (var rule in offer.Rules.Where(r => r.RuleType == RuleTypes.PromoCode))
+                foreach (var rule in offer.Rules.Where(r => r.RuleType == RuleType.PromoCode))
                 {
                     var parameters = rule.GetRuleValue<PromoCodeRuleParameters>();
                     if (parameters != null && 
@@ -155,7 +159,7 @@ namespace ProjectB.Services
             
             if (today >= birthdayWindowStart && today <= birthdayWindowEnd)
             {
-                var birthdayOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleTypes.Birthday));
+                var birthdayOffers = offers.Where(o => o.Rules.Any(r => r.RuleType == RuleType.Birthday));
                 return birthdayOffers.Max(o => o.Discount);
             }
             
