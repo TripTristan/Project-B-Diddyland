@@ -50,14 +50,22 @@ public static class UserLogic
 
     public static bool IsPasswordValid(string Password)
     {
-        if (Password.Length < 8 ||
-            !Password.Any(ch => !char.IsLower(ch)) ||
-            !Password.Any(ch => !char.IsDigit(ch)) ||
-            !Password.Any(ch => !char.IsLetterOrDigit(ch)) ||
-            !Password.Any(ch => !char.IsUpper(ch))
-           )
-            { return false; }
-        return true;
+        if (Password.Length < 8)
+            return false;
+
+        if (!Password.Any(char.IsUpper))
+            return false;
+
+        if (!Password.Any(char.IsLower))
+            return false;
+
+        if (!Password.Any(char.IsDigit))
+            return false;
+
+        if (!Password.Any(ch => !char.IsLetterOrDigit(ch)))
+            return false;
+
+    return true;
     }
 
     public static bool IsDateOfBirthValid(string DOB)
