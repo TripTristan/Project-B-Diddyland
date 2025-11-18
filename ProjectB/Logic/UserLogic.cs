@@ -51,7 +51,6 @@ public static class UserLogic
     public static bool IsPasswordValid(string Password)
     {
         if (Password.Length < 8 ||
-            Password.Length > 16 ||
             !Password.Any(ch => !char.IsLower(ch)) ||
             !Password.Any(ch => !char.IsDigit(ch)) ||
             !Password.Any(ch => !char.IsLetterOrDigit(ch)) ||

@@ -12,7 +12,6 @@ public static class DBC
     try
     {
         Connection.Open();
-        Console.WriteLine("Database connection opened.");
 
     }
     catch (Exception ex)
@@ -22,7 +21,6 @@ public static class DBC
     finally
     {
         Connection.Close();
-        Console.WriteLine("Database connection closed.");
     }
 }
 }
