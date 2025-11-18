@@ -60,9 +60,9 @@ public class GroupReservationService
     }
 
     public GroupReservationDetails CreateReservation(
-        GroupType type, 
-        string orgName, 
-        string contactPerson, 
+        GroupType type,
+        string orgName,
+        string contactPerson,
         string contactEmail,
         string contactPhone,
         int size,
@@ -77,10 +77,10 @@ public class GroupReservationService
         decimal discountForGroupSize = _service.getDiscountForGroupSize(type, size);
         (decimal totalBase, decimal totalFinal) = CalculateTotalPrice(size, discountForGroupSize, basePriceUnit);
 
-       _customerInfo = LoginStatus.CurrentUserInfo;
+        _customerInfo = LoginStatus.CurrentUserInfo;
         var orderNumber = GenerateOrderNumber(_customerInfo);
 
-        return  new GroupReservationDetails
+        return new GroupReservationDetails
         {
             OrderNumber = orderNumber,
             CustomerId = _customerInfo.Id,
@@ -90,86 +90,6 @@ public class GroupReservationService
             FinalPrice = totalFinal,
             Status = false,                     // "Pending Payment"
         };
-
-
-        // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-        bool CreateReservation = ChoiceHelper("Do you want to create the reservation?", "y", "n");
-
-        if (!CreateReservation) return null;
-
-        var orderNumber = GenerateOrderNumber(_customerInfo);
-
-        var reservation = new GroupReservationDetails
-        {
-            OrderNumber = orderNumber,
-            CustomerId = _customerInfo.Id,
-            OrderDate = DateTime.Now,
-            Subtotal = totalBase,
-            Discount = discountForGroupSize,
-            Total = totalFinal,
-            Status = false,                     // "Pending Payment"
-        };
-        _repository.Save(reservation);
-
-        bool Payment = ChoiceHelper("Do you want to pay for the reservation?", "y", "n");
-
-        if (!Payment) return null;
-
-        // var paymentResult = ProcessPayment("Credit Card", totalFinal);
-        // if (paymentResult.Success)
-        // {
-        //     reservation.PaymentStatus = true;
-        //     _repository.Save(reservation);
-        //     return reservation;
-        // }
-        // else
-        // {
-        //     return null;
-        // }
-
-
-        
-
-
-
-        for (int i = 0; i < size; i++)
-        {
-            var ticket = new Ticket
-            {
-                TicketNr = GenerateTicketNr(),
-                SesionId = sessionId,
-                SeatNumber = i + 1,
-                Price = basePriceUnit,
-                Discount = discountForGroupSize,
-                TotalPrice = totalFinal
-            };
-            _repository.Save(ticket);
-        }
-
-
-
-        // Table 
-        var details = new GroupReservationDetails
-        {
-            Id = GenerateReservationId(),
-            OrganizationName = orgName,
-            ContactPerson = contact,
-            ContactEmail = contactEmail,
-            ContactPhone = contactPhone,
-            GroupType = type,
-            GroupSize = size,
-            ShowtimeId = showtimeId,
-            Showtime = showtime.Time,
-            BasePricePerPerson = basePrice,
-            TotalPrice = totalPrice,
-            Discount = hasDiscount ? LARGE_GROUP_DISCOUNT * 100 : 0,
-            ReservationDate = DateTime.Now,
-            Status = false, // "Pending Payment"
-        };
-        
-        _repository.Save(details);
-        return details;
-              // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     }
 
     public string GenerateOrderNumber(UserModel? customerInfo)
@@ -229,5 +149,12 @@ public class GroupReservationService
             return $"ORD-{customerInfo.Id}-{customerInfo.Username}-{suffix}";
 
         return $"ORD-GUEST-{suffix}";
+    }
+
+    public UserModel? GetCustomerInfo()
+    {
+        if (_customerInfo == null)
+            return null;
+        return _customerInfo;
     }
 }

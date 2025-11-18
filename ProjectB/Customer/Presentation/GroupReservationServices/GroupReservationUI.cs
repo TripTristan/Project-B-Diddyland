@@ -2,6 +2,8 @@ public class GroupReservationUI
 {
     private readonly GroupReservationService _service;
 
+    private readonly GroupPaymentUI _paymentUI;
+
     public GroupReservationUI(GroupReservationService service)
     {
         _service = service;
@@ -14,7 +16,8 @@ public class GroupReservationUI
 
 
         var groupType = SelectGroupType();
-        if (groupType == GroupType.None){
+        if (groupType == GroupType.None)
+        {
             Console.WriteLine("\nYou have cancelled the reservation.");
             Console.WriteLine("Press any key to return...");
             Console.ReadKey();
@@ -36,7 +39,7 @@ public class GroupReservationUI
         var session = SelectShowtime(groupSize);
         if (session == null) return;
 
-        // not login Customer
+        // not login Customer 
         GroupReservationDetails reservation = _service.CreateReservation(
             groupType,
             orgName,
@@ -44,36 +47,24 @@ public class GroupReservationUI
             contactPhone,
             contactEmail,
             groupSize,
-            session
+            session.Id
         );
 
+        if (reservation == null)
+        {
+            Console.WriteLine("\nFailed to create reservation. Please try again.");
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+            return;
+        }
 
-
-
-        // 6. Show reservation details
         DisplayReservationDetails(reservation);
 
-        // 7. Confirm and pay
-        if (ConfirmPayment(reservation.TotalPrice))
-        {
-            var paymentResult = _service.ProcessPayment("Credit Card", reservation.TotalPrice);
-            if (paymentResult.Success)
-            {
-                Console.WriteLine("\nPayment successful!");
-                Console.WriteLine($"Transaction ID: {paymentResult.TransactionId}");
-                Console.WriteLine($"Amount paid: €{paymentResult.AmountPaid:N2}");
+        bool Payment = _service.ChoiceHelper("Do you want to pay for the reservation?", "y", "n");
 
-                // 8. Show final confirmation
-                DisplayFinalConfirmation(reservation);
-            }
-            else
-            {
-                Console.WriteLine("\nPayment failed. Please try again later.");
-            }
-        }
-        else
+        if (Payment)
         {
-            Console.WriteLine("\nYou have cancelled the reservation.");
+            _paymentUI.StartPayment(reservation); // GroupReservationDetails // Datemodel
         }
     }
 
@@ -189,23 +180,16 @@ public class GroupReservationUI
         Console.WriteLine($"Contact Email: {details.ContactEmail}");
         Console.WriteLine($"Group Type: {details.GroupType}");
         Console.WriteLine($"Group Size: {details.GroupSize} people");
-        Console.WriteLine($"Showtime: {details.Showtime:yyyy-MM-dd HH:mm}");
-        Console.WriteLine($"Base Price per Person: €{details.BasePricePerPerson:N2}/person");
-
-        if (details.Discount > 0)
-        {
-            Console.WriteLine($"Discount: {details.Discount}%");
-        }
-
-        Console.WriteLine($"\nTotal Price: €{details.TotalPrice:N2}");
-        Console.WriteLine("\n" + "-".PadRight(40, '-'));
+        Console.WriteLine($"Session: {details.SessionId: yyyy-MM-dd HH:mm}");
+        Console.WriteLine($"Discount: {details.Discount}%");
+        Console.WriteLine($"Total Final Price: €{details.FinalPrice:N2}");
     }
 
-    private bool ConfirmPayment(decimal amount)
-    {
-        Console.Write($"\nConfirm payment of €{amount:N2} and complete reservation? (Y/N): ");
-        return Console.ReadLine()?.Trim().ToUpper() == "Y";
-    }
+    // private bool ConfirmPayment(decimal amount)
+    // {
+    //     Console.Write($"\nConfirm payment of €{amount:N2} and complete reservation? (Y/N): ");
+    //     return Console.ReadLine()?.Trim().ToUpper() == "Y";
+    // }
 
     private void DisplayFinalConfirmation(GroupReservationDetails details)
     {
@@ -283,10 +267,10 @@ public class GroupReservationUI
         var contactPerson = Console.ReadLine();
 
         Console.Write("Phone number: ");
-        var contactNumber = Console.ReadLine();
+        var ContactPhone = Console.ReadLine();
 
         Console.Write("Email address: ");
-        var email = Console.ReadLine();
+        var contactEmail = Console.ReadLine();
 
         var minimalTypeGroupSize = _service.getMinimalGroupSize(type);
 
@@ -296,7 +280,7 @@ public class GroupReservationUI
             throw new Exception($"Group size cannot be less than {minimalTypeGroupSize} people");
         }
 
-        return _service.CreateReservation(type, orgName, contactPerson, contactNumber, size ,email);
+        return _service.CreateReservation(type, orgName, contactPerson, contactPhone, contactEmail, size, session.Id);
         
     }
 

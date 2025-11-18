@@ -8,7 +8,6 @@ public static class PaymentUI
 {
     public static void StartPayment(
         string orderNumber, 
-        UserModel customer,
         Dictionary<int, Dictionary<int, List<int>>> bookingSelections,
         List<IGrouping<string, Session>> groupedByDate,
         Dictionary<string, decimal> discountDescriptions,
