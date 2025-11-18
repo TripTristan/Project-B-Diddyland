@@ -6,7 +6,11 @@ public class ResMenu
     public int Quantity { get; set; }
 
 
+<<<<<<< HEAD
     public ResMenu(string nr, int menuID, int quantity)
+=======
+    public ResMenuModel( string nr, int menuID, int quantity)
+>>>>>>> 779559d6e12ade193080a3483b9436de0ab5f535
     {
         Nr = nr;
         MenuID = menuID;
