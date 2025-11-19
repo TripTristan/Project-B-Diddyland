@@ -1,0 +1,23 @@
+public class OrderGroup : OrderBase
+{
+    GroupType GroupType { get; set; }
+    public int GroupSize { get; set; }
+    public decimal GroupDiscount { get; set; }
+    
+    public OrderGroup(
+        string nr,
+        int customerId,
+        DateTime orderDate,
+        decimal subtotal,
+        GroupType groupType,
+        int groupSize,
+        decimal groupDiscount) : base ( nr,
+                                        customerId,
+                                        orderDate,
+                                        subtotal){
+        GroupType = groupType;
+        GroupSize = groupSize;
+        GroupDiscount = groupDiscount;
+    }
+    
+}
