@@ -7,23 +7,19 @@ public static class DBC
 
 
     public static void CloseConnection()
-{
-    
-    try
     {
-        Connection.Open();
-        Console.WriteLine("Database connection opened.");
-
+        try
+        {
+            if (Connection.State != System.Data.ConnectionState.Closed)
+            {
+                Connection.Close();
+                Console.WriteLine("Database connection closed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error closing connection: {ex.Message}");
+        }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error: {ex.Message}");
-    }
-    finally
-    {
-        Connection.Close();
-        Console.WriteLine("Database connection closed.");
-    }
-}
 }
 

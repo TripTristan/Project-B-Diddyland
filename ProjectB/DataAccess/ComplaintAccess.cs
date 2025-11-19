@@ -9,14 +9,17 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
             string sql = "INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status) " +
                          "VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status);";
             DBC.Connection.Execute(sql, complaint);
         }
         finally
         {
-            DBC.CloseConnection();
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 
@@ -24,14 +27,17 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
             string sql = "SELECT * FROM Complaints ORDER BY CreatedAt DESC;";
             List<ComplaintModel> result = DBC.Connection.Query<ComplaintModel>(sql).AsList();
             return result;
         }
         finally
         {
-            DBC.CloseConnection();
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 
@@ -39,7 +45,9 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
             string sql = "SELECT IFNULL(MAX(Id), 0) + 1 FROM Complaints";
             int next = DBC.Connection.ExecuteScalar<int>(sql);
             return next;
@@ -51,7 +59,8 @@ public static class ComplaintsAccess
         }
         finally
         {
-            DBC.CloseConnection();
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 
@@ -59,7 +68,9 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
             string sql = "SELECT * FROM Complaints WHERE 1=1";
 
             if (!string.IsNullOrEmpty(category))
@@ -82,7 +93,8 @@ public static class ComplaintsAccess
         }
         finally
         {
-            DBC.CloseConnection();
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 
@@ -90,13 +102,16 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
             string sql = "UPDATE Complaints SET Status = @Status WHERE Id = @Id;";
             DBC.Connection.Execute(sql, new { Id = id, Status = status });
         }
         finally
         {
-            DBC.CloseConnection();
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 
@@ -104,13 +119,16 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
             string sql = "DELETE FROM Complaints WHERE Id = @Id;";
             DBC.Connection.Execute(sql, new { Id = id });
         }
         finally
         {
-            DBC.CloseConnection();
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 }

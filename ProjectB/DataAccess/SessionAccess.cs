@@ -6,40 +6,88 @@ using Dapper;
 public static class SessionAccess
 {
     public static List<Session> GetAllSessions()
-        => DBC.Connection.Query<Session>(
-            @"SELECT 
-                 ID AS Id,
-                 Date,
-                 Time,
-                 AttractionID,
-                 Currentbookings AS CurrentBookings
-              FROM Sessions").ToList();
+    {
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            return DBC.Connection.Query<Session>(
+                @"SELECT 
+                     ID AS Id,
+                     Date,
+                     Time,
+                     AttractionID,
+                     Currentbookings AS CurrentBookings
+                  FROM Sessions").ToList();
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
+    }
 
     public static Session? GetSessionById(int id)
-        => DBC.Connection.QueryFirstOrDefault<Session>(
-            @"SELECT 
-                 ID AS Id,
-                 Date,
-                 Time,
-                 AttractionID,
-                 Currentbookings AS CurrentBookings
-              FROM Sessions
-              WHERE ID = @Id", new { Id = id });
+    {
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            return DBC.Connection.QueryFirstOrDefault<Session>(
+                @"SELECT 
+                     ID AS Id,
+                     Date,
+                     Time,
+                     AttractionID,
+                     Currentbookings AS CurrentBookings
+                  FROM Sessions
+                  WHERE ID = @Id", new { Id = id });
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
+    }
 
     public static void UpdateSession(Session session)
     {
-        const string sql = @"UPDATE Sessions
-                             SET Currentbookings = @CurrentBookings
-                             WHERE ID = @Id";
-        DBC.Connection.Execute(sql, session);
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = @"UPDATE Sessions
+                                 SET Currentbookings = @CurrentBookings
+                                 WHERE ID = @Id";
+            DBC.Connection.Execute(sql, session);
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static void Insert(Session session)
     {
-        const string sql = @"INSERT INTO Sessions
-                             (Date, Time, AttractionID, Currentbookings)
-                             VALUES (@Date, @Time, @AttractionID, @CurrentBookings)";
-        DBC.Connection.Execute(sql, session);
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = @"INSERT INTO Sessions
+                                 (Date, Time, AttractionID, Currentbookings)
+                                 VALUES (@Date, @Time, @AttractionID, @CurrentBookings)";
+            DBC.Connection.Execute(sql, session);
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static int GetCapacityBySession(Session sesh)
@@ -50,17 +98,28 @@ public static class SessionAccess
 
     public static List<Session> GetSessionsForAttractionOnDate(int attractionId, DateTime date)
     {
-        string day = date.ToString("yyyy-MM-dd");
-        const string sql = @"SELECT 
-                                ID AS Id,
-                                Date,
-                                Time,
-                                AttractionID,
-                                Currentbookings AS CurrentBookings
-                             FROM Sessions
-                             WHERE AttractionID = @AttractionID AND Date = @Date
-                             ORDER BY Time";
-        return DBC.Connection.Query<Session>(sql, new { AttractionID = attractionId, Date = day }).ToList();
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            string day = date.ToString("yyyy-MM-dd");
+            const string sql = @"SELECT 
+                                    ID AS Id,
+                                    Date,
+                                    Time,
+                                    AttractionID,
+                                    Currentbookings AS CurrentBookings
+                                 FROM Sessions
+                                 WHERE AttractionID = @AttractionID AND Date = @Date
+                                 ORDER BY Time";
+            return DBC.Connection.Query<Session>(sql, new { AttractionID = attractionId, Date = day }).ToList();
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static List<Session> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
@@ -75,14 +134,25 @@ public static class SessionAccess
                                    (Date, Time, AttractionID, Currentbookings)
                                    VALUES (@Date, @Time, @AttractionID, 0)";
 
-        foreach (var t in GenerateHalfHourSlots())
+        try
         {
-            DBC.Connection.Execute(insertSql, new
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            foreach (var t in GenerateHalfHourSlots())
             {
-                Date = date.ToString("yyyy-MM-dd"),
-                Time = t,              
-                AttractionID = attractionId
-            });
+                DBC.Connection.Execute(insertSql, new
+                {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Time = t,              
+                    AttractionID = attractionId
+                });
+            }
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
 
         return GetSessionsForAttractionOnDate(attractionId, date);

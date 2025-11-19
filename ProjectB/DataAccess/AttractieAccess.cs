@@ -1,5 +1,4 @@
 using Microsoft.Data.Sqlite;
-using System.Data.SQLite;
 using Dapper;
 using System.Data;
 
@@ -9,46 +8,93 @@ public static class AttractiesAccess
     {
         try
         {
-            using (var connection = DBC.Connection)
-            {
-                connection.Open();
-                const string sql = @"INSERT INTO Attractie (Name, Type, MinHeightInCM, Capacity)
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = @"INSERT INTO Attractie (Name, Type, MinHeightInCM, Capacity)
                                 VALUES (@Name, @Type, @MinHeightInCM, @Capacity)";
-                DBC.Connection.Execute(sql, attractie);
-            }
+            DBC.Connection.Execute(sql, attractie);
         }
         catch (Exception ex)
         {
-            // Log any database-related errors
             Console.WriteLine($"Error during insert: {ex.Message}");
             throw;
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
         }
     }
 
     public static IEnumerable<AttractieModel> GetAll()
     {
-        const string sql = "SELECT * FROM Attractie";
-        return DBC.Connection.Query<AttractieModel>(sql);
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = "SELECT * FROM Attractie";
+            return DBC.Connection.Query<AttractieModel>(sql);
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static AttractieModel? GetById(int id)
     {
-        const string sql = "SELECT * FROM Attractie WHERE ID = @ID";
-        return DBC.Connection.QueryFirstOrDefault<AttractieModel>(sql, new { ID = id });
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = "SELECT * FROM Attractie WHERE ID = @ID";
+            return DBC.Connection.QueryFirstOrDefault<AttractieModel>(sql, new { ID = id });
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static void Update(AttractieModel attractie)
     {
-        const string sql = @"UPDATE Attractie
-                             SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity
-                             WHERE ID = @ID";
-        DBC.Connection.Execute(sql, attractie);
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = @"UPDATE Attractie
+                                 SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity
+                                 WHERE ID = @ID";
+            DBC.Connection.Execute(sql, attractie);
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static void Delete(int id)
     {
-        const string sql = "DELETE FROM Attractie WHERE ID = @ID";
-        DBC.Connection.Execute(sql, new { ID = id });
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = "DELETE FROM Attractie WHERE ID = @ID";
+            DBC.Connection.Execute(sql, new { ID = id });
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
 }
