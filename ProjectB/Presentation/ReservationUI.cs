@@ -173,7 +173,6 @@ public static class ReservationUI
     public static void SelectAndProcessSession(List<Session> sessions)
     {
         var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
-        Dictionary<int, List<int>> bookingSelections = new();
         int dateChoice = GetDateChoice(groupedByDate);
         var sessionsOnDate = groupedByDate[dateChoice].ToList();
 
@@ -182,47 +181,42 @@ public static class ReservationUI
         Session selectedSession = sessionsOnDate[sessionChoice];
         int bookingQuantity = GetBookingQuantity(selectedSession);
 
-        List<int> ages = new();
-        while (ages.Count < bookingQuantity)
+        List<(int sessionId, int age)> cart = new();
+        while (cart.Count < bookingQuantity)
         {
-            Console.Write($"Enter age for ticket {ages.Count + 1}: ");
+            Console.Write($"Enter age for ticket {cart.Count + 1}: ");
             if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
-                ages.Add(age);
+                cart.Add((selectedSession.Id, age));
             else
-                Console.WriteLine("Invalid input. Please try again.");
+                Console.WriteLine("Invalid age.");
         }
 
-        bookingSelections[selectedSession.Id] = ages;
+        var summary = DiscountLogic.ApplyAllDiscounts(cart, _customerInfo, promoCode: null);
 
-        bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
-        if (confirm)
+        bool confirm = ChoiceHelper(
+            $"Total price after discounts: {summary.FinalTotal:C}  (original {summary.OriginalSubTotal:C}). Confirm?",
+            "Yes, confirm.",
+            "No, cancel.");
+        if (!confirm) return;
+
+        string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
+
+        foreach (var (sessionId, age) in cart)
         {
-            string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
-            decimal totalPrice = 0;
+            var ticket = summary.TicketDetails.First(t => t.SessionId == sessionId && t.Age == age);
+            ReservationLogic.CreateSingleTicketBooking(sessionId, age, _customerInfo, orderNumber, ticket.FinalPrice);
+        }
 
-            foreach (int age in bookingSelections[selectedSession.Id])
-            {
-                decimal singlePrice = ReservationLogic.CreateSingleTicketBooking(selectedSession.Id, age, _customerInfo, orderNumber, bookingQuantity);
-                totalPrice += singlePrice;
-            }
-
-            ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-
-            bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
-            if (payment)
-            {
-                PaymentUI.StartPayment(orderNumber, _customerInfo);
-                ShowSuccessMessage(orderNumber);
-                ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-            }
-            else
-            {
-                Console.WriteLine("Payment cancelled. Your reservation is not confirmed.");
-            }
+        ShowBookingDetails(orderNumber, summary);
+        bool payment = ChoiceHelper("Proceed to payment?", "Yes", "No");
+        if (payment)
+        {
+            PaymentUI.StartPayment(orderNumber, _customerInfo);
+            ShowSuccessMessage(orderNumber);
         }
         else
         {
-            Console.WriteLine("Reservation cancelled.");
+            Console.WriteLine("Payment cancelled.");
         }
     }
 
