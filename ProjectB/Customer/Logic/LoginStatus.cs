@@ -1,8 +1,19 @@
-public static class LoginStatus
+public class LoginStatus : ILoginStatus
 {
-    public static UserModel? CurrentUserInfo { get; private set; } // wie is ingelogd // current user
-
-    public static void Login(UserModel accountInfo) => CurrentUserInfo= accountInfo; 
-
-    public static void Logout() => CurrentUserInfo = null;
+    public UserModel? CurrentUser { get; private set; }
+    public void SetUser(UserModel user) => CurrentUser = user;
+    public void Clear() => CurrentUser = null;
 }
+
+
+
+    // not 3 layer all layer can call
+
+    // public static class LoginStatus
+    // {
+    //     public static UserModel? CurrentUserInfo { get; private set; } // wie is ingelogd // current user
+
+    //     public static void Login(UserModel accountInfo) => CurrentUserInfo= accountInfo; 
+
+    //     public static void Logout() => CurrentUserInfo = null;
+    // }

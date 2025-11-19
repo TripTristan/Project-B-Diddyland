@@ -1,7 +1,7 @@
 public class UserLoginUI
 {
-    private readonly ILoginLogic _logic;
-    public UserLoginUI(ILoginLogic logic) => _logic = logic;
+    private readonly ILoginStatus _logic;
+    public UserLoginUI(ILoginStatus logic) => _logic = logic;
 
 
     public UserModel? StartLogin()
