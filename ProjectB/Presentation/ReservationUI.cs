@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 public static class ReservationUI
 {
@@ -191,7 +190,19 @@ public static class ReservationUI
                 Console.WriteLine("Invalid age.");
         }
 
-        var summary = DiscountLogic.ApplyAllDiscounts(cart, _customerInfo, promoCode: null);
+        // 获取优惠码输入
+        string? promoCode = null;
+        Console.Write("\nEnter promo code (or press Enter to skip): ");
+        string? input = Console.ReadLine()?.Trim();
+        if (!string.IsNullOrWhiteSpace(input))
+        {
+            promoCode = input;
+        }
+
+        // 获取预订日期
+        DateTime bookingDate = DateTime.Parse(selectedSession.Date);
+
+        var summary = DiscountLogic.ApplyAllDiscounts(cart, _customerInfo, promoCode, bookingDate);
 
         bool confirm = ChoiceHelper(
             $"Total price after discounts: {summary.FinalTotal:C}  (original {summary.OriginalSubTotal:C}). Confirm?",
@@ -201,10 +212,21 @@ public static class ReservationUI
 
         string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
 
+        bool birthdayTicketUsed = false;
         foreach (var (sessionId, age) in cart)
         {
             var ticket = summary.TicketDetails.First(t => t.SessionId == sessionId && t.Age == age);
             ReservationLogic.CreateSingleTicketBooking(sessionId, age, _customerInfo, orderNumber, ticket.FinalPrice);
+            
+            // 如果使用了生日免费门票，记录使用情况
+            if (!birthdayTicketUsed && ticket.FinalPrice == 0 && ticket.AppliedOffers.Any(o => o.OfferNr == "BIRTHDAY"))
+            {
+                if (_customerInfo != null)
+                {
+                    BirthdayTicketAccess.RecordBirthdayTicketUsage(_customerInfo.Id, bookingDate.Year, orderNumber);
+                    birthdayTicketUsed = true;
+                }
+            }
         }
 
         ShowBookingDetails(orderNumber, summary);

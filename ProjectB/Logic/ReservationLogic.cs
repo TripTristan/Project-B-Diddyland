@@ -34,6 +34,27 @@ public static class ReservationLogic
         return finalPrice;
     }
 
+    public static decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, decimal finalPrice)
+    {
+        var session = SessionAccess.GetSessionById(sessionId)
+                     ?? throw new ArgumentException("Invalid session ID.");
+
+        if (session.CurrentBookings + 1 > SessionAccess.GetCapacityBySession(session))
+            throw new InvalidOperationException("Not enough available seats.");
+
+        decimal basePrice = 15;
+        decimal discount = (basePrice - finalPrice) / basePrice;
+
+        var booking = new ReservationModel(orderNumber, sessionId, 1, customer, DateTime.Now, basePrice, discount, finalPrice);
+        ReservationAccess.AddBooking(booking);
+
+        session.CurrentBookings += 1;
+        SessionAccess.UpdateSession(session);
+
+        Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (discount: {discount * 100:P})");
+        return finalPrice;
+    }
+
     public static (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
     {
         decimal discount = 0m;

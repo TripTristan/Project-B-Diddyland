@@ -1,9 +1,6 @@
-public class UserLoginUI
+public static class UserLoginUI
 {
-    private readonly ILoginLogic _logic;
-    public UserLoginUI(ILoginLogic logic) => _logic = logic;
-
-    public User? StartLogin()
+    public static void StartLogin()
     {
         Console.WriteLine("=== Customer Login ===");
 
@@ -12,24 +9,26 @@ public class UserLoginUI
             string username = Input_Read("Username: ");
             string password = Input_Read("Password: ");
 
-            var user = _logic.Authenticate(username, password);
-            if (user != null)
+            var user = UserAccess.GetByUsername(username);
+            if (user != null && user.Password == password)
             {
+                // Map UserModel to LoginStatus
+                LoginStatus.Login(user);
                 Console.WriteLine("Login successful!");
                 Thread.Sleep(500);
-                return user;
+                return;
             }
 
             Console.WriteLine("Invalid username or password.");
             if (!LoginAgain())
             {
                 Console.WriteLine("Exiting login process.");
-                return null;
+                return;
             }
         }
     }
 
-    private bool LoginAgain()
+    private static bool LoginAgain()
     {
         Console.Write("Try again? (y/n): ");
         string? choice = Console.ReadLine()?.Trim().ToLower();
@@ -42,7 +41,7 @@ public class UserLoginUI
         }
     }
 
-    private string Input_Read(string text)
+    private static string Input_Read(string text)
     {
         string? input;
         do
