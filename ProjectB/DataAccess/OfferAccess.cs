@@ -10,60 +10,82 @@ namespace MyProject.DAL
     {
         public static List<OfferBase> GetActiveOffers()
         {
-            var now = DateTime.Now;
+            try
+            {
+                if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                    DBC.Connection.Open();
 
-            const string sqlBase = @"
-                SELECT Id, Nr, Name, Description, Discount, StartDate, EndDate, [Min], [Max], IsActive
-                FROM   OfferBase
-                WHERE  IsActive = 1
-                AND  @now BETWEEN StartDate AND EndDate";
+                var now = DateTime.Now;
 
-            var baseOffers = DBC.Connection.Query<OfferBase>(sqlBase, new { now }).ToList();
+                const string sqlBase = @"
+                    SELECT Id, Nr, Name, Description, Discount, StartDate, EndDate, [Min], [Max], IsActive
+                    FROM   OfferBase
+                    WHERE  IsActive = 1
+                    AND  @now BETWEEN StartDate AND EndDate";
 
-            const string sqlVip = @"
-                SELECT Id, Nr, Name, Description, Discount, StartDate, EndDate, [Min], [Max], IsActive
-                FROM   OfferVIP
-                WHERE  IsActive = 1
-                AND  @now BETWEEN StartDate AND EndDate";
+                var baseOffers = DBC.Connection.Query<OfferBase>(sqlBase, new { now }).ToList();
 
-            var vipOffers = DBC.Connection.Query<OfferVIP>(sqlVip, new { now })
-                               .Cast<OfferBase>()
-                               .ToList();
+                const string sqlVip = @"
+                    SELECT Id, Nr, Name, Description, Discount, StartDate, EndDate, [Min], [Max], IsActive
+                    FROM   OfferVIP
+                    WHERE  IsActive = 1
+                    AND  @now BETWEEN StartDate AND EndDate";
 
-            const string sqlGroup = @"
-                SELECT Id, Nr, Name, Description, Discount, StartDate, EndDate, [Min], [Max], IsActive, GroupType
-                FROM   OfferGroup
-                WHERE  IsActive = 1
-                AND  @now BETWEEN StartDate AND EndDate";
+                var vipOffers = DBC.Connection.Query<OfferVIP>(sqlVip, new { now })
+                                   .Cast<OfferBase>()
+                                   .ToList();
 
-            var groupOffers = DBC.Connection.Query<OfferGroup>(sqlGroup, new { now })
-                                 .Cast<OfferBase>()
-                                 .ToList();
+                const string sqlGroup = @"
+                    SELECT Id, Nr, Name, Description, Discount, StartDate, EndDate, [Min], [Max], IsActive, GroupType
+                    FROM   OfferGroup
+                    WHERE  IsActive = 1
+                    AND  @now BETWEEN StartDate AND EndDate";
 
-            const string sqlPromo = @"
-                SELECT Id, Nr, PromoCode, ExpiryDate, MaxUses, CurrentUses, Discount
-                FROM   OfferPromoCode
-                WHERE  (ExpiryDate IS NULL OR ExpiryDate >= @now)";
+                var groupOffers = DBC.Connection.Query<OfferGroup>(sqlGroup, new { now })
+                                     .Cast<OfferBase>()
+                                     .ToList();
 
-            var promoOffers = DBC.Connection.Query<OfferPromoCode>(sqlPromo, new { now })
-                                 .Cast<OfferBase>()
-                                 .ToList();
+                const string sqlPromo = @"
+                    SELECT Id, Nr, PromoCode, ExpiryDate, MaxUses, CurrentUses, Discount
+                    FROM   OfferPromoCode
+                    WHERE  (ExpiryDate IS NULL OR ExpiryDate >= @now)";
 
-            return baseOffers.Union(vipOffers)
-                              .Union(groupOffers)
-                              .Union(promoOffers)
-                              .ToList();
+                var promoOffers = DBC.Connection.Query<OfferPromoCode>(sqlPromo, new { now })
+                                     .Cast<OfferBase>()
+                                     .ToList();
+
+                return baseOffers.Union(vipOffers)
+                                  .Union(groupOffers)
+                                  .Union(promoOffers)
+                                  .ToList();
+            }
+            finally
+            {
+                if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                    DBC.Connection.Close();
+            }
         }
 
         /* --------------- 写 --------------- */
         public static void IncrementPromoUse(int promoId)
         {
-            const string sql = @"
-                UPDATE OfferPromoCode
-                SET    CurrentUses = CurrentUses + 1
-                WHERE  Id = @id";
+            try
+            {
+                if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                    DBC.Connection.Open();
 
-            DBC.Connection.Execute(sql, new { id = promoId });
+                const string sql = @"
+                    UPDATE OfferPromoCode
+                    SET    CurrentUses = CurrentUses + 1
+                    WHERE  Id = @id";
+
+                DBC.Connection.Execute(sql, new { id = promoId });
+            }
+            finally
+            {
+                if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                    DBC.Connection.Close();
+            }
         }
     }
 }

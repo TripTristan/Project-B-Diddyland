@@ -10,30 +10,60 @@ namespace MyProject.DAL
     {
         public static List<SessionAvailabilityDto> GetAvailableSessions(int groupSize)
         {
-            const string sql = @"
-                SELECT s.Id, s.Date, s.Time, s.BasisPrice,
-                    (s.MaxCapacity - s.CurrentBookings) AS AvailableSeats
-                FROM   [Session] s
-                WHERE  s.MaxCapacity - s.CurrentBookings >= @groupSize";
-            using var conn = DBC.Connection;
-            return conn.Query<SessionAvailabilityDto>(sql, new { groupSize }).ToList();
+            try
+            {
+                if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                    DBC.Connection.Open();
+
+                const string sql = @"
+                    SELECT s.Id, s.Date, s.Time, s.BasisPrice,
+                        (s.MaxCapacity - s.CurrentBookings) AS AvailableSeats
+                    FROM   [Session] s
+                    WHERE  s.MaxCapacity - s.CurrentBookings >= @groupSize";
+                return DBC.Connection.Query<SessionAvailabilityDto>(sql, new { groupSize }).ToList();
+            }
+            finally
+            {
+                if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                    DBC.Connection.Close();
+            }
         }
 
         public static int InsertGroupOrder(GroupReservationDto dto)
         {
-            const string sql = @"
-                INSERT INTO [OrderGroup] (OrderNumber, GroupType, OrganizationName, ContactPerson, ContactEmail, ContactPhone, GroupSize, SessionId, Discount, FinalPrice, CreatedAt)
-                VALUES (@OrderNumber, @GroupType, @OrganizationName, @ContactPerson, @ContactEmail, @ContactPhone, @GroupSize, @SessionId, @Discount, @FinalPrice, GETDATE());
-                SELECT CAST(SCOPE_IDENTITY() as int);";
-                using var conn = DBC.Connection;
-            return conn.QuerySingle<int>(sql, dto);
+            try
+            {
+                if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                    DBC.Connection.Open();
+
+                const string sql = @"
+                    INSERT INTO [OrderGroup] (OrderNumber, GroupType, OrganizationName, ContactPerson, ContactEmail, ContactPhone, GroupSize, SessionId, Discount, FinalPrice, CreatedAt)
+                    VALUES (@OrderNumber, @GroupType, @OrganizationName, @ContactPerson, @ContactEmail, @ContactPhone, @GroupSize, @SessionId, @Discount, @FinalPrice, datetime('now'));
+                    SELECT last_insert_rowid();";
+                return DBC.Connection.QuerySingle<int>(sql, dto);
+            }
+            finally
+            {
+                if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                    DBC.Connection.Close();
+            }
         }
 
         public static int IncrementSessionBooking(int sessionId, int quantity)
         {
-            const string sql = "UPDATE [Session] SET CurrentBookings = CurrentBookings + @quantity WHERE Id = @sessionId";
-            using var conn = DBC.Connection;
-            return conn.Execute(sql, new { sessionId, quantity });
+            try
+            {
+                if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                    DBC.Connection.Open();
+
+                const string sql = "UPDATE [Session] SET CurrentBookings = CurrentBookings + @quantity WHERE Id = @sessionId";
+                return DBC.Connection.Execute(sql, new { sessionId, quantity });
+            }
+            finally
+            {
+                if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                    DBC.Connection.Close();
+            }
         }
 
         public static string GenerateOrderNumber(string prefix)

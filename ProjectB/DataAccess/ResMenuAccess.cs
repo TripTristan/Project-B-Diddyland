@@ -1,24 +1,57 @@
 using Microsoft.Data.Sqlite;
 using Dapper;
 
-public class ResMenuAccess
+public static class ResMenuAccess
 {
     public static void Link(ResMenuModel resMenu)
     {
-        const string sql = @"INSERT INTO ResMenu (ReservationID, MenuID)
-                             VALUES (@ReservationID, @MenuID)";
-        DBC.Connection.Execute(sql, resMenu);
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = @"INSERT INTO ResMenu (ReservationID, MenuID)
+                                 VALUES (@ReservationID, @MenuID)";
+            DBC.Connection.Execute(sql, resMenu);
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static IEnumerable<ResMenuModel> GetAll()
     {
-        const string sql = "SELECT * FROM ResMenu";
-        return DBC.Connection.Query<ResMenuModel>(sql);
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = "SELECT * FROM ResMenu";
+            return DBC.Connection.Query<ResMenuModel>(sql);
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 
     public static void Delete(int id)
     {
-        const string sql = "DELETE FROM ResMenu WHERE ID = @ID";
-        DBC.Connection.Execute(sql, new { ID = id });
+        try
+        {
+            if (DBC.Connection.State != System.Data.ConnectionState.Open)
+                DBC.Connection.Open();
+
+            const string sql = "DELETE FROM ResMenu WHERE ID = @ID";
+            DBC.Connection.Execute(sql, new { ID = id });
+        }
+        finally
+        {
+            if (DBC.Connection.State == System.Data.ConnectionState.Open)
+                DBC.Connection.Close();
+        }
     }
 }

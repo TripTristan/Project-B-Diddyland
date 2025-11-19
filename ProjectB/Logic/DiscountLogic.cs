@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MyProject.DAL;
 
 namespace MyProject.BLL
 {
@@ -9,9 +10,10 @@ namespace MyProject.BLL
         public static DiscountSummaryDto ApplyAllDiscounts(
             List<(int sessionId, int age)> cart,
             UserModel? customer,
-            string? promoCode = null)
+            string? promoCode = null,
+            DateTime? bookingDate = null)
         {
-            var offers = OfferRepository.GetActiveOffers();
+            var offers = OfferAccess.GetActiveOffers();
 
 
             var applicable = offers
@@ -19,8 +21,16 @@ namespace MyProject.BLL
                 .OrderByDescending(o => o.Discount)
                 .ToList();
 
+            // 检查生日免费门票优惠（在应用其他优惠之前）
+            bool canUseBirthdayTicket = false;
+            if (customer != null && bookingDate.HasValue)
+            {
+                canUseBirthdayTicket = CheckBirthdayDiscount(customer, bookingDate.Value, cart) == true;
+            }
+
             var details = new List<TicketDiscountDto>();
             decimal originalSubTotal = 0;
+            bool birthdayTicketApplied = false;
 
             foreach (var (sessionId, age) in cart)
             {
@@ -30,17 +40,29 @@ namespace MyProject.BLL
                 var applied = new List<AppliedOfferDto>();
                 var price = basePrice;
 
-                foreach (var offer in applicable)
+                // 如果是第一张票且可以使用生日免费门票，直接应用100%折扣
+                if (canUseBirthdayTicket && !birthdayTicketApplied && details.Count == 0)
                 {
-                    if (!IsOfferValidForTicket(offer, age, customer, cart.Count)) continue;
-
-                    var percent = offer.Discount;
-                    var amount  = price * percent;
                     applied.Add(new AppliedOfferDto(
-                        offer.Id, offer.Nr, offer.Name, percent, amount));
+                        0, "BIRTHDAY", "Birthday Free Ticket", 1.0m, basePrice));
+                    price = 0;
+                    birthdayTicketApplied = true;
+                }
+                else
+                {
+                    // 应用其他优惠
+                    foreach (var offer in applicable)
+                    {
+                        if (!IsOfferValidForTicket(offer, age, customer, cart.Count)) continue;
 
-                    price -= amount;
-                    if (price <= 0) break;
+                        var percent = offer.Discount;
+                        var amount  = price * percent;
+                        applied.Add(new AppliedOfferDto(
+                            offer.Id, offer.Nr, offer.Name, percent, amount));
+
+                        price -= amount;
+                        if (price <= 0) break;
+                    }
                 }
 
                 details.Add(new TicketDiscountDto(
@@ -48,12 +70,63 @@ namespace MyProject.BLL
             }
 
             foreach (var promo in applicable.OfType<OfferPromoCode>())
-                OfferRepository.IncrementPromoUse(promo.Id);
+                OfferAccess.IncrementPromoUse(promo.Id);
 
             return new DiscountSummaryDto(
                 details,
                 originalSubTotal,
                 details.Sum(t => t.FinalPrice));
+        }
+
+        private static bool? CheckBirthdayDiscount(UserModel customer, DateTime bookingDate, List<(int sessionId, int age)> cart)
+        {
+            if (string.IsNullOrEmpty(customer.DateOfBirth)) return null;
+
+            try
+            {
+                string[] dobParts = customer.DateOfBirth.Split("-");
+                if (dobParts.Length != 3) return null;
+
+                int day = int.Parse(dobParts[0]);
+                int month = int.Parse(dobParts[1]);
+                int year = int.Parse(dobParts[2]);
+
+                DateTime thisYearBirthday = new DateTime(bookingDate.Year, month, day);
+                DateTime lastYearBirthday = new DateTime(bookingDate.Year - 1, month, day);
+                DateTime nextYearBirthday = new DateTime(bookingDate.Year + 1, month, day);
+
+                bool isWithinRange = false;
+                DateTime relevantBirthday = thisYearBirthday;
+
+                if (Math.Abs((bookingDate.Date - thisYearBirthday.Date).TotalDays) <= 7)
+                {
+                    isWithinRange = true;
+                    relevantBirthday = thisYearBirthday;
+                }
+                else if (Math.Abs((bookingDate.Date - lastYearBirthday.Date).TotalDays) <= 7)
+                {
+                    isWithinRange = true;
+                    relevantBirthday = lastYearBirthday;
+                }
+                else if (Math.Abs((bookingDate.Date - nextYearBirthday.Date).TotalDays) <= 7)
+                {
+                    isWithinRange = true;
+                    relevantBirthday = nextYearBirthday;
+                }
+
+                if (!isWithinRange) return null;
+
+            
+                int currentYear = bookingDate.Year;
+                if (BirthdayTicketAccess.HasUsedBirthdayTicket(customer.Id, currentYear))
+                    return null;
+
+                return true;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static bool IsApplicable(OfferBase offer, List<(int, int)> cart, UserModel? customer, string? promoCode)
