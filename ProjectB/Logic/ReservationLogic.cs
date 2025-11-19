@@ -1,6 +1,5 @@
 public static class ReservationLogic
 {
-
     public static List<Session> GetAvailableSessions()
     {
         var all = SessionAccess.GetAllSessions();
@@ -14,31 +13,35 @@ public static class ReservationLogic
         return session.CurrentBookings + quantity <= SessionAccess.GetCapacityBySession(session);
     }
 
-    // Called once per ticket from UI:
-    public static decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
+    public static decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber)
     {
-
         var session = SessionAccess.GetSessionById(sessionId)
                      ?? throw new ArgumentException("Invalid session ID.");
+
         if (session.CurrentBookings + 1 > SessionAccess.GetCapacityBySession(session))
             throw new InvalidOperationException("Not enough available seats.");
 
-        // price & discount
-        // decimal basePrice = session.PricePerPerson;
         decimal basePrice = 15;
         var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
 
-        // persist ticket
-        ReservationModel booking = new(orderNumber, sessionId, qty, customer, DateTime.Now,  basePrice, discount, finalPrice);
-
+        var booking = new ReservationModel(orderNumber, sessionId, 1, customer, DateTime.Now, basePrice, discount, finalPrice);
         ReservationAccess.AddBooking(booking);
 
-        // update capacity
         session.CurrentBookings += 1;
         SessionAccess.UpdateSession(session);
 
         Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (discount: {discount * 100}%)");
         return finalPrice;
+    }
+
+    public static (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
+    {
+        decimal discount = 0m;
+        if (age <= 12) discount = 0.5m;
+        else if (age >= 65) discount = 0.3m;
+
+        decimal finalPrice = basePrice * (1 - discount);
+        return (discount, finalPrice);
     }
 
     public static string GenerateOrderNumber(UserModel? customerInfo)
@@ -53,13 +56,14 @@ public static class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-    public static (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
+    public static decimal CalculateTotalPrice(List<(int age, int qty)> tickets)
     {
-        decimal discount = 0m;
-        if (age <= 12) discount = 0.5m;     // children
-        else if (age >= 65) discount = 0.3m; // seniors
-
-        decimal finalPrice = basePrice * (1 - discount);
-        return (discount, finalPrice);
+        decimal total = 0m;
+        foreach (var (age, qty) in tickets)
+        {
+            var (_, price) = CalculateDiscountedPrice(15, age);
+            total += price * qty;
+        }
+        return total;
     }
 }
