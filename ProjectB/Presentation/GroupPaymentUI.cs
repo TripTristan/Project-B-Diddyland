@@ -1,9 +1,7 @@
 public static class GroupPaymentUI
 {
-    public static async Task ProcessPaymentAsync(IPaymentService paymentService, GroupReservationDto reservation)
+    public static void ProcessPayment(GroupReservationDto reservation)
     {
-        if (paymentService == null) throw new ArgumentNullException(nameof(paymentService));
-
         while (true)
         {
             Console.Clear();
@@ -21,10 +19,10 @@ public static class GroupPaymentUI
             Console.Write("\nProcessing...");
             for (int i = 0; i < 3; i++) { Thread.Sleep(500); Console.Write("."); }
 
-            var result = await paymentService.ProcessPaymentAsync(reservation.OrderNumber,
-                new User(reservation.ContactPerson, reservation.ContactPerson, reservation.ContactPhone,
-                    reservation.ContactEmail, "", "", "", ""),
-                reservation.FinalPrice, method.Value);
+            var result = GroupPaymentLogic.ProcessGroupPayment(
+                reservation.OrderNumber,
+                reservation.FinalPrice,
+                method.Value);
 
             if (result.Success)
             {
