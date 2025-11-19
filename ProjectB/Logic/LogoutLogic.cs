@@ -1,8 +1,14 @@
-public class LogoutLogic
+public class LogoutLogic : ILogoutLogic
 {
-    public string Logout()
+    private readonly ISessionService _sessionService;
+
+    public LogoutLogic(ISessionService sessionService)
     {
-        LoginStatus.Logout();
-        return "You have been successfully logged out.";
+        _sessionService = sessionService;
+    }
+
+    public void Logout()
+    {
+        _sessionService.ClearCurrentUser();
     }
 }

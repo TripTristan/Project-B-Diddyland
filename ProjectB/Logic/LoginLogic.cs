@@ -1,12 +1,20 @@
-public static class LoginLogic
+public class LoginLogic : ILoginLogic
 {
-    public static bool AccountVerify(string username, string password)
-    {
-        UserModel account = UserAccess.GetByUsername(username.ToLower()); 
-        if (account == null) return false;
-        if (account.Password != password) return false;
+    private readonly IUserRepository _userRepo;
+    private readonly ISessionService _sessionService;
 
-        LoginStatus.Login(account);
-        return true;
+    public LoginLogic(IUserRepository userRepo, ISessionService sessionService)
+    {
+        _userRepo = userRepo;
+        _sessionService = sessionService;
+    }
+
+    public User? Authenticate(string account, string password)
+    {
+        var user = _userRepo.GetByAccount(account);
+        if (user == null || user.Password != password) return null;
+        
+        _sessionService.SetCurrentUser(user);
+        return user;
     }
 }

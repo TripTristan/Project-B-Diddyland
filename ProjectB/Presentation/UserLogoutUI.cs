@@ -1,12 +1,20 @@
 public class UserLogoutUI
 {
-    private readonly LogoutLogic _logic = new();
-    
-    public void Start() => ShowLogoutMenu();
+    private readonly ILogoutStatus _Logoutlogic;
+
+    public UserLogoutUI(ILogoutStatus logic)
+    {
+        _Logoutlogic = logic;
+    }
+
+    public void Start()
+    {
+        ShowLogoutMenu();
+    }
 
     private void ShowLogoutMenu()
     {
-        Console.WriteLine("=== Logout Menu ===");
+        Console.WriteLine("\n=== Logout Menu ===");
         Console.WriteLine("Are you sure you want to logout?\n(1) Yes \n(2) No");
 
         while (true)
@@ -16,25 +24,16 @@ public class UserLogoutUI
             switch (choice)
             {
                 case "1":
-                    UserLogout();
+                    _Logoutlogic.Clear();
+                    Console.WriteLine("You have been successfully logged out.");
                     return;
-
                 case "2":
                     Console.WriteLine("Logout cancelled.");
-                    // go back to main menu???????
                     return;
-
                 default:
                     Console.WriteLine("Invalid option. Please try again.");
                     break;
             }
         }
     }
-
-    private void UserLogout()
-    {
-        string message = _logic.Logout();
-        Console.WriteLine(message);
-    }
-
 }
