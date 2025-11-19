@@ -1,20 +1,20 @@
-public class AttractieModel
+using System;
+
+public class Attractie
 {
-    public int ID { get; set; }
+    public int Id { get; set; } // Primary Key// Database Generated
+    public String Nr { get; set; }
     public string Name { get; set; } = "";
     public string Type { get; set; } = "";
     public int MinHeightInCM { get; set; }
     public int Capacity { get; set; }
 
-    public AttractieModel() { }
-
-    public AttractieModel(int id, string name, string type, int minHeightInCM, int capacity)
+    public Attractie( String nr, string name, string type, int minHeightInCM, int capacity)
     {
-        ID = id;
+        Nr = nr;
         Name = name;
         Type = type;
         MinHeightInCM = minHeightInCM;
         Capacity = capacity;
     }
 }
-
