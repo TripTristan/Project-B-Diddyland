@@ -5,14 +5,24 @@ public static class MenuLogic
 
     public static string AddItem(string? food, string? drink, double price)
     {
-        food ??= "";        // Set defaullt value
+        food ??= "";
         drink ??= "";
 
-        if (string.IsNullOrWhiteSpace(food) && string.IsNullOrWhiteSpace(drink))        // Nothing filled in
+        if (string.IsNullOrWhiteSpace(food) && string.IsNullOrWhiteSpace(drink))
             return "Please provide at least a food or drink name.";
 
-        if (price < 0)      // Negative price
+        if (price < 0)
             return "Price cannot be negative.";
+
+        var existing = MenusAccess.GetAll();
+
+        bool duplicate = existing.Any(m =>
+            string.Equals(m.Food ?? "", food.Trim(), StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(m.Drink ?? "", drink.Trim(), StringComparison.OrdinalIgnoreCase)
+        );
+
+        if (duplicate)
+            return "This menu item already exists.";
 
         var model = new MenuModel
         {
@@ -24,6 +34,7 @@ public static class MenuLogic
         MenusAccess.Insert(model);
         return "Item added successfully!";
     }
+
 
     public static string AddFood(string name, double price) => AddItem(name, "", price);
     public static string AddDrink(string name, double price) => AddItem("", name, price);
