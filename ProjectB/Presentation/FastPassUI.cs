@@ -9,14 +9,19 @@ public static class FastPassUI
         Console.Clear();
         Console.WriteLine("=== FastPass Reservation ===\n");
 
-        var attractions = AttractiesAccess.GetAll().ToList();
+        string location = ChooseParkLocation();
+
+        var attractions = AttractiesAccess.GetAll()
+                            .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+
         if (attractions.Count == 0)
         {
-            Console.WriteLine("No attractions found. Please add attractions first.");
+            Console.WriteLine($"No attractions found in {location}. Please add attractions first.");
             return;
         }
 
-        Console.WriteLine("Select an attraction:");
+        Console.WriteLine($"\nSelect an attraction in {location}:");
         foreach (var a in attractions)
             Console.WriteLine($"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})");
 
@@ -34,10 +39,10 @@ public static class FastPassUI
 
         DateTime day = DateTime.Today;
 
-        var available = FastPassLogic.GetAvailableFastPassSessions(attractionId, day);
+        var available = FastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
         if (available.Count == 0)
         {
-            Console.WriteLine("\nNo available timeslots for this attraction today.");
+            Console.WriteLine($"\nNo available timeslots for this attraction today in {location}.");
             return;
         }
 
@@ -67,7 +72,7 @@ public static class FastPassUI
 
         try
         {
-            var confirmation = FastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser);
+            var confirmation = FastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser, location);
 
             Console.Clear();
             Console.WriteLine("====== FastPass Confirmation ======\n");
@@ -88,6 +93,26 @@ public static class FastPassUI
         }
     }
 
+    private static string ChooseParkLocation()
+    {
+        string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
+
+        while (true)
+        {
+            Console.WriteLine("Select park location:");
+            for (int i = 0; i < locations.Length; i++)
+                Console.WriteLine($"{i + 1}) {locations[i]}");
+
+            Console.Write("\nEnter choice number: ");
+            string? input = Console.ReadLine();
+
+            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= locations.Length)
+                return locations[choice - 1];
+
+            Console.WriteLine("Invalid input. Please choose a valid number.\n");
+        }
+    }
+
     private static int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)
     {
         while (true)
@@ -96,7 +121,7 @@ public static class FastPassUI
             var input = Console.ReadLine();
 
             if (input == "0" && allowCancel)
-                return 0; // Cancel request
+                return 0;
 
             if (int.TryParse(input, out int val) && isValid(val))
                 return val;
@@ -104,17 +129,4 @@ public static class FastPassUI
             Console.WriteLine(errorMsg);
         }
     }
-
-
-    private static DateTime ReadDate(string prompt)
-    {
-        Console.Write(prompt);
-        var s = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(s)) return DateTime.Today;
-        if (DateTime.TryParseExact(s, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
-            return d;
-        Console.WriteLine("Invalid date. Using today.");
-        return DateTime.Today;
-    }
 }
-
