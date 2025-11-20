@@ -4,7 +4,7 @@ public class AttractieMenu
     {
         RunMenu();
     }
-    
+
     private static void RunMenu()
     {
         while (true)
@@ -44,22 +44,38 @@ public class AttractieMenu
         }
     }
 
+    private static string ChooseLocation()
+    {
+        string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
+        Console.WriteLine("Select park location:");
+        for (int i = 0; i < locations.Length; i++)
+            Console.WriteLine($"{i + 1}) {locations[i]}");
+
+        Console.Write("\nEnter choice number: ");
+        string? input = Console.ReadLine();
+        int choice = int.TryParse(input, out int n) ? n : 1;
+        if (choice < 1 || choice > locations.Length) choice = 1;
+
+        return locations[choice - 1];
+    }
+
     private static void ListAll()
     {
         Header("All attractions");
+        string location = ChooseLocation();
 
-        var items = AttractieLogic.GetAll().ToList();
+        var items = AttractieLogic.GetAll().Where(a => a.Location == location).ToList();
         if (!items.Any())
         {
-            Info("No attractions yet.");
+            Info("No attractions yet for this location.");
             return;
         }
 
-        Console.WriteLine($"{Pad("ID",5)}  {Pad("Name",25)}  {Pad("Type",15)}  {Pad("Min(cm)",8)}  {Pad("MaxCapacity",8)}");
-        Console.WriteLine(new string('-', 70));
+        Console.WriteLine($"{Pad("ID",5)}  {Pad("Name",25)}  {Pad("Type",15)}  {Pad("Min(cm)",8)}  {Pad("MaxCapacity",8)}  {Pad("Location",15)}");
+        Console.WriteLine(new string('-', 85));
         foreach (var m in items)
         {
-            Console.WriteLine($"{Pad(m.ID.ToString(),5)}  {Pad(m.Name,25)}  {Pad(m.Type,15)}  {Pad(m.MinHeightInCM.ToString(),8)}  {Pad(m.Capacity.ToString(),8)}");
+            Console.WriteLine($"{Pad(m.ID.ToString(),5)}  {Pad(m.Name,25)}  {Pad(m.Type,15)}  {Pad(m.MinHeightInCM.ToString(),8)}  {Pad(m.Capacity.ToString(),8)}  {Pad(m.Location,15)}");
         }
     }
 
@@ -75,12 +91,15 @@ public class AttractieMenu
     private static void Add()
     {
         Header("Add attraction");
+        string location = ChooseLocation();
+
         var m = new AttractieModel
         {
             Name = ReadRequired("Name"),
             Type = ReadRequired("Type"),
             MinHeightInCM = ReadInt("Min height (cm)", min: 0, max: 300),
             Capacity = ReadInt("MaxCapacity", min: 1, max: 5000),
+            Location = location
         };
 
         AttractieLogic.Add(m);
@@ -101,14 +120,18 @@ public class AttractieMenu
         var minH = ReadOptionalInt($"Min height (cm) [{existing.MinHeightInCM}]", 0, 300);
         var cap  = ReadOptionalInt($"MaxCapacity [{existing.Capacity}]", 1, 5000);
 
+        string location = ReadOptional($"Location [{existing.Location}]") ?? existing.Location;
+
         existing.Name = string.IsNullOrWhiteSpace(name) ? existing.Name : name.Trim();
         existing.Type = string.IsNullOrWhiteSpace(type) ? existing.Type : type.Trim();
         existing.MinHeightInCM = minH ?? existing.MinHeightInCM;
         existing.Capacity = cap ?? existing.Capacity;
+        existing.Location = location;
 
         AttractieLogic.Update(existing);
         Success("Updated.");
     }
+
 
     private static void Delete()
     {
@@ -138,7 +161,8 @@ public class AttractieMenu
         Console.WriteLine($"Name:        {m.Name}");
         Console.WriteLine($"Type:        {m.Type}");
         Console.WriteLine($"Min height:  {m.MinHeightInCM} cm");
-        Console.WriteLine($"MaxCapacity:    {m.Capacity}");
+        Console.WriteLine($"MaxCapacity: {m.Capacity}");
+        Console.WriteLine($"Location:    {m.Location}");
         Console.WriteLine();
     }
 
@@ -167,9 +191,9 @@ public class AttractieMenu
             var range = (min, max) switch
             {
                 (int a, int b) => $" between {a} and {b}",
-                (int a, null)  => $" ≥ {a}",
-                (null, int b)  => $" ≤ {b}",
-                _              => ""
+                (int a, null) => $" ≥ {a}",
+                (null, int b) => $" ≤ {b}",
+                _ => ""
             };
             Warn($"Please enter a valid integer{range}.");
         }
@@ -194,9 +218,9 @@ public class AttractieMenu
             var range = (min, max) switch
             {
                 (int a, int b) => $" between {a} and {b}",
-                (int a, null)  => $" ≥ {a}",
-                (null, int b)  => $" ≤ {b}",
-                _              => ""
+                (int a, null) => $" ≥ {a}",
+                (null, int b) => $" ≤ {b}",
+                _ => ""
             };
             Warn($"Please enter a valid integer{range}, or press Enter to keep.");
         }

@@ -10,7 +10,7 @@ public static class ParkMap
 
     public enum Zone { Adventure = 1, Coastal = 2, Jungle = 3, Retro = 4 }
 
-    public static void ShowInteractive()
+    public static void ShowInteractive(string location)
     {
         Console.Clear();
         Console.WriteLine("=== Diddyland Park Map ===\n");
@@ -18,7 +18,7 @@ public static class ParkMap
         Console.WriteLine("  1) Adventure Zone");
         Console.WriteLine("  2) Coastal Zone");
         Console.WriteLine("  3) Jungle Zone");
-        Console.WriteLine("  4) Retro Zone ");
+        Console.WriteLine("  4) Retro Zone");
         Console.WriteLine("  0) All zones");
         Console.WriteLine();
 
@@ -27,31 +27,28 @@ public static class ParkMap
         Zone? filter = ParseFilter(input);
 
         Console.Clear();
-        Show(filter);
+        Show(location, filter);
 
         Console.WriteLine();
         Console.Write("Press Enter to return...");
         Console.ReadLine();
     }
 
-    public static void Show(Zone? filter)
+    public static void Show(string location, Zone? filter)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-
         DrawBase();
-        PlaceAll(filter);
-
+        PlaceAll(location, filter);
         Render();
         Console.WriteLine(RESET);
-        PrintLegend(filter);
+        PrintLegend(filter, location);
     }
 
-    // --- DRAWING METHODS ---
     private static void Clear(char ch = ' ')
     {
         for (int y = 0; y < H; y++)
             for (int x = 0; x < W; x++)
-            { glyph[y, x] = ch; color[y, x] = 0; }
+                { glyph[y, x] = ch; color[y, x] = 0; }
     }
 
     private static void P(int x, int y, char ch)
@@ -87,12 +84,11 @@ public static class ParkMap
         P(left, bottom, '+');   C(left, bottom, col);
         P(right, bottom, '+');  C(right, bottom, col);
 
-        // Centered label
         string text = label.Length <= width - 2 ? label : label.Substring(0, width - 2);
         int tx = left + 1 + Math.Max(0, ((width - 2) - text.Length) / 2);
         int ty = top + height / 2;
         for (int i = 0; i < text.Length && tx + i < right; i++)
-        { P(tx + i, ty, text[i]); C(tx + i, ty, col); }
+            { P(tx + i, ty, text[i]); C(tx + i, ty, col); }
     }
 
     private static void DrawHLine(int x1, int x2, int y, int col = 90)
@@ -119,45 +115,80 @@ public static class ParkMap
         P(midX, midY, '+'); C(midX, midY, 90);
     }
 
-    private static void PlaceAll(Zone? filter)
+    private static void PlaceAll(string location, Zone? filter)
     {
         int red = 31, blue = 34, green = 32, yellow = 33;
         bool Show(Zone z) => filter == null || filter == z;
 
-        if (Show(Zone.Adventure))
+        if (location.ToLower() == "rotterdam")
         {
-            DrawBox(4, 4, 20, 6, "Thunderbolt", red);
-            DrawBox(27, 4, 20, 6, "Serpent", red);
-            DrawBox(4, 12, 20, 6, "Drop Tower", red);
-            DrawBox(27, 12, 20, 6, "Pizza Place", red);
-            WriteText(6, 2, "Adventure Zone", red);
+            if (Show(Zone.Adventure))
+            {
+                DrawBox(4, 4, 20, 6, "Thunderbolt", red);
+                DrawBox(27, 4, 20, 6, "Serpent", red);
+                DrawBox(4, 12, 20, 6, "Drop Tower", red);
+                DrawBox(27, 12, 20, 6, "Pizza Place", red);
+                WriteText(6, 2, "Adventure Zone", red);
+            }
+            if (Show(Zone.Coastal))
+            {
+                DrawBox(55, 4, 20, 6, "Cyclone", blue);
+                DrawBox(78, 4, 20, 6, "Wildcat", blue);
+                DrawBox(55, 12, 20, 6, "Ferris Wheel", blue);
+                DrawBox(78, 12, 20, 6, "Burger Shack", blue);
+                WriteText(72, 2, "Coastal Zone", blue);
+            }
+            if (Show(Zone.Jungle))
+            {
+                DrawBox(4, 20, 20, 6, "Vortex", green);
+                DrawBox(27, 20, 20, 6, "Dragon", green);
+                DrawBox(4, 28, 20, 6, "Carousel", green);
+                DrawBox(27, 28, 20, 6, "Toilets West", green);
+                WriteText(6, 18, "Jungle Zone", green);
+            }
+            if (Show(Zone.Retro))
+            {
+                DrawBox(55, 20, 20, 6, "Comet", yellow);
+                DrawBox(78, 20, 20, 6, "Riptide", yellow);
+                DrawBox(55, 28, 20, 6, "Bumper Cars", yellow);
+                DrawBox(78, 28, 20, 6, "Toilets East", yellow);
+                WriteText(73, 18, "Retro Zone", yellow);
+            }
         }
-
-        if (Show(Zone.Coastal))
+        else if (location.ToLower() == "amsterdam")
         {
-            DrawBox(55, 4, 20, 6, "Cyclone", blue);
-            DrawBox(78, 4, 20, 6, "Wildcat", blue);
-            DrawBox(55, 12, 20, 6, "Ferris Wheel", blue);
-            DrawBox(78, 12, 20, 6, "Burger Shack", blue);
-            WriteText(72, 2, "Coastal Zone", blue);
-        }
-
-        if (Show(Zone.Jungle))
-        {
-            DrawBox(4, 20, 20, 6, "Vortex", green);
-            DrawBox(27, 20, 20, 6, "Dragon", green);
-            DrawBox(4, 28, 20, 6, "Carousel", green);
-            DrawBox(27, 28, 20, 6, "Toilets West", green);
-            WriteText(6, 18, "Jungle Zone", green);
-        }
-
-        if (Show(Zone.Retro))
-        {
-            DrawBox(55, 20, 20, 6, "Comet", yellow);
-            DrawBox(78, 20, 20, 6, "Riptide", yellow);
-            DrawBox(55, 28, 20, 6, "Bumper Cars", yellow);
-            DrawBox(78, 28, 20, 6, "Toilets East", yellow);
-            WriteText(73, 18, "Retro Zone", yellow);
+            if (Show(Zone.Adventure))
+            {
+                DrawBox(5, 3, 18, 6, "Dragon Fly", red);
+                DrawBox(25, 3, 18, 6, "Spin Tornado", red);
+                DrawBox(5, 11, 18, 6, "Sky Drop", red);
+                DrawBox(25, 11, 18, 6, "Snack Hut", red);
+                WriteText(6, 1, "Adventure Zone", red);
+            }
+            if (Show(Zone.Coastal))
+            {
+                DrawBox(55, 3, 18, 6, "Blue Whirl", blue);
+                DrawBox(75, 3, 18, 6, "Sea Dragon", blue);
+                DrawBox(55, 11, 18, 6, "Mini Ferris", blue);
+                DrawBox(75, 11, 18, 6, "Food Shack", blue);
+                WriteText(72, 1, "Coastal Zone", blue);
+            }
+            if (Show(Zone.Jungle))
+            {
+                DrawBox(5, 20, 18, 6, "Jungle Ride", green);
+                DrawBox(25, 20, 18, 6, "Swinger", green);
+                DrawBox(5, 28, 18, 6, "Mini Carousel", green);
+                DrawBox(25, 28, 18, 6, "Toilets West", green);
+                WriteText(6, 18, "Jungle Zone", green);
+            }
+            if (Show(Zone.Retro))
+            {
+                DrawBox(55, 20, 18, 6, "Retro Coaster", yellow);
+                DrawBox(75, 20, 18, 6, "Old Spinner", yellow);
+                DrawBox(55, 28, 18, 6, "Bumper Cars", yellow);
+                DrawBox(75, 28, 18, 6, "Toilets East", yellow);
+                WriteText(72, 18, "Retro Zone", yellow);
+            }
         }
     }
 
@@ -183,7 +214,7 @@ public static class ParkMap
     private static void WriteText(int x, int y, string text, int col)
     {
         for (int i = 0; i < text.Length && x + i < W - 1; i++)
-        { P(x + i, y, text[i]); C(x + i, y, col); }
+            { P(x + i, y, text[i]); C(x + i, y, col); }
     }
 
     private static void WriteCentered(int y, string text, int col)
@@ -192,9 +223,9 @@ public static class ParkMap
         for (int i = 0; i < text.Length; i++) { P(x + i, y, text[i]); C(x + i, y, col); }
     }
 
-    private static void PrintLegend(Zone? filter)
+    private static void PrintLegend(Zone? filter, string location)
     {
-        Console.WriteLine("Legend:");
+        Console.WriteLine($"Legend – Location: {location}");
         Console.WriteLine("\u001b[90m#,-,|,+\u001b[0m Walkways");
         Console.WriteLine("\u001b[31mRed   \u001b[0m Adventure Zone");
         Console.WriteLine("\u001b[34mBlue  \u001b[0m Coastal Zone");
@@ -215,5 +246,23 @@ public static class ParkMap
         if (s.StartsWith("jun")) return Zone.Jungle;
         if (s.StartsWith("ret")) return Zone.Retro;
         return null;
+    }
+
+    public static void ShowMap()
+    {
+        Console.Clear();
+        Console.WriteLine("Select park location:");
+        Console.WriteLine("1) Diddyland Rotterdam");
+        Console.WriteLine("2) Diddyland Amsterdam");
+        Console.Write("\nEnter choice: ");
+
+        string? input = Console.ReadLine();
+        string location = input switch
+        {
+            "2" => "Amsterdam",
+            _ => "Rotterdam"
+        };
+
+        ShowInteractive(location);
     }
 }

@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-
 public static class ComplaintLogic
 {
-    public static void SubmitComplaint(string username, string category, string description)
+    public static void SubmitComplaint(string username, string category, string description, string location)
     {
         int nextId = ComplaintsAccess.NextId();
 
@@ -13,20 +10,21 @@ public static class ComplaintLogic
             category,
             description,
             DateTime.Now,
-            "Open"
+            "Open",
+            location
         );
 
         ComplaintsAccess.Write(complaint);
     }
 
-    public static List<ComplaintModel> GetAllComplaints()
+    public static List<ComplaintModel> GetAllComplaints(string? location = null)
     {
-        return ComplaintsAccess.GetAll();
+        return ComplaintsAccess.GetAll(location);
     }
 
-    public static List<ComplaintModel> FilterComplaints(string? category = null, string? username = null, string? status = null)
+    public static List<ComplaintModel> FilterComplaints(string? category = null, string? username = null, string? status = null, string? location = null)
     {
-        return ComplaintsAccess.Filter(category, username, status);
+        return ComplaintsAccess.Filter(category, username, status, location);
     }
 
     public static void UpdateStatus(int id, string status)

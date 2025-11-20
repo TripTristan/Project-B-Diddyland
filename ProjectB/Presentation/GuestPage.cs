@@ -24,7 +24,7 @@ static class GuestMenu
             switch (choice)
             {
                 case "1":
-                    ParkMap.ShowInteractive();
+                    ParkMap.ShowMap();
                     break;
 
                 case "2":

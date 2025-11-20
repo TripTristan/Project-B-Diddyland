@@ -46,7 +46,18 @@ static class SuperAdminMenu
                     break;
 
                 case "5":
-                    ParkMap.ShowInteractive();
+                    Console.Clear();
+                    Console.WriteLine("Select park location:");
+                    Console.WriteLine("1) Diddyland Rotterdam");
+                    Console.WriteLine("2) Diddyland Amsterdam");
+                    Console.Write("\nEnter choice: ");
+                    string? input = Console.ReadLine()?.Trim();
+                    string location = input switch
+                    {
+                        "2" => "Amsterdam",
+                        _   => "Rotterdam"
+                    };
+                    ParkMap.ShowInteractive(location);
                     break;
 
                 case "6":
