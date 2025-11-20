@@ -8,8 +8,10 @@ public class ReservationModel
     public decimal OriginalPrice { get; set; }
     public decimal Discount { get; set; }
     public decimal FinalPrice { get; set; }
+    public string Type { get; set; } = "Reservation";
+
     
-    public ReservationModel(string ord, int ses, int qty, UserModel cus, DateTime bok, decimal price, decimal discount, decimal final)
+    public ReservationModel(string ord, int ses, int qty, UserModel cus, DateTime bok, decimal price, decimal discount, decimal final, string type)
     {
         OrderNumber = ord;
         SessionId = ses;
@@ -19,5 +21,7 @@ public class ReservationModel
         OriginalPrice = price;
         Discount = discount;
         FinalPrice = final;
+        Type = type;
     }
+
 }

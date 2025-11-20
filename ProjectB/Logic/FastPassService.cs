@@ -41,7 +41,7 @@ public static class FastPassLogic
         var orderNo = ReservationLogic.GenerateOrderNumber(user);
         var reservation = new ReservationModel(orderNo, sessionId, quantity,
             user ?? new UserModel { Id = 0, Name = "Guest" },
-            DateTime.Now, original, discount, final);
+            DateTime.Now, original, discount, final, "FastPass");
 
         ReservationAccess.AddBooking(reservation);
 

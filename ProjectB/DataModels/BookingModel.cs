@@ -8,4 +8,5 @@ public class BookingModel
     public decimal Discount { get; set; }     
     public decimal FinalPrice { get; set; }    
     public long? CustomerId { get; set; }
+    public string Type { get; set; } = "Reservation"; 
 }

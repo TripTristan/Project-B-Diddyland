@@ -10,8 +10,8 @@ public static class ReservationAccess
     public static void AddBooking(ReservationModel booking)
     {
         string sql =
-            $"INSERT INTO {Table} (OrderNumber, SessionID, Quantity, CustomerId, BookingDate, OriginalPrice, Discount, FinalPrice) " +
-            "VALUES (@OrderNumber, @SessionId, @Quantity, @CustomerID, @BookingDate, @OriginalPrice, @Discount, @FinalPrice);";
+            $"INSERT INTO {Table} (OrderNumber, SessionID, Quantity, CustomerId, BookingDate, OriginalPrice, Discount, FinalPrice, Type) " +
+            "VALUES (@OrderNumber, @SessionId, @Quantity, @CustomerID, @BookingDate, @OriginalPrice, @Discount, @FinalPrice, @Type);";
 
         DBC.Connection.Execute(sql, booking);
         Console.WriteLine($"[DB] Added ticket for {UserAccess.GetNameById(booking.CustomerID) ?? "Guest"} ({booking.OrderNumber})");

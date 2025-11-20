@@ -8,49 +8,45 @@ public static class BookingHistoryUI
     {
         Console.WriteLine("=== My Bookings ===");
 
-        var tree = BookingHistoryLogic.GetUserBookingsGroupedByYearMonth(username);
+        Console.WriteLine("\nFilter your bookings:");
+        Console.WriteLine("  1) Show ALL bookings");
+        Console.WriteLine("  2) Only Reservations");
+        Console.WriteLine("  3) Only FastPass");
+        Console.Write("\nChoose an option: ");
 
-        if (tree == null || !tree.Any())
+        string? choice = Console.ReadLine()?.Trim();
+
+        Func<BookingModel, bool> filter = choice switch
         {
-            var raw = BookingHistoryLogic.GetUserBookingsRaw(username);
-            if (raw == null || raw.Count == 0)
-            {
-                Console.WriteLine("No bookings found.");
-                return;
-            }
+            "2" => b => b.Type == "Reservation",
+            "3" => b => b.Type == "FastPass",
+            _   => b => true
+        };
 
-            foreach (var b in raw.OrderBy(b => b.OrderNumber))
-            {
-                PrintBooking(b);
-            }
+        var bookings = BookingHistoryLogic
+                        .GetUserBookingsRaw(username)
+                        .Where(filter)
+                        .OrderBy(b => b.OrderNumber)
+                        .ToList();
+
+        if (bookings.Count == 0)
+        {
+            Console.WriteLine("No bookings found for this filter.");
             return;
         }
 
-        foreach (var yearGroup in tree)
+        foreach (var b in bookings)
         {
-            Console.WriteLine($"\n【{yearGroup.Key} Year】");
-            foreach (var monthGroup in yearGroup.OrderBy(mg => mg.Key))
-            {
-                var monthName = CultureInfo.GetCultureInfo("en-US").DateTimeFormat.GetMonthName(monthGroup.Key);
-                Console.WriteLine($"  -- {monthName} --");
-
-                foreach (var b in monthGroup.OrderBy(bm => bm.OrderNumber))
-                {
-                    PrintBooking(b);
-                }
-            }
+            PrintBooking(b);
         }
     }
 
     private static void PrintBooking(BookingModel b)
     {
-        string bookingDateFormatted = "";
-
-        if (DateTime.TryParse(b.BookingDate, out var bookingDt))
-            bookingDateFormatted = bookingDt.ToString("dd-MM-yyyy HH:mm");
-        else
-            bookingDateFormatted = b.BookingDate;
-
+        string bookingDateFormatted =
+            DateTime.TryParse(b.BookingDate, out var bookingDt)
+            ? bookingDt.ToString("dd-MM-yyyy HH:mm")
+            : b.BookingDate;
 
         var session = SessionAccess.GetSessionById(b.SessionId);
 
@@ -58,8 +54,6 @@ public static class BookingHistoryUI
 
         if (session != null)
         {
-            string combined = $"{session.Date} {session.Time}";
-
             if (DateTime.TryParseExact(
                     session.Date,
                     "yyyy-MM-dd",
@@ -67,22 +61,34 @@ public static class BookingHistoryUI
                     DateTimeStyles.None,
                     out var sessionDate))
             {
-                sessionDateFormatted = sessionDate.ToString("dd-MM-yyyy") + " " + session.Time;
+                sessionDateFormatted =
+                    $"{sessionDate:dd-MM-yyyy} {session.Time}";
             }
             else
             {
-                sessionDateFormatted = session.Date + " " + session.Time;
+                sessionDateFormatted = $"{session.Date} {session.Time}";
             }
         }
 
+        Console.WriteLine("\n------------------------------------------------");
+
         Console.WriteLine($"Order Number : {b.OrderNumber}");
+        Console.WriteLine($"Type         : {b.Type}");
         Console.WriteLine($"Quantity     : {b.Quantity}");
         Console.WriteLine($"Booked On    : {bookingDateFormatted}");
+
+        if (b.Type == "FastPass" && session != null)
+        {
+            var attraction = AttractiesAccess.GetById(session.AttractionID);
+            string name = attraction?.Name ?? $"Attraction #{session.AttractionID}";
+            Console.WriteLine($"Attraction   : {name}");
+        }
+
         Console.WriteLine($"Session Time : {sessionDateFormatted}");
         Console.WriteLine($"Final Price  : {b.FinalPrice:C}");
+
         Console.WriteLine("------------------------------------------------\n");
     }
-
 
     private static string FormatCurrencyOrRaw(string value)
     {

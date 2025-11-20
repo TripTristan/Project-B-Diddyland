@@ -29,7 +29,7 @@ public static class ReservationLogic
         var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
 
         // persist ticket
-        ReservationModel booking = new(orderNumber, sessionId, qty, customer, DateTime.Now,  basePrice, discount, finalPrice);
+        ReservationModel booking = new(orderNumber, sessionId, qty, customer, DateTime.Now,  basePrice, discount, finalPrice, "Reservation");
 
         ReservationAccess.AddBooking(booking);
 
