@@ -7,7 +7,6 @@ public class ComplaintModel
     public DateTime CreatedAt { get; set; }
     public string Status { get; set; } = "Open";
 
-    public ComplaintModel() { }
 
     public ComplaintModel(int id, string username, string category, string description, DateTime createdAt, string status)
     {

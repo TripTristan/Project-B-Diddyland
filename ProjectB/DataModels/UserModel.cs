@@ -12,7 +12,6 @@ public class UserModel
     public UserLevel Level { get; set; } = UserLevel.Regular;
     public int Role { get; set; }
 
-    public UserModel() { }
 
     public UserModel(int id, string name, string email, string dateOfBirth, int height, string phone, string password)
     {

@@ -10,7 +10,6 @@ public class Session
     public int CurrentBookings { get; set; }
     public bool IsActive { get; set; }
 
-    public Session() { }
 
     public Session(string nr, 
                     string date, 
