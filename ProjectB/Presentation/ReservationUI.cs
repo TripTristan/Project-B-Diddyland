@@ -175,58 +175,54 @@
 
 
 
-        public static void SelectAndProcessSession(List<Session> sessions) 
+        public static void SelectAndProcessSession(List<Session> sessions)
         {
             var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
-            Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> quantity
+            Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> ages
+
             int dateChoice = GetDateChoice(groupedByDate);
             var sessionsOnDate = groupedByDate[dateChoice].ToList();
 
             ShowSessionsByDate(groupedByDate, dateChoice);
             int sessionChoice = GetSessionChoice(sessionsOnDate);
+
             Session selectedSession = sessionsOnDate[sessionChoice];
             int bookingQuantity = GetBookingQuantity(selectedSession);
 
-            while (true)
+            // Collect ages
+            List<int> ages = new();
+            while (ages.Count < bookingQuantity)
             {
-                List<int> ages = new();
-                // age for every ticket
-                // for (int i = 0; i < bookingQuantity; i++)
-                // {
-                while (ages.Count < bookingQuantity)
-                {
-                    Console.Write($"Enter age for ticket {ages.Count + 1}: ");
-                    if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
-                        ages.Add(age);
-
-                    else
-                    {
-                        Console.WriteLine("Invalid input. Please try again.");
-                    }
-                }
-            // }
+                Console.Write($"Enter age for ticket {ages.Count + 1}: ");
+                if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
+                    ages.Add(age);
+                else
+                    Console.WriteLine("Invalid input. Please try again.");
+            }
 
             bookingSelections[selectedSession.Id] = ages;
 
-                // bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
-                // if (!another) 
-                break;
-            }
-
-
+            // Confirm booking
             bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
-        if (confirm)
-        {
-            string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
-            decimal totalPrice = 0; // for discount calculation
-
-            foreach (int age in bookingSelections[selectedSession.Id])
+            if (!confirm)
             {
-                Console.WriteLine("part1");
-                decimal singlePrice = ReservationLogic.CreateSingleTicketBooking(selectedSession.Id, age, _customerInfo, orderNumber, bookingQuantity);
-                totalPrice += singlePrice;
+                Console.WriteLine("Reservation cancelled.");
+                return;
             }
 
+            string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
+
+            int representativeAge = ages[0];  // use first age for discount calculation
+
+            decimal totalPrice = ReservationLogic.CreateSingleTicketBooking(
+                selectedSession.Id,
+                representativeAge,
+                _customerInfo,
+                orderNumber,
+                bookingQuantity
+            );
+
+            // Show details
             ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
 
             bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
@@ -239,18 +235,9 @@
             else
             {
                 Console.WriteLine("Payment cancelled. Your reservation is not confirmed.");
-
             }
-            ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
+        }
 
-        }
-        else
-        {
-            Console.WriteLine("Reservation cancelled.");
-            // go back to main menu // Maybe
-            return;
-        }
-        }
 
 
         public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)

@@ -15,7 +15,7 @@ public class ReservationModel
         SessionId = ses;
         Quantity = qty;
         CustomerID = cus.Id;
-        BookingDate = bok.ToString("ddMMyyyy-HHmm");
+        BookingDate = bok.ToString("yyyy-MM-dd HH:mm:ss");
         OriginalPrice = price;
         Discount = discount;
         FinalPrice = final;

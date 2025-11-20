@@ -19,7 +19,6 @@ public static class BookingHistoryUI
                 return;
             }
 
-            Console.WriteLine("(Some bookings have no readable date; showing an ungrouped list.)\n");
             foreach (var b in raw.OrderBy(b => b.OrderNumber))
             {
                 PrintBooking(b);
@@ -45,44 +44,45 @@ public static class BookingHistoryUI
 
     private static void PrintBooking(BookingModel b)
     {
-        // Use OriginalPrice as the booking date (temporary fix)
-        string formattedDate = FormatDateFromOriginalPrice(b.OriginalPrice);
+        string bookingDateFormatted = "";
 
-        Console.WriteLine($"Order Number : {b.OrderNumber}");
-        Console.WriteLine($"Quantity     : {b.Quantity}");
-        Console.WriteLine($"Booking Date : {formattedDate}");
-        Console.WriteLine($"Final        : {FormatCurrencyOrRaw(b.Discount)}");
-        Console.WriteLine("------------------------------------------------\n");
-    }
+        if (DateTime.TryParse(b.BookingDate, out var bookingDt))
+            bookingDateFormatted = bookingDt.ToString("dd-MM-yyyy HH:mm");
+        else
+            bookingDateFormatted = b.BookingDate;
 
-    private static string FormatDateFromOriginalPrice(string raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw))
-            return "";
 
-        // Remove any hyphen and whitespace
-        raw = raw.Replace("-", "").Trim();
+        var session = SessionAccess.GetSessionById(b.SessionId);
 
-        // Expected pattern: ddMMyyyyHHmm or ddMMyyyy
-        if (raw.Length >= 8)
+        string sessionDateFormatted = "Unknown session";
+
+        if (session != null)
         {
-            try
+            string combined = $"{session.Date} {session.Time}";
+
+            if (DateTime.TryParseExact(
+                    session.Date,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var sessionDate))
             {
-                string day = raw.Substring(0, 2);
-                string month = raw.Substring(2, 2);
-                string year = raw.Substring(4, 4);
-                // Format as yyyy-MM-dd
-                return $"{year}-{month}-{day}";
+                sessionDateFormatted = sessionDate.ToString("dd-MM-yyyy") + " " + session.Time;
             }
-            catch
+            else
             {
-                // fallback: return as-is if substring fails
-                return raw;
+                sessionDateFormatted = session.Date + " " + session.Time;
             }
         }
 
-        return raw;
+        Console.WriteLine($"Order Number : {b.OrderNumber}");
+        Console.WriteLine($"Quantity     : {b.Quantity}");
+        Console.WriteLine($"Booked On    : {bookingDateFormatted}");
+        Console.WriteLine($"Session Time : {sessionDateFormatted}");
+        Console.WriteLine($"Final Price  : {b.FinalPrice:C}");
+        Console.WriteLine("------------------------------------------------\n");
     }
+
 
     private static string FormatCurrencyOrRaw(string value)
     {
