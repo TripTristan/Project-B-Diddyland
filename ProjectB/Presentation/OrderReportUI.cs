@@ -13,8 +13,9 @@ public static class OrderReportUI
         int day = ReadInt("Day (1-31, 0 = whole month): ", d => d >= 0 && d <= 31);
 
         var rows = ReportLogic.GetOrderReport(year, month, day);
+        var data = rows.ToArray();
 
-        if (rows.Count == 0)
+        if (data.Length == 0)
         {
             Console.WriteLine();
             Console.WriteLine("No bookings found for this period.");
@@ -22,8 +23,8 @@ public static class OrderReportUI
             return;
         }
 
-        PrintSummary(rows);
-        PrintTable(rows);
+        PrintSummary(data);
+        PrintTable(data);
 
         UiHelpers.Pause();
     }
@@ -40,9 +41,9 @@ public static class OrderReportUI
         }
     }
 
-    private static void PrintSummary(List<OrderReportRow> rows)
+    private static void PrintSummary(OrderReportRow[] rows)
     {
-        int totalBookings = rows.Count;
+        int totalBookings = rows.Length;
         int totalTickets = 0;
         decimal totalOriginal = 0m;
         decimal totalFinal = 0m;
@@ -63,7 +64,7 @@ public static class OrderReportUI
         Console.WriteLine();
     }
 
-    private static void PrintTable(List<OrderReportRow> rows)
+    private static void PrintTable(OrderReportRow[] rows)
     {
         Console.WriteLine("Date       Time   OrderNumber                 CustId  SessId  Qty  Final");
         Console.WriteLine("----------------------------------------------------------------------------");
