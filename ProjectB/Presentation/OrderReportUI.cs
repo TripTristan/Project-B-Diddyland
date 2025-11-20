@@ -8,11 +8,69 @@ public static class OrderReportUI
         Console.Clear();
         UiHelpers.WriteHeader("Order Reports (Super Admin)");
 
-        int year = ReadInt("Year (e.g. 2025): ", y => y >= 2000 && y <= 2100);
-        int month = ReadInt("Month (1-12, 0 = all months): ", m => m >= 0 && m <= 12);
-        int day = ReadInt("Day (1-31, 0 = whole month): ", d => d >= 0 && d <= 31);
+        var today = DateTime.Today;
+
+        Console.WriteLine("Select report type:");
+        Console.WriteLine("1) Yearly report");
+        Console.WriteLine("2) Monthly report");
+        Console.WriteLine("3) Daily report");
+        Console.WriteLine();
+
+        int type;
+        while (true)
+        {
+            Console.Write("Choice (1-3): ");
+            var input = Console.ReadLine();
+            if (int.TryParse(input, out type) && type >= 1 && type <= 3)
+                break;
+            Console.WriteLine("Invalid value. Please enter 1, 2 or 3.");
+        }
+
+        int year;
+        while (true)
+        {
+            Console.Write("Year (e.g. 2025): ");
+            var input = Console.ReadLine();
+            if (int.TryParse(input, out year) && year >= 2000 && year <= today.Year)
+                break;
+            Console.WriteLine($"Invalid year. Please enter a value between 2000 and {today.Year}.");
+        }
+
+        int month = 0;
+        int day = 0;
+
+        if (type >= 2)
+        {
+            while (true)
+            {
+                int maxMonth = (year == today.Year) ? today.Month : 12;
+                Console.Write($"Month (1-{maxMonth}): ");
+                var input = Console.ReadLine();
+                if (int.TryParse(input, out month) && month >= 1 && month <= maxMonth)
+                    break;
+                Console.WriteLine($"Invalid month. Please enter a value between 1 and {maxMonth}.");
+            }
+        }
+
+        if (type == 3)
+        {
+            while (true)
+            {
+                int maxDayInMonth = DateTime.DaysInMonth(year, month);
+                int maxDay = (year == today.Year && month == today.Month)
+                    ? Math.Min(maxDayInMonth, today.Day)
+                    : maxDayInMonth;
+                Console.Write($"Day (1-{maxDay}): ");
+                var input = Console.ReadLine();
+                if (int.TryParse(input, out day) && day >= 1 && day <= maxDay)
+                    break;
+                Console.WriteLine("Invalid day. Please enter a valid day for the selected month.");
+            }
+        }
 
         var rows = ReportLogic.GetOrderReport(year, month, day);
+
+        // Aarry {} //display // normale List
         var data = rows.ToArray();
 
         if (data.Length == 0)
@@ -29,18 +87,7 @@ public static class OrderReportUI
         UiHelpers.Pause();
     }
 
-    private static int ReadInt(string prompt, Func<int, bool> isValid)
-    {
-        while (true)
-        {
-            Console.Write(prompt);
-            var input = Console.ReadLine();
-            if (int.TryParse(input, out int value) && isValid(value))
-                return value;
-            Console.WriteLine("Invalid value.");
-        }
-    }
-
+    // Aarry {} //display // normale List
     private static void PrintSummary(OrderReportRow[] rows)
     {
         int totalBookings = rows.Length;
