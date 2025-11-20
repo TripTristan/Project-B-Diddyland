@@ -256,7 +256,7 @@ public static class AdminComplaintsPage
 
     private static void DeleteComplaint(string location)
     {
-        ViewAll();
+        ViewAll(location);
         Console.Write("Enter complaint ID to delete: ");
         if (int.TryParse(Console.ReadLine(), out int id))
         {

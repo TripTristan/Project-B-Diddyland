@@ -109,12 +109,20 @@ For larger complaints, you can contact us via:
 
     public static void ShowHandledMessages()
     {
-        ShowPendingMessages();
-        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
 
+        string? username = LoginStatus.CurrentUserInfo?.Username;
+
+        if (username == null || username == "Guest")
+        {
+            Console.WriteLine("Guests dont recieve messages.");
+            return;
+        }
+
+        ShowPendingMessages();
         var handledComplaints = ComplaintLogic.GetByUserAndStatus(username, "Handled");
 
-        if (!handledComplaints.Any()) return;
+        if (!handledComplaints.Any()) 
+            return;
 
         Console.WriteLine("You have some complaints that have been handled:\n");
 
