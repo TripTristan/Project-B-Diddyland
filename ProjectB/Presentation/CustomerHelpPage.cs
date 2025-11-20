@@ -35,13 +35,32 @@ public static class CustomerHelpPage
 
             actions[choice - 1].Invoke();
 
+            string[] locations =
+            {
+                "DiddyLand - Amsterdam",
+                "DiddyLand - Rotterdam"
+            };
+
+            Console.WriteLine("\nSelect park location:");
+            for (int i = 0; i < locations.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}. {locations[i]}");
+            }
+
+            Console.Write("\nEnter location number: ");
+            string locInput = Console.ReadLine();
+            int locChoice = int.TryParse(locInput, out int locNum) ? locNum : 1;
+            if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
+
+            string location = locations[locChoice - 1];
+
             Console.WriteLine("\nPlease describe your complaint below:");
             string description = Console.ReadLine();
 
             string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
             string category = menuOptions[choice - 1];
 
-            ComplaintLogic.SubmitComplaint(username, category, description);
+            ComplaintLogic.SubmitComplaint(username, category, description, location);
 
             Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
             Console.WriteLine("We appreciate your feedback and will work to improve.\n");
