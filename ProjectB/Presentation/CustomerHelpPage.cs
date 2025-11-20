@@ -35,13 +35,32 @@ public static class CustomerHelpPage
 
             actions[choice - 1].Invoke();
 
+            string[] locations =
+            {
+                "DiddyLand - Amsterdam",
+                "DiddyLand - Rotterdam"
+            };
+
+            Console.WriteLine("\nSelect park location:");
+            for (int i = 0; i < locations.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}. {locations[i]}");
+            }
+
+            Console.Write("\nEnter location number: ");
+            string locInput = Console.ReadLine();
+            int locChoice = int.TryParse(locInput, out int locNum) ? locNum : 1;
+            if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
+
+            string location = locations[locChoice - 1];
+
             Console.WriteLine("\nPlease describe your complaint below:");
             string description = Console.ReadLine();
 
             string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
             string category = menuOptions[choice - 1];
 
-            ComplaintLogic.SubmitComplaint(username, category, description);
+            ComplaintLogic.SubmitComplaint(username, category, description, location);
 
             Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
             Console.WriteLine("We appreciate your feedback and will work to improve.\n");
@@ -86,5 +105,47 @@ public static class CustomerHelpPage
             • E-mail: bob.bob@diddyland.com
             • SMS: +31 0181 982513
             • Mail: 6767FN Tripisgeweldigstraat 95");
+    }
+
+    public static void ShowHandledMessages()
+    {
+
+        string? username = LoginStatus.CurrentUserInfo?.Username;
+
+        if (username == null || username == "Guest")
+        {
+            Console.WriteLine("Guests dont recieve messages.");
+            return;
+        }
+
+        ShowPendingMessages();
+        var handledComplaints = ComplaintLogic.GetByUserAndStatus(username, "Handled");
+
+        if (!handledComplaints.Any()) 
+            return;
+
+        Console.WriteLine("You have some complaints that have been handled:\n");
+
+        foreach (var c in handledComplaints)
+        {
+            Console.WriteLine($"• {c.Description}");
+            Console.WriteLine("✅ This complaint has been handled by our staff.\n");
+        }
+    }
+
+    public static void ShowPendingMessages()
+    {
+        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        var pendingComplaints = ComplaintLogic.GetPendingByUser(username);
+
+        if (!pendingComplaints.Any()) return;
+
+        Console.WriteLine("You have pending complaints:\n");
+
+        foreach (var c in pendingComplaints)
+        {
+            Console.WriteLine($"• {c.Description}");
+            Console.WriteLine("⏳ This complaint is still pending.\n");
+        }
     }
 }

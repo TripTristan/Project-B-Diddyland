@@ -8,12 +8,13 @@ public static class AttractiesAccess
     {
         try
         {
-            if (DBC.Connection.State != System.Data.ConnectionState.Open)
-                DBC.Connection.Open();
-
-            const string sql = @"INSERT INTO Attractie (Name, Type, MinHeightInCM, Capacity)
-                                VALUES (@Name, @Type, @MinHeightInCM, @Capacity)";
-            DBC.Connection.Execute(sql, attractie);
+            using (var connection = DBC.Connection)
+            {
+                connection.Open();
+                const string sql = @"INSERT INTO Attractie (Name, Type, MinHeightInCM, Capacity, Location)
+                                     VALUES (@Name, @Type, @MinHeightInCM, @Capacity, @Location)";
+                connection.Execute(sql, attractie);
+            }
         }
         catch (Exception ex)
         {
@@ -27,15 +28,18 @@ public static class AttractiesAccess
         }
     }
 
-    public static IEnumerable<AttractieModel> GetAll()
+    public static IEnumerable<AttractieModel> GetAll(string? location = null)
     {
         try
         {
             if (DBC.Connection.State != System.Data.ConnectionState.Open)
                 DBC.Connection.Open();
 
-            const string sql = "SELECT * FROM Attractie";
-            return DBC.Connection.Query<AttractieModel>(sql);
+            string sql = "SELECT * FROM Attractie";
+            if (!string.IsNullOrEmpty(location))
+                sql += " WHERE Location = @Location";
+            return DBC.Connection.Query<AttractieModel>(sql, new { Location = location });
+
         }
         finally
         {
@@ -69,7 +73,7 @@ public static class AttractiesAccess
                 DBC.Connection.Open();
 
             const string sql = @"UPDATE Attractie
-                                 SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity
+                                 SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity, Location = @Location
                                  WHERE ID = @ID";
             DBC.Connection.Execute(sql, attractie);
         }
@@ -96,5 +100,4 @@ public static class AttractiesAccess
                 DBC.Connection.Close();
         }
     }
-
 }

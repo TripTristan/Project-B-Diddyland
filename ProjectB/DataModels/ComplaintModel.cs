@@ -6,9 +6,10 @@ public class ComplaintModel
     public string Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public string Status { get; set; } = "Open";
+    public string Location { get; set; }
 
 
-    public ComplaintModel(int id, string username, string category, string description, DateTime createdAt, string status)
+    public ComplaintModel(int id, string username, string category, string description, DateTime createdAt, string status, string location)
     {
         Id = id;
         Username = username;
@@ -16,5 +17,6 @@ public class ComplaintModel
         Description = description;
         CreatedAt = createdAt;
         Status = status;
+        Location = location;
     }
 }

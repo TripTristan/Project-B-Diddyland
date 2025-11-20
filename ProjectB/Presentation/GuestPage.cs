@@ -15,7 +15,8 @@ static class GuestMenu
             Console.WriteLine("5) Profile");
             Console.WriteLine("6) Booking History");
             Console.WriteLine("7) Customer Complaints");
-            Console.WriteLine("8) Logout");
+            Console.WriteLine("8) Inbox");
+            Console.WriteLine("9) Logout");
             Console.WriteLine();
 
             Console.Write("Choose an option: ");
@@ -24,7 +25,7 @@ static class GuestMenu
             switch (choice)
             {
                 case "1":
-                    ParkMap.ShowInteractive();
+                    ParkMap.ShowMap();
                     break;
 
                 case "2":
@@ -57,6 +58,11 @@ static class GuestMenu
                     break;
 
                 case "8":
+                    CustomerHelpPage.ShowHandledMessages();
+                    UiHelpers.Pause();
+                    break;
+
+                case "9":
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
                     return;

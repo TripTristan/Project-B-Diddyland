@@ -12,8 +12,8 @@ public static class ComplaintsAccess
             if (DBC.Connection.State != System.Data.ConnectionState.Open)
                 DBC.Connection.Open();
 
-            string sql = "INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status) " +
-                         "VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status);";
+            string sql = "INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status , Location) " +
+                         "VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status, @Location);";
             DBC.Connection.Execute(sql, complaint);
         }
         finally
@@ -23,15 +23,17 @@ public static class ComplaintsAccess
         }
     }
 
-    public static List<ComplaintModel> GetAll()
+    public static List<ComplaintModel> GetAll(string? location = null)
     {
         try
         {
-            if (DBC.Connection.State != System.Data.ConnectionState.Open)
-                DBC.Connection.Open();
-
+            DBC.Connection.Open();
             string sql = "SELECT * FROM Complaints ORDER BY CreatedAt DESC;";
-            List<ComplaintModel> result = DBC.Connection.Query<ComplaintModel>(sql).AsList();
+            if (!string.IsNullOrEmpty(location))
+                sql += " WHERE Location = @Location";
+            sql += " ORDER BY CreatedAt DESC;";
+
+            List<ComplaintModel> result = DBC.Connection.Query<ComplaintModel>(sql, new { Location = location }).AsList();
             return result;
         }
         finally
@@ -54,7 +56,6 @@ public static class ComplaintsAccess
         }
         catch (Exception e)
         {
-            Console.WriteLine("Error getting next ID: " + e.Message);
             return 1;
         }
         finally
@@ -64,7 +65,7 @@ public static class ComplaintsAccess
         }
     }
 
-    public static List<ComplaintModel> Filter(string? category = null, string? username = null, string? status = null)
+    public static List<ComplaintModel> Filter(string? category = null, string? username = null, string? status = null, string? location = null)
     {
         try
         {
@@ -82,11 +83,14 @@ public static class ComplaintsAccess
             if (!string.IsNullOrEmpty(status))
                 sql += " AND Status = @Status";
 
+            if (!string.IsNullOrEmpty(location))
+                sql += " AND Location = @Location";
+
             sql += " ORDER BY CreatedAt DESC;";
 
             List<ComplaintModel> result = DBC.Connection.Query<ComplaintModel>(
                 sql,
-                new { Category = category, Username = username, Status = status }
+                new { Category = category, Username = username, Status = status, Location = location }
             ).AsList();
 
             return result;
