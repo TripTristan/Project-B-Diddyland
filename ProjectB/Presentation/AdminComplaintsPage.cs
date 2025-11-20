@@ -214,21 +214,49 @@ public static class AdminComplaintsPage
 
     private static void MarkHandled(string location)
     {
+        List<ComplaintModel> openComplaints = ComplaintsAccess.Filter(location: location, status: "Open");
+
+        if (openComplaints.Count == 0)
+        {
+            Console.WriteLine("No open complaints to handle.");
+            UiHelpers.Pause();
+            return;
+        }
+
+        Console.Clear();
+        UiHelpers.WriteHeader("Open Complaints");
+        foreach (var c in openComplaints)
+        {
+            Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category} - {c.Status}");
+            Console.WriteLine($"    {c.Description}");
+            Console.WriteLine();
+        }
+
         Console.Write("Enter complaint ID to mark as handled: ");
         if (int.TryParse(Console.ReadLine(), out int id))
         {
-            ComplaintsAccess.UpdateStatus(id, "Handled");
-            Console.WriteLine("✅ Complaint marked as handled.");
+            if (!openComplaints.Any(c => c.Id == id))
+            {
+                Console.WriteLine("Invalid ID or complaint already handled.");
+            }
+            else
+            {
+                ComplaintsAccess.UpdateStatus(id, "Handled");
+                Console.WriteLine("✅ Complaint marked as handled.");
+            }
         }
         else
         {
             Console.WriteLine("Invalid ID.");
         }
+
         UiHelpers.Pause();
     }
 
+
     private static void DeleteComplaint(string location)
     {
+        ViewAll();
         Console.Write("Enter complaint ID to delete: ");
         if (int.TryParse(Console.ReadLine(), out int id))
         {

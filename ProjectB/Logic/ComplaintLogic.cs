@@ -36,4 +36,14 @@ public static class ComplaintLogic
     {
         ComplaintsAccess.Delete(id);
     }
+
+    public static IEnumerable<ComplaintModel> GetByUserAndStatus(string username, string status)
+    {
+        return ComplaintsAccess.Filter(username: username, status: status);
+    }
+
+    public static IEnumerable<ComplaintModel> GetPendingByUser(string username)
+    {
+        return ComplaintsAccess.Filter(username: username, status: "Open");
+    }
 }

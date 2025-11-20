@@ -106,4 +106,38 @@ For larger complaints, you can contact us via:
   • SMS: +31 0181 982513
   • Mail: 6767FN Tripisgeweldigstraat 95");
     }
+
+    public static void ShowHandledMessages()
+    {
+        ShowPendingMessages();
+        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+
+        var handledComplaints = ComplaintLogic.GetByUserAndStatus(username, "Handled");
+
+        if (!handledComplaints.Any()) return;
+
+        Console.WriteLine("You have some complaints that have been handled:\n");
+
+        foreach (var c in handledComplaints)
+        {
+            Console.WriteLine($"• {c.Description}");
+            Console.WriteLine("✅ This complaint has been handled by our staff.\n");
+        }
+    }
+
+    public static void ShowPendingMessages()
+    {
+        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        var pendingComplaints = ComplaintLogic.GetPendingByUser(username);
+
+        if (!pendingComplaints.Any()) return;
+
+        Console.WriteLine("You have pending complaints:\n");
+
+        foreach (var c in pendingComplaints)
+        {
+            Console.WriteLine($"• {c.Description}");
+            Console.WriteLine("⏳ This complaint is still pending.\n");
+        }
+    }
 }
