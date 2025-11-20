@@ -250,19 +250,30 @@ public static class ParkMap
 
     public static void ShowMap()
     {
-        Console.Clear();
-        Console.WriteLine("Select park location:");
-        Console.WriteLine("1) Diddyland Rotterdam");
-        Console.WriteLine("2) Diddyland Amsterdam");
-        Console.Write("\nEnter choice: ");
-
-        string? input = Console.ReadLine();
-        string location = input switch
+        while (true)
         {
-            "2" => "Amsterdam",
-            _ => "Rotterdam"
-        };
+            Console.Clear();
+            Console.WriteLine("Select park location:");
+            Console.WriteLine("1) Diddyland Rotterdam");
+            Console.WriteLine("2) Diddyland Amsterdam");
+            Console.Write("\nEnter choice: ");
 
-        ShowInteractive(location);
+            string? input = Console.ReadLine()?.Trim();
+
+            if (input == "1")
+            {
+                ShowInteractive("Rotterdam");
+                return;
+            }
+            else if (input == "2")
+            {
+                ShowInteractive("Amsterdam");
+                return;
+            }
+
+            Console.WriteLine("\nInvalid input. Please enter 1 or 2.");
+            Console.WriteLine("Press Enter to try again...");
+            Console.ReadLine();
+        }
     }
 }

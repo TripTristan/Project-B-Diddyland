@@ -47,16 +47,25 @@ public class AttractieMenu
     private static string ChooseLocation()
     {
         string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
-        Console.WriteLine("Select park location:");
-        for (int i = 0; i < locations.Length; i++)
-            Console.WriteLine($"{i + 1}) {locations[i]}");
 
-        Console.Write("\nEnter choice number: ");
-        string? input = Console.ReadLine();
-        int choice = int.TryParse(input, out int n) ? n : 1;
-        if (choice < 1 || choice > locations.Length) choice = 1;
+        while (true)
+        {
+            Console.WriteLine("Select park location:");
+            for (int i = 0; i < locations.Length; i++)
+                Console.WriteLine($"{i + 1}) {locations[i]}");
 
-        return locations[choice - 1];
+            Console.Write("\nEnter choice number: ");
+            string? input = Console.ReadLine()?.Trim();
+
+            if (int.TryParse(input, out int choice) &&
+                choice >= 1 &&
+                choice <= locations.Length)
+            {
+                return locations[choice - 1];
+            }
+
+            Console.WriteLine("Invalid input. Please enter a number from the list.\n");
+        }
     }
 
     private static void ListAll()
