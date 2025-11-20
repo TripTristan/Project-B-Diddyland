@@ -20,6 +20,7 @@ static class SuperAdminMenu
             Console.WriteLine("6) Manage Admins");
             Console.WriteLine("7) Manage Complaints");
             Console.WriteLine("8) Logout");
+            Console.WriteLine("9) Order reports");
             Console.WriteLine("0) Quit");
             Console.WriteLine();
 
@@ -57,7 +58,9 @@ static class SuperAdminMenu
                     AdminComplaintsPage.Show();
                     break;
                 
-
+                case "9":
+                    OrderReportUI.Run();
+                    break;
                 case "8":
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();

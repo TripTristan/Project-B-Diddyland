@@ -21,7 +21,6 @@ namespace MyProject.BLL
                 .OrderByDescending(o => o.Discount)
                 .ToList();
 
-            // 检查生日免费门票优惠（在应用其他优惠之前）
             bool canUseBirthdayTicket = false;
             if (customer != null && bookingDate.HasValue)
             {
@@ -40,7 +39,7 @@ namespace MyProject.BLL
                 var applied = new List<AppliedOfferDto>();
                 var price = basePrice;
 
-                // 如果是第一张票且可以使用生日免费门票，直接应用100%折扣
+
                 if (canUseBirthdayTicket && !birthdayTicketApplied && details.Count == 0)
                 {
                     applied.Add(new AppliedOfferDto(
@@ -50,7 +49,6 @@ namespace MyProject.BLL
                 }
                 else
                 {
-                    // 应用其他优惠
                     foreach (var offer in applicable)
                     {
                         if (!IsOfferValidForTicket(offer, age, customer, cart.Count)) continue;
