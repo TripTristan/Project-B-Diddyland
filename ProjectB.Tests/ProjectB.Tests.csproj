@@ -10,10 +10,35 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="MSTest" Version="3.6.4" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ProjectB\DataModels\**\*.cs"
+             Exclude="..\ProjectB\DataModels\OfferGroup.cs;
+                      ..\ProjectB\DataModels\OfferVIP.CS;
+                      ..\ProjectB\DataModels\OfferTypes.cs;
+                      ..\ProjectB\DataModels\UserLevel.cs;
+                      ..\ProjectB\DataModels\TicketAttractieModel.cs;
+                      ..\ProjectB\DataModels\OfferPromoCode.cs">
+      <Link>ProjectB\DataModels\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\ProjectB\Logic\**\*.cs">
+      <Link>ProjectB\Logic\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\ProjectB\DataSources\diddyland.db">
+      <Link>DataSources\diddyland.db</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

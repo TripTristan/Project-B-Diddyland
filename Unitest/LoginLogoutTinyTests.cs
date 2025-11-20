@@ -3,13 +3,11 @@ using Xunit;
 
 namespace MyProject.Tests
 {
-    // Moq is a facke Object / if you not want to use a real DB test
     public class LoginLogoutTinyTests
     {
         private readonly Mock<IUserRepository> _userRepo = new();
         private readonly Mock<ISessionService> _session = new();
 
-        /* ---------- Login ---------- */
         [Fact]
         public void L01_WrongPwd_ReturnsNull()
         {
@@ -27,7 +25,7 @@ namespace MyProject.Tests
             Assert.Equal(user, logic.Authenticate("bob", "right"));
         }
 
-        /* ---------- Logout ---------- */
+
         [Fact]
         public void LO01_Logout_ClearsSession()
         {
