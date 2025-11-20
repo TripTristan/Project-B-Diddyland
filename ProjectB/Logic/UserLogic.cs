@@ -68,37 +68,17 @@ public static class UserLogic
     return true;
     }
 
-    public static bool IsDateOfBirthValid(string DOB)
+    public static bool IsDateOfBirthValid(string dob)
     {
-        string[] dob = DOB.Split("-");
-
-        try
-        {
-            int days = Int32.Parse(dob[0]);
-            int months = Int32.Parse(dob[1]);
-            int years = Int32.Parse(dob[2]);
-
-            List<int> longMonths = new() { 1, 3, 5, 7, 8, 10, 12 };
-            if (longMonths.Contains(months) && days <= 31)
-            {
-                return true;
-            }
-            if (months == 2 && days <= 28)
-            {
-                return true;
-            }
-            if (months < 12 && months > 1 && days <= 30)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        catch (Exception e)
-        {
-            return false;
-        }
+        return DateTime.TryParseExact(
+            dob,
+            "dd-MM-yyyy",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out _
+        );
     }
+
 
     public static int DOBtoAGE(string DateOfBirth)
     {
