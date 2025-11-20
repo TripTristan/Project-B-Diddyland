@@ -14,8 +14,6 @@ public static class LoginStatus
         Height = 0,
         Phone = "",
         Password = "",
-        Admin = 0,
-        Role = 0
     };
 
     public static void Login(UserModel user)

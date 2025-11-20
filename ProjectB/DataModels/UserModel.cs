@@ -8,9 +8,8 @@ public class UserModel
     public int Height { get; set; }
     public string Phone { get; set; } = "";
     public string Password { get; set; } = "";
-    public int Admin { get; set; }
     public UserLevel Level { get; set; } = UserLevel.Regular;
-    public int Role { get; set; }
+    public ManagementRol Rol{ get; set; } = ManagementRol.User;
 
 
     public UserModel(int id, string name, string email, string dateOfBirth, int height, string phone, string password)
@@ -23,8 +22,6 @@ public class UserModel
         Height = height;
         Phone = phone;
         Password = password;
-        Admin = 0;
-        Level = UserLevel.Regular;
     }
 }
 

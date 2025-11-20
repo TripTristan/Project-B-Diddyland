@@ -55,36 +55,36 @@ public static class CustomerHelpPage
     public static void ComplaintFood()
     {
         Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: quality@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
+            For larger complaints, you can contact us via:
+            • E-mail: quality@diddyland.com
+            • SMS: +31 0181 982513
+            • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
     public static void ComplaintStaff()
     {
         Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: hr@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
+            For larger complaints, you can contact us via:
+            • E-mail: hr@diddyland.com
+            • SMS: +31 0181 982513
+            • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
     public static void ComplaintSafety()
     {
         Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: safetycoach@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
+            For larger complaints, you can contact us via:
+            • E-mail: safetycoach@diddyland.com
+            • SMS: +31 0181 982513
+            • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
     public static void ComplaintOrganization()
     {
         Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: bob.bob@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
+            For larger complaints, you can contact us via:
+            • E-mail: bob.bob@diddyland.com
+            • SMS: +31 0181 982513
+            • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 }
