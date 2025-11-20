@@ -1,25 +1,14 @@
 public static class AttractieLogic
 {
-    public static IEnumerable<AttractieModel> GetAll() => AttractiesAccess.GetAll();
+    public static IEnumerable<AttractieModel> GetAll(string? location = null) => AttractiesAccess.GetAll(location);
+
     public static AttractieModel? Get(int id) => AttractiesAccess.GetById(id);
 
     public static void Add(AttractieModel m)
-{
-    try
     {
         Validate(m);
         AttractiesAccess.Insert(m);
     }
-    catch (Exception ex)
-    {
-        // Log the exception to help with debugging
-        Console.WriteLine($"Error occurred while adding the attraction: {ex.Message}");
-        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-        throw new ApplicationException("An error occurred while adding the attraction.", ex);
-    }
-}
-
-
 
     public static void Update(AttractieModel m)
     {
@@ -44,5 +33,7 @@ public static class AttractieLogic
             throw new ArgumentException("Min height must be between 0 and 300 cm.");
         if (m.Capacity <= 0 || m.Capacity > 100)
             throw new ArgumentException("Capacity must be between 1 and 100.");
+        if (string.IsNullOrWhiteSpace(m.Location))
+            throw new ArgumentException("Location is required.");
     }
 }
