@@ -69,6 +69,9 @@ public static class MenuForm
     {
         Console.Clear();
         Console.WriteLine("=== Add FOOD ===");
+        Console.WriteLine(MenuForm.FormatMenu(MenuLogic.GetAll()));
+        Console.WriteLine();
+        
         var name = PromptNonEmpty("Food name: ");
         var price = PromptPrice("Price (€): ");
 
@@ -80,6 +83,9 @@ public static class MenuForm
     {
         Console.Clear();
         Console.WriteLine("=== Add DRINK ===");
+        Console.WriteLine(MenuForm.FormatMenu(MenuLogic.GetAll()));
+        Console.WriteLine();
+
         var name = PromptNonEmpty("Drink name: ");
         var price = PromptPrice("Price (€): ");
 
@@ -91,6 +97,8 @@ public static class MenuForm
     {
         Console.Clear();
         Console.WriteLine("=== Remove item ===");
+        Console.WriteLine(MenuForm.FormatMenu(MenuLogic.GetAll()));
+        Console.WriteLine();
         var id = PromptInt("Menu ID to remove: ");
 
         var result = MenuLogic.RemoveItem(id);

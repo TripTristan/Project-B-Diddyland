@@ -20,7 +20,17 @@ public static class FastPassUI
         foreach (var a in attractions)
             Console.WriteLine($"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})");
 
-        int attractionId = ReadInt("\nEnter attraction ID: ", id => attractions.Any(a => a.ID == id), "Invalid attraction ID.");
+        Console.WriteLine("\nEnter attraction ID (0 to cancel): ");
+        int attractionId = ReadInt("> ",
+            id => attractions.Any(a => a.ID == id),
+            "Invalid attraction ID.",
+            allowCancel: true);
+
+        if (attractionId == 0)
+        {
+            Console.WriteLine("FastPass cancelled.");
+            return;
+        }
 
         DateTime day = DateTime.Today;
 
@@ -39,9 +49,18 @@ public static class FastPassUI
             Console.WriteLine($"  [{i + 1}] {s.Time}  (Booked: {s.CurrentBookings}/{cap})");
         }
 
-        int index = ReadInt("\nChoose a timeslot (number): ",
-                            n => n >= 1 && n <= available.Count,
-                            "Please choose a valid timeslot number.");
+        Console.WriteLine("\nChoose a timeslot (0 to cancel): ");
+        int index = ReadInt("> ",
+            n => n >= 1 && n <= available.Count,
+            "Please choose a valid timeslot number.",
+            allowCancel: true);
+
+        if (index == 0)
+        {
+            Console.WriteLine("FastPass cancelled.");
+            return;
+        }
+
         var selectedSession = available[index - 1];
 
         int qty = ReadInt("How many tickets?: ", n => n > 0, "Quantity must be a positive number.");
@@ -69,17 +88,23 @@ public static class FastPassUI
         }
     }
 
-    private static int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg)
+    private static int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)
     {
         while (true)
         {
             Console.Write(prompt);
             var input = Console.ReadLine();
+
+            if (input == "0" && allowCancel)
+                return 0; // Cancel request
+
             if (int.TryParse(input, out int val) && isValid(val))
                 return val;
+
             Console.WriteLine(errorMsg);
         }
     }
+
 
     private static DateTime ReadDate(string prompt)
     {

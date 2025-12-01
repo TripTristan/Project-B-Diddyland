@@ -82,13 +82,6 @@ public static class BookingHistoryLogic
                 return fromOrd;
         }
 
-        if (!string.IsNullOrWhiteSpace(b.OriginalPrice))
-        {
-            if (DateTime.TryParseExact(b.OriginalPrice, BookingDateFormats,
-                                       CultureInfo.InvariantCulture, DateTimeStyles.None, out var fromPrice))
-                return fromPrice;
-        }
-
         return null;
     }
 }

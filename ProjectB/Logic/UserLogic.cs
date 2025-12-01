@@ -1,3 +1,5 @@
+using System.Globalization;
+
 public static class UserLogic
 {
     public static bool IsPhoneValid(string phone)
@@ -50,48 +52,35 @@ public static class UserLogic
 
     public static bool IsPasswordValid(string Password)
     {
-        if (Password.Length < 8 ||
-            Password.Length > 16 ||
-            !Password.Any(ch => !char.IsLower(ch)) ||
-            !Password.Any(ch => !char.IsDigit(ch)) ||
-            !Password.Any(ch => !char.IsLetterOrDigit(ch)) ||
-            !Password.Any(ch => !char.IsUpper(ch))
-           )
-            { return false; }
-        return true;
+        if (Password.Length < 8)
+            return false;
+
+        if (!Password.Any(char.IsUpper))
+            return false;
+
+        if (!Password.Any(char.IsLower))
+            return false;
+
+        if (!Password.Any(char.IsDigit))
+            return false;
+
+        if (!Password.Any(ch => !char.IsLetterOrDigit(ch)))
+            return false;
+
+    return true;
     }
 
-    public static bool IsDateOfBirthValid(string DOB)
+    public static bool IsDateOfBirthValid(string dob)
     {
-        string[] dob = DOB.Split("-");
-
-        try
-        {
-            int days = Int32.Parse(dob[0]);
-            int months = Int32.Parse(dob[1]);
-            int years = Int32.Parse(dob[2]);
-
-            List<int> longMonths = new() { 1, 3, 5, 7, 8, 10, 12 };
-            if (longMonths.Contains(months) && days <= 31)
-            {
-                return true;
-            }
-            if (months == 2 && days <= 28)
-            {
-                return true;
-            }
-            if (months < 12 && months > 1 && days <= 30)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        catch (Exception e)
-        {
-            return false;
-        }
+        return DateTime.TryParseExact(
+            dob,
+            "dd-MM-yyyy",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out _
+        );
     }
+
 
     public static int DOBtoAGE(string DateOfBirth)
     {

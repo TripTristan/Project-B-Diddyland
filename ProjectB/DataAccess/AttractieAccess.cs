@@ -11,23 +11,24 @@ public static class AttractiesAccess
             using (var connection = DBC.Connection)
             {
                 connection.Open();
-                const string sql = @"INSERT INTO Attractie (Name, Type, MinHeightInCM, Capacity)
-                                VALUES (@Name, @Type, @MinHeightInCM, @Capacity)";
-                DBC.Connection.Execute(sql, attractie);
+                const string sql = @"INSERT INTO Attractie (Name, Type, MinHeightInCM, Capacity, Location)
+                                     VALUES (@Name, @Type, @MinHeightInCM, @Capacity, @Location)";
+                connection.Execute(sql, attractie);
             }
         }
         catch (Exception ex)
         {
-            // Log any database-related errors
             Console.WriteLine($"Error during insert: {ex.Message}");
             throw;
         }
     }
 
-    public static IEnumerable<AttractieModel> GetAll()
+    public static IEnumerable<AttractieModel> GetAll(string? location = null)
     {
-        const string sql = "SELECT * FROM Attractie";
-        return DBC.Connection.Query<AttractieModel>(sql);
+        string sql = "SELECT * FROM Attractie";
+        if (!string.IsNullOrEmpty(location))
+            sql += " WHERE Location = @Location";
+        return DBC.Connection.Query<AttractieModel>(sql, new { Location = location });
     }
 
     public static AttractieModel? GetById(int id)
@@ -39,7 +40,7 @@ public static class AttractiesAccess
     public static void Update(AttractieModel attractie)
     {
         const string sql = @"UPDATE Attractie
-                             SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity
+                             SET Name = @Name, Type = @Type, MinHeightInCM = @MinHeightInCM, Capacity = @Capacity, Location = @Location
                              WHERE ID = @ID";
         DBC.Connection.Execute(sql, attractie);
     }
@@ -49,5 +50,4 @@ public static class AttractiesAccess
         const string sql = "DELETE FROM Attractie WHERE ID = @ID";
         DBC.Connection.Execute(sql, new { ID = id });
     }
-
 }

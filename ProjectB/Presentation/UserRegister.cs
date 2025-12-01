@@ -1,6 +1,6 @@
 static class UserRegister
 {
-    public static string Register()
+    public static void Register()
     {
         string Name = "";
         string Email = "";
@@ -62,7 +62,7 @@ static class UserRegister
 
         do
         {
-            Console.Write("Please enter a valid password (8–16 chars, symbol, capital letter, small letter, and a number): ");
+            Console.Write("Please enter a valid password (8 chars min., symbol, capital letter, small letter, and a number): ");
             Password = Console.ReadLine();
             if (!UserLogic.IsPasswordValid(Password))
             {
@@ -73,6 +73,7 @@ static class UserRegister
         Console.Clear();
         UserLogic.Register(Name, Email, DateOfBirth, Height, Phone, Password);
 
-        return $"Welcome {Name}!\nYou have successfully registered your account.";
+        Console.WriteLine($"Welcome {Name}!");
+        Console.WriteLine("You have successfully registered your account.");
     }
 }

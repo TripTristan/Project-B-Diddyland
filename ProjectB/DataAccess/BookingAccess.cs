@@ -19,7 +19,8 @@ public static class BookingAccess
                 OriginalPrice     AS OriginalPrice,
                 Discount          AS Discount,
                 FinalPrice        AS FinalPrice,
-                CAST(CustomerId AS INTEGER) AS CustomerId   -- 🔒 force Int64 and alias to exact prop name
+                CAST(CustomerId AS INTEGER) AS CustomerId,  -- 🔒 force Int64 and alias to exact prop name
+                Type              AS Type
             FROM Bookings
             WHERE LOWER(OrderNumber) LIKE LOWER(@pattern);
         ";
