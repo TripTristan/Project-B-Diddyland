@@ -1,47 +1,64 @@
-public static class ReservationLogic
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class ReservationLogic
 {
+    private readonly SessionAccess _sessionAccess;
+    private readonly ReservationAccess _reservationAccess;
 
-    public static List<Session> GetAvailableSessions()
+    public ReservationLogic(SessionAccess sessionAccess, ReservationAccess reservationAccess)
     {
-        var all = SessionAccess.GetAllSessions();
-        return all.Where(s => s.CurrentBookings < SessionAccess.GetCapacityBySession(s)).ToList();
+        _sessionAccess = sessionAccess;
+        _reservationAccess = reservationAccess;
     }
 
-    public static bool CanBookSession(int sessionId, int quantity)
+    public List<Session> GetAvailableSessions()
     {
-        var session = SessionAccess.GetSessionById(sessionId);
+        var all = _sessionAccess.GetAllSessions();
+        return all.Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s)).ToList();
+    }
+
+    public bool CanBookSession(int sessionId, int quantity)
+    {
+        var session = _sessionAccess.GetSessionById(sessionId);
         if (session == null) return false;
-        return session.CurrentBookings + quantity <= SessionAccess.GetCapacityBySession(session);
+
+        return session.CurrentBookings + quantity <= _sessionAccess.GetCapacityBySession(session);
     }
 
-    // Called once per ticket from UI:
-    public static decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
+    public decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
     {
-
-        var session = SessionAccess.GetSessionById(sessionId)
+        var session = _sessionAccess.GetSessionById(sessionId)
                      ?? throw new ArgumentException("Invalid session ID.");
-        if (session.CurrentBookings + 1 > SessionAccess.GetCapacityBySession(session))
+
+        if (session.CurrentBookings + 1 > _sessionAccess.GetCapacityBySession(session))
             throw new InvalidOperationException("Not enough available seats.");
 
-        // price & discount
-        // decimal basePrice = session.PricePerPerson;
         decimal basePrice = 15;
         var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
 
-        // persist ticket
-        ReservationModel booking = new(orderNumber, sessionId, qty, customer, DateTime.Now,  basePrice, discount, finalPrice, "Reservation");
+        var booking = new ReservationModel(
+            orderNumber,
+            sessionId,
+            qty,
+            customer,
+            DateTime.Now,
+            basePrice,
+            discount,
+            finalPrice,
+            "Reservation");
 
-        ReservationAccess.AddBooking(booking);
+        _reservationAccess.AddBooking(booking);
 
-        // update capacity
         session.CurrentBookings += 1;
-        SessionAccess.UpdateSession(session);
+        _sessionAccess.UpdateSession(session);
 
         Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (discount: {discount * 100}%)");
         return finalPrice;
     }
 
-    public static string GenerateOrderNumber(UserModel? customerInfo)
+    public string GenerateOrderNumber(UserModel? customerInfo)
     {
         var random = new Random();
         int randomNumber = random.Next(1000, 9999);
@@ -53,11 +70,11 @@ public static class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-    public static (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
+    public (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
     {
         decimal discount = 0m;
-        if (age <= 12) discount = 0.5m;     // children
-        else if (age >= 65) discount = 0.3m; // seniors
+        if (age <= 12) discount = 0.5m;
+        else if (age >= 65) discount = 0.3m;
 
         decimal finalPrice = basePrice * (1 - discount);
         return (discount, finalPrice);

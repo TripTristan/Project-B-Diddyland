@@ -1,31 +1,37 @@
-using Microsoft.Data.Sqlite;
+using System.Collections.Generic;
 using Dapper;
 
 public class TicketsAccess
 {
+    private readonly DatabaseContext _db;
 
-    public static void Insert(TicketModel ticket)
+    public TicketsAccess(DatabaseContext db)
+    {
+        _db = db;
+    }
+
+    public void Insert(TicketModel ticket)
     {
         const string sql = @"INSERT INTO Ticket (Type, Price, ReservationID)
                              VALUES (@Type, @Price, @ReservationID)";
-        DBC.Connection.Execute(sql, ticket);
+        _db.Connection.Execute(sql, ticket);
     }
 
-    public static IEnumerable<TicketModel> GetAll()
+    public IEnumerable<TicketModel> GetAll()
     {
         const string sql = "SELECT * FROM Ticket";
-        return DBC.Connection.Query<TicketModel>(sql);
+        return _db.Connection.Query<TicketModel>(sql);
     }
 
-    public static TicketModel? GetById(int ticketId)
+    public TicketModel? GetById(int ticketId)
     {
         const string sql = "SELECT * FROM Ticket WHERE TicketID = @TicketID";
-        return DBC.Connection.QueryFirstOrDefault<TicketModel>(sql, new { TicketID = ticketId });
+        return _db.Connection.QueryFirstOrDefault<TicketModel>(sql, new { TicketID = ticketId });
     }
 
-    public static void Delete(int ticketId)
+    public void Delete(int ticketId)
     {
         const string sql = "DELETE FROM Ticket WHERE TicketID = @TicketID";
-        DBC.Connection.Execute(sql, new { TicketID = ticketId });
+        _db.Connection.Execute(sql, new { TicketID = ticketId });
     }
 }

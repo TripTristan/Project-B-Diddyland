@@ -1,15 +1,34 @@
 using System;
 using System.Linq;
 using System.Globalization;
+using System.Collections.Generic;
 
-public static class FastPassUI
+public class FastPassUI
 {
-    public static void Run(UserModel? currentUser = null)
+    private readonly FastPassLogic _fastPassLogic;
+    private readonly AttractiesAccess _attractiesAccess;
+    private readonly SessionAccess _sessionAccess;
+    private readonly UiHelpers _ui;
+
+    public FastPassUI(
+        FastPassLogic fastPassLogic,
+        AttractiesAccess attractiesAccess,
+        SessionAccess sessionAccess,
+        UiHelpers ui)
+    {
+        _fastPassLogic = fastPassLogic;
+        _attractiesAccess = attractiesAccess;
+        _sessionAccess = sessionAccess;
+        _ui = ui;
+    }
+
+    public void Run(UserModel? currentUser = null)
     {
         Console.Clear();
         Console.WriteLine("=== FastPass Reservation ===\n");
 
-        var attractions = AttractiesAccess.GetAll().ToList();
+       var attractions = _attractiesAccess.GetAll()?.ToList() ?? new List<AttractieModel>();
+
         if (attractions.Count == 0)
         {
             Console.WriteLine("No attractions found. Please add attractions first.");
@@ -17,10 +36,17 @@ public static class FastPassUI
         }
 
         Console.WriteLine("Select an attraction:");
+
         foreach (var a in attractions)
-            Console.WriteLine($"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})");
+        {
+            Console.WriteLine(
+                $"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})"
+            );
+        }
+
 
         Console.WriteLine("\nEnter attraction ID (0 to cancel): ");
+
         int attractionId = ReadInt("> ",
             id => attractions.Any(a => a.ID == id),
             "Invalid attraction ID.",
@@ -34,7 +60,8 @@ public static class FastPassUI
 
         DateTime day = DateTime.Today;
 
-        var available = FastPassLogic.GetAvailableFastPassSessions(attractionId, day);
+        var available = _fastPassLogic.GetAvailableFastPassSessions(attractionId, day);
+
         if (available.Count == 0)
         {
             Console.WriteLine("\nNo available timeslots for this attraction today.");
@@ -42,14 +69,17 @@ public static class FastPassUI
         }
 
         Console.WriteLine($"\nAvailable timeslots for {day:yyyy-MM-dd}:");
+
         for (int i = 0; i < available.Count; i++)
         {
             var s = available[i];
-            int cap = SessionAccess.GetCapacityBySession(s);
-            Console.WriteLine($"  [{i + 1}] {s.Time}  (Booked: {s.CurrentBookings}/{cap})");
+            int cap = _sessionAccess.GetCapacityBySession(s);
+
+            Console.WriteLine($"  [{i + 1}] {s.Time} (Booked: {s.CurrentBookings}/{cap})");
         }
 
         Console.WriteLine("\nChoose a timeslot (0 to cancel): ");
+
         int index = ReadInt("> ",
             n => n >= 1 && n <= available.Count,
             "Please choose a valid timeslot number.",
@@ -63,11 +93,13 @@ public static class FastPassUI
 
         var selectedSession = available[index - 1];
 
-        int qty = ReadInt("How many tickets?: ", n => n > 0, "Quantity must be a positive number.");
+        int qty = ReadInt("How many tickets?: ",
+            n => n > 0,
+            "Quantity must be a positive number.");
 
         try
         {
-            var confirmation = FastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser);
+            var confirmation = _fastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser);
 
             Console.Clear();
             Console.WriteLine("====== FastPass Confirmation ======\n");
@@ -88,15 +120,15 @@ public static class FastPassUI
         }
     }
 
-    private static int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)
+    private int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)
     {
         while (true)
         {
             Console.Write(prompt);
             var input = Console.ReadLine();
 
-            if (input == "0" && allowCancel)
-                return 0; // Cancel request
+            if (allowCancel && input == "0")
+                return 0;
 
             if (int.TryParse(input, out int val) && isValid(val))
                 return val;
@@ -105,16 +137,19 @@ public static class FastPassUI
         }
     }
 
-
-    private static DateTime ReadDate(string prompt)
+    private DateTime ReadDate(string prompt)
     {
         Console.Write(prompt);
         var s = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(s)) return DateTime.Today;
-        if (DateTime.TryParseExact(s, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
+
+        if (string.IsNullOrWhiteSpace(s))
+            return DateTime.Today;
+
+        if (DateTime.TryParseExact(s, "yyyy-MM-dd",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
             return d;
+
         Console.WriteLine("Invalid date. Using today.");
         return DateTime.Today;
     }
 }
-
