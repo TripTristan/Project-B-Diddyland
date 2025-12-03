@@ -1,27 +1,38 @@
+using System;
 using Microsoft.Data.Sqlite;
-using Dapper;
 
-public static class DBC
+public class DatabaseContext : IDisposable
 {
-    public static readonly SqliteConnection Connection = new("Data Source=DataSources/diddyland.db");
+    private readonly string _connectionString;
+    private SqliteConnection? _connection;
 
-
-    public static void CloseConnection()
-{
-    
-    try
+    public DatabaseContext(string connectionString)
     {
-        Connection.Open();
-
+        _connectionString = connectionString;
     }
-    catch (Exception ex)
+
+    public SqliteConnection Connection
     {
-        Console.WriteLine($"Error: {ex.Message}");
+        get
+        {
+            if (_connection == null)
+                _connection = new SqliteConnection(_connectionString);
+
+            if (_connection.State != System.Data.ConnectionState.Open)
+                _connection.Open();
+
+            return _connection;
+        }
     }
-    finally
+
+    public void Dispose()
     {
-        Connection.Close();
+        if (_connection != null)
+        {
+            if (_connection.State != System.Data.ConnectionState.Closed)
+                _connection.Close();
+
+            _connection.Dispose();
+        }
     }
 }
-}
-

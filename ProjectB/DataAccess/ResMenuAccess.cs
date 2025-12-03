@@ -1,24 +1,31 @@
-using Microsoft.Data.Sqlite;
+using System.Collections.Generic;
 using Dapper;
 
 public class ResMenuAccess
 {
-    public static void Link(ResMenuModel resMenu)
+    private readonly DatabaseContext _db;
+
+    public ResMenuAccess(DatabaseContext db)
+    {
+        _db = db;
+    }
+
+    public void Link(ResMenuModel resMenu)
     {
         const string sql = @"INSERT INTO ResMenu (ReservationID, MenuID)
                              VALUES (@ReservationID, @MenuID)";
-        DBC.Connection.Execute(sql, resMenu);
+        _db.Connection.Execute(sql, resMenu);
     }
 
-    public static IEnumerable<ResMenuModel> GetAll()
+    public IEnumerable<ResMenuModel> GetAll()
     {
         const string sql = "SELECT * FROM ResMenu";
-        return DBC.Connection.Query<ResMenuModel>(sql);
+        return _db.Connection.Query<ResMenuModel>(sql);
     }
 
-    public static void Delete(int id)
+    public void Delete(int id)
     {
         const string sql = "DELETE FROM ResMenu WHERE ID = @ID";
-        DBC.Connection.Execute(sql, new { ID = id });
+        _db.Connection.Execute(sql, new { ID = id });
     }
 }

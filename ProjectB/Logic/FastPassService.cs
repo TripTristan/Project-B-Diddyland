@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public static class FastPassLogic
+public class FastPassLogic
 {
     public class Confirmation
     {
@@ -16,15 +16,31 @@ public static class FastPassLogic
         public decimal TotalPrice { get; set; }
     }
 
+    private readonly SessionAccess _sessionAccess;
+    private readonly ReservationLogic _reservationLogic;
+    private readonly ReservationAccess _reservationAccess;
+    private readonly AttractiesAccess _attractiesAccess;
+
+    public FastPassLogic(
+        SessionAccess sessionAccess,
+        ReservationLogic reservationLogic,
+        ReservationAccess reservationAccess,
+        AttractiesAccess attractiesAccess)
+    {
+        _sessionAccess = sessionAccess;
+        _reservationLogic = reservationLogic;
+        _reservationAccess = reservationAccess;
+        _attractiesAccess = attractiesAccess;
+    }
+
+    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day)
     public static List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
     {
         var sessionsForDay = SessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
 
+        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
         return sessionsForDay
-            .Where(s => 
-                s.Location.Equals(location, StringComparison.OrdinalIgnoreCase) &&
-                s.CurrentBookings < SessionAccess.GetCapacityBySession(s)
-            )
+            .Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s))
             .OrderBy(s => s.Time)
             .ToList();
     }
@@ -42,6 +58,9 @@ public static class FastPassLogic
 
         if (!ReservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
+
+        var session = _sessionAccess.GetSessionById(sessionId)
+                      ?? throw new ArgumentException("Session not found.");
 
         const decimal basePrice = 10m;
         decimal original = basePrice * quantity;
@@ -62,10 +81,12 @@ public static class FastPassLogic
             "FastPass"
         );
 
-        ReservationAccess.AddBooking(reservation);
+        _reservationAccess.AddBooking(reservation);
 
         session.CurrentBookings += quantity;
-        SessionAccess.UpdateSession(session);
+        _sessionAccess.UpdateSession(session);
+
+        var attraction = _attractiesAccess.GetById(session.AttractionID);
 
         return new Confirmation
         {

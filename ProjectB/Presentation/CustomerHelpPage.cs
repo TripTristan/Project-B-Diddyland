@@ -3,22 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 
 public static class CustomerHelpPage
-{
-    public static void Show()
-    {
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine("Which complaint do you have?");
-            Console.WriteLine("0. Back to main menu");
+using System;
+using System.Linq;
 
-            string[] menuOptions =
-            {
-                "Complaint about food",
-                "Complaint about staff or service",
-                "Complaint about safety",
-                "Complaint about organization",
-            };
+public class CustomerHelpPage
+{
+    private readonly ComplaintLogic _logic;
+    private readonly LoginStatus _loginStatus;
+
+    public CustomerHelpPage(ComplaintLogic logic, LoginStatus loginStatus)
+    {
+        _logic = logic;
+        _loginStatus = loginStatus;
+    }
+
+    public void Show()
+    {
+        Console.Clear();
+        Console.WriteLine("Which complaint do you have?");
+
+        string[] menuOptions =
+        {
+            "Complaint about food",
+            "Complaint about staff or service",
+            "Complaint about safety",
+            "Complaint about organization",
+        };
 
             Action[] actions =
             {
@@ -86,7 +96,7 @@ public static class CustomerHelpPage
                     Console.WriteLine("Description cannot be empty.");
             }
 
-            string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+            string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
             string category = menuOptions[choice - 1];
 
             ComplaintLogic.SubmitComplaint(username, category, description, location, "");
@@ -98,7 +108,7 @@ public static class CustomerHelpPage
         }
     }
 
-    public static void ComplaintFood()
+    private void ComplaintFood()
     {
         Console.WriteLine(@"For any small complaints, write here.
 For larger complaints, you can contact us via:
@@ -107,7 +117,7 @@ For larger complaints, you can contact us via:
   • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
-    public static void ComplaintStaff()
+    private void ComplaintStaff()
     {
         Console.WriteLine(@"For any small complaints, write here.
 For larger complaints, you can contact us via:
@@ -116,7 +126,7 @@ For larger complaints, you can contact us via:
   • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
-    public static void ComplaintSafety()
+    private void ComplaintSafety()
     {
         Console.WriteLine(@"For any small complaints, write here.
 For larger complaints, you can contact us via:
@@ -125,7 +135,7 @@ For larger complaints, you can contact us via:
   • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
-    public static void ComplaintOrganization()
+    private void ComplaintOrganization()
     {
         Console.WriteLine(@"For any small complaints, write here.
 For larger complaints, you can contact us via:
@@ -134,14 +144,22 @@ For larger complaints, you can contact us via:
   • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 
-    public static void ShowHandledMessages()
+    public void ShowHandledMessages()
     {
-        string? username = LoginStatus.CurrentUserInfo?.Username;
-        if (username == null || username == "Guest") return;
+        string? username = _loginStatus.CurrentUserInfo?.Username;
+
+        if (username == null || username == "Guest")
+        {
+            Console.WriteLine("Guests don't receive messages.");
+            return;
+        }
 
         ShowPendingMessages();
-        var handledComplaints = ComplaintLogic.GetByUserAndStatus(username, "Handled");
-        if (!handledComplaints.Any()) return;
+
+        var handledComplaints = _logic.GetByUserAndStatus(username, "Handled");
+
+        if (!handledComplaints.Any())
+            return;
 
         Console.WriteLine("You have some complaints that have been handled:\n");
         foreach (var c in handledComplaints)
@@ -151,10 +169,11 @@ For larger complaints, you can contact us via:
         }
     }
 
-    public static void ShowPendingMessages()
+    public void ShowPendingMessages()
     {
-        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
-        var pendingComplaints = ComplaintLogic.GetPendingByUser(username);
+        string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        var pendingComplaints = _logic.GetPendingByUser(username);
+
         if (!pendingComplaints.Any()) return;
 
         Console.WriteLine("You have pending complaints:\n");

@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Dapper;
 
-public static class SessionAccess
+public class SessionAccess
 {
-    private static readonly List<string> DefaultTimes =
-        GenerateHalfHourSlots().ToList();
+    private readonly DatabaseContext _db;
+    private readonly AttractiesAccess _attractiesAccess;
 
-    public static List<Session> GetAllSessions()
-        => DBC.Connection.Query<Session>(
+    public SessionAccess(DatabaseContext db, AttractiesAccess attractiesAccess)
+    {
+        _db = db;
+        _attractiesAccess = attractiesAccess;
+    }
+
+    public List<Session> GetAllSessions()
+        => _db.Connection.Query<Session>(
             @"SELECT 
                  ID AS Id,
                  Date,
@@ -19,8 +25,8 @@ public static class SessionAccess
                  Location
               FROM Sessions").ToList();
 
-    public static Session? GetSessionById(int id)
-        => DBC.Connection.QueryFirstOrDefault<Session>(
+    public Session? GetSessionById(int id)
+        => _db.Connection.QueryFirstOrDefault<Session>(
             @"SELECT 
                  ID AS Id,
                  Date,
@@ -31,15 +37,15 @@ public static class SessionAccess
               FROM Sessions
               WHERE ID = @Id", new { Id = id });
 
-    public static void UpdateSession(Session session)
+    public void UpdateSession(Session session)
     {
         const string sql = @"UPDATE Sessions
                              SET Currentbookings = @CurrentBookings
                              WHERE ID = @Id";
-        DBC.Connection.Execute(sql, session);
+        _db.Connection.Execute(sql, session);
     }
 
-    public static void Insert(Session session)
+    public void Insert(Session session)
     {
         const string sql = @"INSERT INTO Sessions
                              (Date, Time, AttractionID, Currentbookings, Location)
@@ -47,9 +53,9 @@ public static class SessionAccess
         DBC.Connection.Execute(sql, session);
     }
 
-    public static int GetCapacityBySession(Session sesh)
+    public int GetCapacityBySession(Session sesh)
     {
-        var attr = AttractiesAccess.GetById(sesh.AttractionID);
+        var attr = _attractiesAccess.GetById(sesh.AttractionID);
         return attr?.Capacity ?? 0;
     }
 
@@ -105,13 +111,14 @@ public static class SessionAccess
         return newSessions;
     }
 
-    private static IEnumerable<string> GenerateHalfHourSlots()
+    private IEnumerable<string> GenerateHalfHourSlots()
     {
         var start = new TimeSpan(9, 0, 0);
         var end = new TimeSpan(18, 0, 0);
 
         for (var t = start; t < end; t = t.Add(TimeSpan.FromMinutes(30)))
-            yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0)
-                .ToString("HH:mm");
+        {
+            yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0).ToString("HH:mm");
+        }
     }
 }

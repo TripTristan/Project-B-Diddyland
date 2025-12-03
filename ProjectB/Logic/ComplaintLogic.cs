@@ -2,7 +2,7 @@ public static class ComplaintLogic
 {
     public static void SubmitComplaint(string username, string category, string description, string location, string adminResponse)
     {
-        int nextId = ComplaintsAccess.NextId();
+        int nextId = _complaintsAccess.NextId();
 
         ComplaintModel complaint = new ComplaintModel(
             nextId,
@@ -15,18 +15,18 @@ public static class ComplaintLogic
             adminResponse
         );
 
-        ComplaintsAccess.Write(complaint);
+        _complaintsAccess.Write(complaint);
     }
 
-    public static List<ComplaintModel> GetAllComplaints(string? location = null)
-    {
-        return ComplaintsAccess.GetAll(location);
-    }
+    public List<ComplaintModel> GetAllComplaints(string? location = null)
+        => _complaintsAccess.GetAll(location);
 
-    public static List<ComplaintModel> FilterComplaints(string? category = null, string? username = null, string? status = null, string? location = null)
-    {
-        return ComplaintsAccess.Filter(category, username, status, location);
-    }
+    public List<ComplaintModel> FilterComplaints(
+        string? category = null,
+        string? username = null,
+        string? status = null,
+        string? location = null)
+        => _complaintsAccess.Filter(category, username, status, location);
 
     public static void MarkComplaintHandled(int id, string adminResponse)
     {
@@ -36,18 +36,12 @@ public static class ComplaintLogic
         ComplaintsAccess.SetHandled(id, adminResponse);
     }
 
-    public static void DeleteComplaint(int id)
-    {
-        ComplaintsAccess.Delete(id);
-    }
+    public void DeleteComplaint(int id)
+        => _complaintsAccess.Delete(id);
 
-    public static IEnumerable<ComplaintModel> GetByUserAndStatus(string username, string status)
-    {
-        return ComplaintsAccess.Filter(username: username, status: status);
-    }
+    public IEnumerable<ComplaintModel> GetByUserAndStatus(string username, string status)
+        => _complaintsAccess.Filter(username: username, status: status);
 
-    public static IEnumerable<ComplaintModel> GetPendingByUser(string username)
-    {
-        return ComplaintsAccess.Filter(username: username, status: "Open");
-    }
+    public IEnumerable<ComplaintModel> GetPendingByUser(string username)
+        => _complaintsAccess.Filter(username: username, status: "Open");
 }

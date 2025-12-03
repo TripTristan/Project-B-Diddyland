@@ -1,13 +1,55 @@
-static class GuestMenu
+public class GuestMenu
 {
-    public static void Run()
+    private readonly LoginStatus _loginStatus;
+    private readonly UiHelpers _ui;
+    private readonly AttractieMenu _attractieMenu;
+    private readonly MenuForm _menuForm;
+    private readonly OrderForm _orderForm;
+    private readonly ReservationUI _reservationUI;
+    private readonly FastPassUI _fastPassUI;
+    private readonly ProfilePage _profilePage;
+    private readonly BookingHistoryUI _bookingHistoryUI;
+    private readonly CustomerHelpPage _customerHelpPage;
+    private readonly UserLogoutUI _logoutUI;
+    private readonly ParkMap _parkMap;
+
+    public GuestMenu(
+        LoginStatus loginStatus,
+        UiHelpers ui,
+        AttractieMenu attractieMenu,
+        MenuForm menuForm,
+        OrderForm orderForm,
+        ReservationUI reservationUI,
+        FastPassUI fastPassUI,
+        ProfilePage profilePage,
+        BookingHistoryUI bookingHistoryUI,
+        CustomerHelpPage customerHelpPage,
+        UserLogoutUI logoutUI,
+        ParkMap parkMap)
     {
-        while (LoginStatus.CurrentUserInfo != null &&
-               LoginStatus.CurrentUserInfo.Role == 0)
+        _loginStatus = loginStatus;
+        _ui = ui;
+        _attractieMenu = attractieMenu;
+        _menuForm = menuForm;
+        _orderForm = orderForm;
+        _reservationUI = reservationUI;
+        _fastPassUI = fastPassUI;
+        _profilePage = profilePage;
+        _bookingHistoryUI = bookingHistoryUI;
+        _customerHelpPage = customerHelpPage;
+        _logoutUI = logoutUI;
+        _parkMap = parkMap;
+    }
+
+    public void Run()
+    {
+        while (_loginStatus.CurrentUserInfo != null &&
+               _loginStatus.CurrentUserInfo.Role == 0)
         {
             Console.Clear();
-            UiHelpers.WriteHeader("Diddyland – Guest Page");
-            Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Guest)");
+            _ui.WriteHeader("Diddyland – Guest Page");
+            Console.WriteLine($"Logged in as: {_loginStatus.CurrentUserInfo.Name} (Guest)");
+
             Console.WriteLine("1) Map");
             Console.WriteLine("2) Orders");
             Console.WriteLine("3) Reservations");
@@ -17,59 +59,58 @@ static class GuestMenu
             Console.WriteLine("7) Customer Complaints");
             Console.WriteLine("8) Inbox");
             Console.WriteLine("9) Logout");
-            Console.WriteLine();
+            Console.Write("\nChoose: ");
 
-            Console.Write("Choose an option: ");
             var choice = Console.ReadLine()?.Trim();
 
             switch (choice)
             {
                 case "1":
-                    ParkMap.ShowMap();
+                    _parkMap.ShowMap();
                     break;
 
                 case "2":
-                    OrderForm.Run();
+                    _orderForm.Run();
                     break;
 
                 case "3":
-                    ReservationUI.StartReservation();
-                    UiHelpers.Pause();
+                    _reservationUI.StartReservation();
+                    _ui.Pause();
                     break;
 
                 case "4":
-                    FastPassUI.Run(LoginStatus.CurrentUserInfo);
-                    UiHelpers.Pause();
+                    _fastPassUI.Run(_loginStatus.CurrentUserInfo);
+                    _ui.Pause();
                     break;
 
                 case "5":
-                    ProfilePage.Show(LoginStatus.CurrentUserInfo.Id);
-                    UiHelpers.Pause();
+                    _profilePage.Show(_loginStatus.CurrentUserInfo.Id);
+                    _ui.Pause();
                     break;
-                
-                case "6": 
-                    BookingHistoryUI.Display(LoginStatus.CurrentUserInfo.Username);
-                    UiHelpers.Pause();
+
+                case "6":
+                    _bookingHistoryUI.Display(_loginStatus.CurrentUserInfo.Name);
+                    _ui.Pause();
                     break;
-                
+
                 case "7":
-                    CustomerHelpPage.Show();
-                    UiHelpers.Pause();
+                    _customerHelpPage.Show();
+                    _ui.Pause();
                     break;
 
                 case "8":
-                    CustomerHelpPage.ShowHandledMessages();
-                    UiHelpers.Pause();
+                    _customerHelpPage.ShowHandledMessages();
+                    _ui.Pause();
                     break;
 
                 case "9":
-                    new UserLogoutUI().Start();
-                    UiHelpers.Pause();
+                    _logoutUI.Start();
+                    _ui.Pause();
                     return;
 
                 default:
-                    UiHelpers.Warn("Unknown option.");
-                    UiHelpers.Pause();
+                    _ui.Warn("Unknown option.");
+                    _ui.Pause();
                     break;
             }
         }
