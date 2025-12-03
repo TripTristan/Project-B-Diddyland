@@ -1,6 +1,6 @@
 public static class ComplaintLogic
 {
-    public static void SubmitComplaint(string username, string category, string description, string location)
+    public static void SubmitComplaint(string username, string category, string description, string location, string adminResponse)
     {
         int nextId = ComplaintsAccess.NextId();
 
@@ -11,7 +11,8 @@ public static class ComplaintLogic
             description,
             DateTime.Now,
             "Open",
-            location
+            location,
+            adminResponse
         );
 
         ComplaintsAccess.Write(complaint);
@@ -27,9 +28,12 @@ public static class ComplaintLogic
         return ComplaintsAccess.Filter(category, username, status, location);
     }
 
-    public static void UpdateStatus(int id, string status)
+    public static void MarkComplaintHandled(int id, string adminResponse)
     {
-        ComplaintsAccess.UpdateStatus(id, status);
+        if (string.IsNullOrWhiteSpace(adminResponse))
+            adminResponse = "No further information provided.";
+
+        ComplaintsAccess.SetHandled(id, adminResponse);
     }
 
     public static void DeleteComplaint(int id)

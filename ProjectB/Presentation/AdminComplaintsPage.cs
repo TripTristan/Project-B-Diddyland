@@ -214,7 +214,15 @@ public static class AdminComplaintsPage
 
     private static void MarkHandled(string location)
     {
-        List<ComplaintModel> openComplaints = ComplaintsAccess.Filter(location: location, status: "Open");
+        if (LoginStatus.CurrentUserInfo?.Username == "Guest")
+        {
+            Console.WriteLine("Guests cannot handle complaints.");
+            UiHelpers.Pause();
+            return;
+        }
+
+        List<ComplaintModel> openComplaints =
+            ComplaintsAccess.Filter(location: location, status: "Open");
 
         if (openComplaints.Count == 0)
         {
@@ -225,6 +233,7 @@ public static class AdminComplaintsPage
 
         Console.Clear();
         UiHelpers.WriteHeader("Open Complaints");
+
         foreach (var c in openComplaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category} - {c.Status}");
@@ -233,25 +242,31 @@ public static class AdminComplaintsPage
         }
 
         Console.Write("Enter complaint ID to mark as handled: ");
-        if (int.TryParse(Console.ReadLine(), out int id))
-        {
-            if (!openComplaints.Any(c => c.Id == id))
-            {
-                Console.WriteLine("Invalid ID or complaint already handled.");
-            }
-            else
-            {
-                ComplaintsAccess.UpdateStatus(id, "Handled");
-                Console.WriteLine("✅ Complaint marked as handled.");
-            }
-        }
-        else
+        if (!int.TryParse(Console.ReadLine(), out int id))
         {
             Console.WriteLine("Invalid ID.");
+            UiHelpers.Pause();
+            return;
         }
 
+        var selected = openComplaints.FirstOrDefault(c => c.Id == id);
+        if (selected == null)
+        {
+            Console.WriteLine("Invalid ID or complaint already handled.");
+            UiHelpers.Pause();
+            return;
+        }
+
+        Console.Write("\nEnter admin response message: ");
+        string response = Console.ReadLine() ?? "";
+
+        ComplaintLogic.MarkComplaintHandled(id, response);
+
+        Console.WriteLine("✔ Complaint marked as handled with admin response.");
         UiHelpers.Pause();
     }
+
+
 
 
     private static void DeleteComplaint(string location)

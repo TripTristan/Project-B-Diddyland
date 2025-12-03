@@ -92,18 +92,15 @@ public static class ComplaintsAccess
         }
     }
 
-    public static void UpdateStatus(int id, string status)
+    public static void SetHandled(int id, string adminResponse)
     {
-        try
-        {
-            DBC.Connection.Open();
-            string sql = "UPDATE Complaints SET Status = @Status WHERE Id = @Id;";
-            DBC.Connection.Execute(sql, new { Id = id, Status = status });
-        }
-        finally
-        {
-            DBC.CloseConnection();
-        }
+        const string sql = @"
+            UPDATE Complaints
+            SET Status = 'Handled',
+                AdminResponse = @AdminResponse
+            WHERE ID = @Id";
+
+        DBC.Connection.Execute(sql, new { Id = id, AdminResponse = adminResponse });
     }
 
     public static void Delete(int id)

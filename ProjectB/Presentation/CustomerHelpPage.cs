@@ -1,38 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 public static class CustomerHelpPage
 {
     public static void Show()
     {
-        Console.Clear();
-        Console.WriteLine("Which complaint do you have?");
-        string[] menuOptions =
-        {
-            "Complaint about food",
-            "Complaint about staff or service",
-            "Complaint about safety",
-            "Complaint about organization",
-        };
-
-        Action[] actions =
-        {
-            ComplaintFood,
-            ComplaintStaff,
-            ComplaintSafety,
-            ComplaintOrganization
-        };
-
-        for (int i = 0; i < menuOptions.Length; i++)
-        {
-            Console.WriteLine($"{i + 1}. {menuOptions[i]}");
-        }
-
-        Console.Write("\nEnter your choice (1-4): ");
-        string input = Console.ReadLine();
-
-        if (int.TryParse(input, out int choice) && choice >= 1 && choice <= menuOptions.Length)
+        while (true)
         {
             Console.Clear();
-            Console.WriteLine($"[{menuOptions[choice - 1]}]\n");
+            Console.WriteLine("Which complaint do you have?");
+            Console.WriteLine("0. Back to main menu");
 
+            string[] menuOptions =
+            {
+                "Complaint about food",
+                "Complaint about staff or service",
+                "Complaint about safety",
+                "Complaint about organization",
+            };
+
+            Action[] actions =
+            {
+                ComplaintFood,
+                ComplaintStaff,
+                ComplaintSafety,
+                ComplaintOrganization
+            };
+
+            for (int i = 0; i < menuOptions.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}. {menuOptions[i]}");
+            }
+
+            Console.Write("\nEnter your choice (0-4): ");
+            string input = Console.ReadLine();
+
+            if (input == "0")
+                return;
+
+            if (!int.TryParse(input, out int choice) || choice < 1 || choice > menuOptions.Length)
+            {
+                Console.WriteLine("Invalid choice. Please enter a number between 0 and 4.");
+                UiHelpers.Pause();
+                continue;
+            }
+
+            Console.Clear();
+            Console.WriteLine($"[{menuOptions[choice - 1]}]\n");
             actions[choice - 1].Invoke();
 
             string[] locations =
@@ -41,33 +56,45 @@ public static class CustomerHelpPage
                 "DiddyLand - Rotterdam"
             };
 
-            Console.WriteLine("\nSelect park location:");
-            for (int i = 0; i < locations.Length; i++)
+            int locChoice = 0;
+            while (true)
             {
-                Console.WriteLine($"{i + 1}. {locations[i]}");
-            }
+                Console.WriteLine("\nSelect park location:");
+                for (int i = 0; i < locations.Length; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {locations[i]}");
+                }
 
-            Console.Write("\nEnter location number: ");
-            string locInput = Console.ReadLine();
-            int locChoice = int.TryParse(locInput, out int locNum) ? locNum : 1;
-            if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
+                Console.Write("\nEnter location number: ");
+                string locInput = Console.ReadLine();
+                if (int.TryParse(locInput, out int num) && num >= 1 && num <= locations.Length)
+                {
+                    locChoice = num;
+                    break;
+                }
+                Console.WriteLine("Invalid input. Please select 1 or 2.");
+            }
 
             string location = locations[locChoice - 1];
 
-            Console.WriteLine("\nPlease describe your complaint below:");
-            string description = Console.ReadLine();
+            string description = "";
+            while (string.IsNullOrWhiteSpace(description))
+            {
+                Console.WriteLine("\nPlease describe your complaint below:");
+                description = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(description))
+                    Console.WriteLine("Description cannot be empty.");
+            }
 
             string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
             string category = menuOptions[choice - 1];
 
-            ComplaintLogic.SubmitComplaint(username, category, description, location);
+            ComplaintLogic.SubmitComplaint(username, category, description, location, "");
 
             Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
             Console.WriteLine("We appreciate your feedback and will work to improve.\n");
-        }
-        else
-        {
-            Console.WriteLine("\nInvalid choice. Please try again.\n");
+            UiHelpers.Pause();
+            return;
         }
     }
 
@@ -109,23 +136,14 @@ For larger complaints, you can contact us via:
 
     public static void ShowHandledMessages()
     {
-
         string? username = LoginStatus.CurrentUserInfo?.Username;
-
-        if (username == null || username == "Guest")
-        {
-            Console.WriteLine("Guests dont recieve messages.");
-            return;
-        }
+        if (username == null || username == "Guest") return;
 
         ShowPendingMessages();
         var handledComplaints = ComplaintLogic.GetByUserAndStatus(username, "Handled");
-
-        if (!handledComplaints.Any()) 
-            return;
+        if (!handledComplaints.Any()) return;
 
         Console.WriteLine("You have some complaints that have been handled:\n");
-
         foreach (var c in handledComplaints)
         {
             Console.WriteLine($"• {c.Description}");
@@ -137,11 +155,9 @@ For larger complaints, you can contact us via:
     {
         string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
         var pendingComplaints = ComplaintLogic.GetPendingByUser(username);
-
         if (!pendingComplaints.Any()) return;
 
         Console.WriteLine("You have pending complaints:\n");
-
         foreach (var c in pendingComplaints)
         {
             Console.WriteLine($"• {c.Description}");
