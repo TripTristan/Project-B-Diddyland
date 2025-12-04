@@ -29,9 +29,9 @@ public class FastPassUI
 
         string location = ChooseParkLocation();
 
-        var attractions = AttractiesAccess.GetAll()
-                            .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
+        var attractions = _attractiesAccess.GetAll()
+            .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         if (attractions.Count == 0)
         {
@@ -46,7 +46,6 @@ public class FastPassUI
                 $"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})"
             );
         }
-
 
         Console.WriteLine("\nEnter attraction ID (0 to cancel): ");
 
@@ -63,7 +62,7 @@ public class FastPassUI
 
         DateTime day = DateTime.Today;
 
-        var available = FastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
+        var available = _fastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
         if (available.Count == 0)
         {
             Console.WriteLine($"\nNo available timeslots for this attraction today in {location}.");
@@ -76,7 +75,6 @@ public class FastPassUI
         {
             var s = available[i];
             int cap = _sessionAccess.GetCapacityBySession(s);
-
             Console.WriteLine($"  [{i + 1}] {s.Time} (Booked: {s.CurrentBookings}/{cap})");
         }
 
@@ -101,7 +99,7 @@ public class FastPassUI
 
         try
         {
-            var confirmation = FastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser, location);
+            var confirmation = _fastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser, location);
 
             Console.Clear();
             Console.WriteLine("====== FastPass Confirmation ======\n");
@@ -122,7 +120,7 @@ public class FastPassUI
         }
     }
 
-    private static string ChooseParkLocation()
+    private string ChooseParkLocation()
     {
         string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
 
@@ -142,7 +140,7 @@ public class FastPassUI
         }
     }
 
-    private static int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)
+    private int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)
     {
         while (true)
         {

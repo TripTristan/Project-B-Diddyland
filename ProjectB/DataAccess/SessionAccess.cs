@@ -50,7 +50,7 @@ public class SessionAccess
         const string sql = @"INSERT INTO Sessions
                              (Date, Time, AttractionID, Currentbookings, Location)
                              VALUES (@Date, @Time, @AttractionID, @CurrentBookings, @Location)";
-        DBC.Connection.Execute(sql, session);
+        _db.Connection.Execute(sql, session);
     }
 
     public int GetCapacityBySession(Session sesh)
@@ -59,7 +59,7 @@ public class SessionAccess
         return attr?.Capacity ?? 0;
     }
 
-    public static List<Session> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
+    public List<Session> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
         string day = date.ToString("yyyy-MM-dd");
 
@@ -76,7 +76,7 @@ public class SessionAccess
                                AND Location = @Location
                              ORDER BY Time";
 
-        return DBC.Connection.Query<Session>(sql, new
+        return _db.Connection.Query<Session>(sql, new
         {
             AttractionID = attractionId,
             Date = day,
@@ -84,7 +84,7 @@ public class SessionAccess
         }).ToList();
     }
 
-    public static List<Session> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
+    public List<Session> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
     {
         var existing = GetSessionsForAttractionOnDate(attractionId, date, location);
         if (existing.Any())
@@ -93,7 +93,7 @@ public class SessionAccess
         var newSessions = new List<Session>();
         string day = date.ToString("yyyy-MM-dd");
 
-        foreach (var time in DefaultTimes)
+        foreach (var time in GenerateHalfHourSlots())
         {
             var session = new Session
             {

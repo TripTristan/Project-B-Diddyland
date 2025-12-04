@@ -77,7 +77,7 @@ public class ComplaintsAccess
         return result;
     }
 
-    public static void SetHandled(int id, string adminResponse)
+    public void SetHandled(int id, string adminResponse)
     {
         const string sql = @"
             UPDATE Complaints
@@ -85,7 +85,7 @@ public class ComplaintsAccess
                 AdminResponse = @AdminResponse
             WHERE ID = @Id";
 
-        DBC.Connection.Execute(sql, new { Id = id, AdminResponse = adminResponse });
+        _db.Connection.Execute(sql, new { Id = id, AdminResponse = adminResponse });
     }
 
     public void Delete(int id)

@@ -33,41 +33,36 @@ public class FastPassLogic
         _attractiesAccess = attractiesAccess;
     }
 
-    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day)
-    public static List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
+    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
     {
-        var sessionsForDay = SessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
+        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
 
-        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
         return sessionsForDay
             .Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s))
             .OrderBy(s => s.Time)
             .ToList();
     }
 
-    public static Confirmation BookFastPass(int sessionId, int quantity, UserModel? user, string location)
+    public Confirmation BookFastPass(int sessionId, int quantity, UserModel? user, string location)
     {
-        var session = SessionAccess.GetSessionById(sessionId)
-                    ?? throw new ArgumentException("Session not found.");
+        var session = _sessionAccess.GetSessionById(sessionId)
+                      ?? throw new ArgumentException("Session not found.");
 
-        var attraction = AttractiesAccess.GetById(session.AttractionID)
+        var attraction = _attractiesAccess.GetById(session.AttractionID)
                         ?? throw new Exception("Attraction not found.");
 
         if (!string.Equals(session.Location, attraction.Location, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("FastPass session does not belong to the same park as the attraction.");
 
-        if (!ReservationLogic.CanBookSession(sessionId, quantity))
+        if (!_reservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
-
-        var session = _sessionAccess.GetSessionById(sessionId)
-                      ?? throw new ArgumentException("Session not found.");
 
         const decimal basePrice = 10m;
         decimal original = basePrice * quantity;
         decimal discount = 0m;
         decimal final = original;
 
-        var orderNo = ReservationLogic.GenerateOrderNumber(user);
+        var orderNo = _reservationLogic.GenerateOrderNumber(user);
 
         var reservation = new ReservationModel(
             orderNo,
@@ -85,8 +80,6 @@ public class FastPassLogic
 
         session.CurrentBookings += quantity;
         _sessionAccess.UpdateSession(session);
-
-        var attraction = _attractiesAccess.GetById(session.AttractionID);
 
         return new Confirmation
         {
