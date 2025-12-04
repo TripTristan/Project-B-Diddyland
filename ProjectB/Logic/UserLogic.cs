@@ -1,16 +1,27 @@
+using System;
 using System.Globalization;
+using System.Linq;
 
-public static class UserLogic
+public class UserLogic
 {
-    public static bool IsPhoneValid(string phone)
+    private readonly IUserAccess _userAccess;
+
+    public UserLogic(IUserAccess userAccess)
     {
+        _userAccess = userAccess;
+    }
+
+    public bool IsPhoneValid(string phone)
+    {
+        if (phone.Length == 0) return false;
+
         if (phone[0] != '+' && phone[0] != '0')
-        {
             return false;
-        }
 
-        if ((phone.Trim().Substring(1, phone.Length-1).All(ch => char.IsDigit(ch)) && phone[0] == '+' && phone.Trim().Length == 12)
-        || (phone.Trim().All(ch => char.IsDigit(ch)) && phone[0] == '0' && phone[1] == '6' && phone.Trim().Length == 10))
+        if ((phone.Trim().Substring(1, phone.Trim().Length - 1).All(char.IsDigit)
+                && phone[0] == '+' && phone.Trim().Length == 12)
+            || (phone.Trim().All(char.IsDigit)
+                && phone[0] == '0' && phone.Length > 1 && phone[1] == '6' && phone.Trim().Length == 10))
         {
             return true;
         }
@@ -18,77 +29,73 @@ public static class UserLogic
         return false;
     }
 
-    public static bool IsHeightValid(int height)
+    public bool IsHeightValid(int height)
     {
-        if (height >= 30 && height <= 250)
-        {
-            return true;
-        }
-        return false;
+        return height >= 30 && height <= 250;
     }
 
-    public static bool IsEmailValid(string email)
+    public bool IsEmailValid(string email)
     {
-        if (!email.Contains("@") || !email.Contains("."))
-        {
+        if (string.IsNullOrWhiteSpace(email))
             return false;
-        }
-        if (!(email.IndexOf("@") < email.IndexOf(".")))
-        {
-            return false;
-        }
+
+        int at = email.IndexOf("@");
+        int dot = email.LastIndexOf(".");
+
+        // must contain both and in correct order
+        if (at <= 0) return false;                 // no text before @
+        if (dot <= at + 1) return false;           // no domain name
+        if (dot == email.Length - 1) return false; // no TLD
 
         return true;
     }
 
-    public static bool IsNameValid(string name)
+
+    public bool IsNameValid(string name)
     {
         if (2 < name.Length && name.Length < 20 && name.All(ch => !char.IsDigit(ch)))
-        {
             return true;
-        }
+
         return false;
     }
 
-    public static bool IsPasswordValid(string Password)
+    public bool IsPasswordValid(string password)
     {
-        if (Password.Length < 8)
+        if (password.Length < 8)
             return false;
 
-        if (!Password.Any(char.IsUpper))
+        if (!password.Any(char.IsUpper))
             return false;
 
-        if (!Password.Any(char.IsLower))
+        if (!password.Any(char.IsLower))
             return false;
 
-        if (!Password.Any(char.IsDigit))
+        if (!password.Any(char.IsDigit))
             return false;
 
-        if (!Password.Any(ch => !char.IsLetterOrDigit(ch)))
+        if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
             return false;
 
-    return true;
+        return true;
     }
 
-    public static bool IsDateOfBirthValid(string dob)
+    public bool IsDateOfBirthValid(string dob)
     {
         return DateTime.TryParseExact(
             dob,
             "dd-MM-yyyy",
             CultureInfo.InvariantCulture,
             DateTimeStyles.None,
-            out _
-        );
+            out _);
     }
 
-
-    public static int DOBtoAGE(string DateOfBirth)
+    public int DOBtoAGE(string dateOfBirth)
     {
-        string[] dob = DateOfBirth.Split("-");
+        string[] dob = dateOfBirth.Split('-');
 
-        int days = Int32.Parse(dob[0]);
-        int months = Int32.Parse(dob[1]);
-        int years = Int32.Parse(dob[2]);
+        int days = int.Parse(dob[0]);
+        int months = int.Parse(dob[1]);
+        int years = int.Parse(dob[2]);
 
         DateTime birthday = new DateTime(years, months, days);
         int age = (int)((DateTime.Now - birthday).TotalDays / 365);
@@ -96,9 +103,17 @@ public static class UserLogic
         return age;
     }
 
-    public static void Register(string name, string email, string dateOfBirth, int height, string phone, string password)
+    public void Register(string name, string email, string dateOfBirth, int height, string phone, string password)
     {
-        UserModel registeredAccount = new UserModel(UserAccess.NextId(), name, email, dateOfBirth, height, phone, password);
-        UserAccess.Write(registeredAccount);
+        UserModel registeredAccount = new UserModel(
+            _userAccess.NextId(),
+            name,
+            email,
+            dateOfBirth,
+            height,
+            phone,
+            password);
+
+        _userAccess.Write(registeredAccount);
     }
 }

@@ -1,37 +1,62 @@
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-    public static class ReservationUI
+public class ReservationUI
+{
+    private readonly ReservationLogic _reservationLogic;
+    private readonly PaymentUI _paymentUI;
+    private readonly UserLoginUI _loginUI;
+    private readonly UiHelpers _ui;
+    private readonly SessionAccess _sessionAccess;
+    private readonly LoginStatus _loginStatus;
+
+    private UserModel? _customerInfo;
+    private int _week = 0;
+
+    public ReservationUI(
+        ReservationLogic reservationLogic,
+        PaymentUI paymentUI,
+        UserLoginUI loginUI,
+        UiHelpers ui,
+        SessionAccess sessionAccess,
+        LoginStatus loginStatus)
     {
-        private static UserModel? _customerInfo;
+        _reservationLogic = reservationLogic;
+        _paymentUI = paymentUI;
+        _loginUI = loginUI;
+        _ui = ui;
+        _sessionAccess = sessionAccess;
+        _loginStatus = loginStatus;
+    }
 
-    public static int week = 0;
-
-    public static void StartReservation()
+    public void StartReservation()
     {
-            _customerInfo = LoginStatus.CurrentUserInfo;
-            Console.WriteLine("=== Reservation ===");
+        _customerInfo = _loginStatus.CurrentUserInfo;
 
-            if (_customerInfo == LoginStatus.guest)
+        Console.WriteLine("=== Reservation ===");
+
+        if (_customerInfo == _loginStatus.Guest)
+        {
+            bool guest = ChoiceHelper(
+                "You are not logged in. Continue as guest?",
+                "Yes, continue as guest.",
+                "No, I want to log in."
+            );
+
+            if (!guest)
             {
-                bool guest = ChoiceHelper(
-                    "You are not logged in. Continue as guest?",
-                    "Yes, continue as guest.",
-                    "No, I want to log in."
-                );
-                if (!guest)
-                {
-                    UserLoginUI.StartLogin();
-                }
-                else
-                {
-                    Console.WriteLine("Continuing as guest.");
-                // can here email in //
-                }
+                _loginUI.StartLogin();
+                _customerInfo = _loginStatus.CurrentUserInfo;
             }
+            else
+            {
+                Console.WriteLine("Continuing as guest.");
+            }
+        }
 
-            List<Session> sessions = ReservationLogic.GetAvailableSessions();
+        var sessions = _reservationLogic.GetAvailableSessions();
+
         if (sessions.Count == 0)
         {
             Console.WriteLine("No available sessions.");
@@ -42,10 +67,7 @@
         SelectAndProcessSession(sessions);
     }
 
-
-
-
-    public static bool ChoiceHelper(string message, string yesOption, string noOption)
+    private bool ChoiceHelper(string message, string yesOption, string noOption)
     {
         while (true)
         {
@@ -59,276 +81,247 @@
         }
     }
 
-
-        public static int GetBookingQuantity(Session session) // Get and verify booking quantity
+    private int GetBookingQuantity(Session session)
+    {
+        while (true)
         {
-            while (true)
+            Console.Write("Enter the number of bookings you want: ");
+            if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
             {
-                Console.Write("Enter the number of bookings you want to make: ");
-                if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
-                {
-                    if (ReservationLogic.CanBookSession(session.Id, quantity))
-                    {
-                        return quantity;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Not enough available seats. Please try again.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input. Please enter a positive number.");
-                }
+                if (_reservationLogic.CanBookSession(session.Id, quantity))
+                    return quantity;
+
+                Console.WriteLine("Not enough available seats. Please try again.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a positive number.");
             }
         }
+    }
 
-
-    public static void DisplayDates(List<Session> sessions, DateTime startOfWeek, DateTime endOfWeek)
+    private void DisplayDates(List<Session> sessions, DateTime startOfWeek, DateTime endOfWeek)
     {
         Console.WriteLine("\nAvailable sessions:");
 
         var orderedGroups = sessions
             .Where(s =>
             {
-
-                DateTime sessionDate;
-                bool isValidDate = DateTime.TryParse(s.Date, out sessionDate);
-                return isValidDate && sessionDate >= startOfWeek && sessionDate < endOfWeek;
+                bool ok = DateTime.TryParse(s.Date, out var dt);
+                return ok && dt >= startOfWeek && dt < endOfWeek;
             })
             .GroupBy(s => DateTime.Parse(s.Date))
             .OrderBy(g => g.Key);
 
-        int seshid = 1;
+        int seshId = 1;
+
         foreach (var group in orderedGroups)
         {
             var orderedInDay = group
-                .Where(s => !IsFastPassSlot(s.Time))    // ✅ skip fastpass-only sessions
-                .GroupBy(s => s.Time.Trim().ToLower())  // remove duplicate labels
+                .Where(s => !IsFastPassSlot(s.Time))
+                .GroupBy(s => s.Time.Trim().ToLower())
                 .Select(g => g.First())
                 .OrderBy(s => s.Time);
 
-
             Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
-            Console.WriteLine($"{seshid * (week + 1)}) ");
+
             foreach (var s in orderedInDay)
             {
-                DateTime sessionDate = DateTime.Parse(s.Date);
+                int capacity = _sessionAccess.GetCapacityBySession(s);
+                int available = capacity - s.CurrentBookings;
+
                 Console.WriteLine(
-                    $"Date: {sessionDate:yyyy-MM-dd}, " +
+                    $"Date: {group.Key:yyyy-MM-dd}, " +
                     $"Time: {s.Time}, " +
-                    $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
+                    $"Available Spots: {available}"
+                );
             }
 
             Console.WriteLine();
-            seshid++;
+            seshId++;
         }
-        UiHelpers.WriteHeader($"      < {week} >      ");
-        Console.WriteLine($"0) This week\n1) View next week\n2) View last week");
+
+        _ui.WriteHeader($"      < {_week} >      ");
+        Console.WriteLine("0) This week\n1) Next week\n2) Previous week");
     }
 
-    private static bool IsFastPassSlot(string time)
+    private bool IsFastPassSlot(string time)
     {
         if (string.IsNullOrWhiteSpace(time)) return false;
-        var t = time.Trim().ToLowerInvariant();
-        return TimeSpan.TryParse(t, out _); 
+        return TimeSpan.TryParse(time.Trim().ToLower(), out _);
     }
 
-    public static int GetDateChoice(List<IGrouping<string, Session>> groupedByDate)
+    private int GetDateChoice(List<IGrouping<string, Session>> groupedByDate)
     {
         while (true)
         {
             Console.Write("Please select a date number: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice < groupedByDate.Count)
-            {
+            if (int.TryParse(Console.ReadLine(), out int choice) &&
+                choice >= 0 &&
+                choice < groupedByDate.Count)
                 return choice;
-            }
+
             Console.WriteLine("Invalid input. Please try again.");
         }
     }
 
-        public static void ShowSessionsByDate(List<IGrouping<string, Session>> groupedByDate, int dateChoice)
+    private void ShowSessionsByDate(List<IGrouping<string, Session>> groupedByDate, int dateChoice)
+    {
+        Console.WriteLine($"\nAvailable Sessions on {groupedByDate[dateChoice].Key}:");
+
+        var sessionsOnDate = groupedByDate[dateChoice].ToList();
+
+        for (int i = 0; i < sessionsOnDate.Count; i++)
         {
-            Console.WriteLine($"\nAvailable Sessions on {groupedByDate[dateChoice].Key}:");
-            var sessionsOnDate = groupedByDate[dateChoice].ToList();
-            for (int i = 0; i < sessionsOnDate.Count; i++)
-            {
-                var s = sessionsOnDate[i];
-                Console.WriteLine($"{i}. Time: {s.Time}, Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
-            }
+            var s = sessionsOnDate[i];
+
+            int capacity = _sessionAccess.GetCapacityBySession(s);
+            int available = capacity - s.CurrentBookings;
+
+            Console.WriteLine($"{i}. Time: {s.Time}, Available Spots: {available}");
         }
+    }
 
-
-
-        public static int GetSessionChoice(List<Session> sessionsOnDate)
+    private int GetSessionChoice(List<Session> sessionsOnDate)
+    {
+        while (true)
         {
-            while (true)
+            Console.Write("Select a session number: ");
+            if (int.TryParse(Console.ReadLine(), out int choice) &&
+                choice >= 0 &&
+                choice < sessionsOnDate.Count)
             {
-                Console.Write("Select a session number: ");
-                if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice < sessionsOnDate.Count)
-                {
-                    return choice;
-                }
+                return choice;
+            }
+
+            Console.WriteLine("Invalid input. Please try again.");
+        }
+    }
+
+    private void SelectAndProcessSession(List<Session> sessions)
+    {
+        var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
+        Dictionary<int, List<int>> bookingSelections = new();
+
+        int dateChoice = GetDateChoice(groupedByDate);
+        var sessionsOnDate = groupedByDate[dateChoice].ToList();
+
+        ShowSessionsByDate(groupedByDate, dateChoice);
+
+        int sessionChoice = GetSessionChoice(sessionsOnDate);
+        var selectedSession = sessionsOnDate[sessionChoice];
+
+        int bookingQuantity = GetBookingQuantity(selectedSession);
+
+        List<int> ages = new();
+        while (ages.Count < bookingQuantity)
+        {
+            Console.Write($"Enter age for ticket {ages.Count + 1}: ");
+            if (int.TryParse(Console.ReadLine(), out int age) &&
+                age > 0 && age <= 120)
+            {
+                ages.Add(age);
+            }
+            else
+            {
                 Console.WriteLine("Invalid input. Please try again.");
             }
         }
 
+        bookingSelections[selectedSession.Id] = ages;
 
-
-        public static void SelectAndProcessSession(List<Session> sessions)
+        bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
+        if (!confirm)
         {
-            var groupedByDate = sessions.GroupBy(s => s.Date).ToList();
-            Dictionary<int, List<int>> bookingSelections = new(); // sessionId -> ages
+            Console.WriteLine("Reservation cancelled.");
+            return;
+        }
 
-            int dateChoice = GetDateChoice(groupedByDate);
-            var sessionsOnDate = groupedByDate[dateChoice].ToList();
+        string orderNumber = _reservationLogic.GenerateOrderNumber(_customerInfo);
+        int representativeAge = ages[0];
 
-            ShowSessionsByDate(groupedByDate, dateChoice);
-            int sessionChoice = GetSessionChoice(sessionsOnDate);
+        decimal totalPrice = _reservationLogic.CreateSingleTicketBooking(
+            selectedSession.Id,
+            representativeAge,
+            _customerInfo,
+            orderNumber,
+            bookingQuantity
+        );
 
-            Session selectedSession = sessionsOnDate[sessionChoice];
-            int bookingQuantity = GetBookingQuantity(selectedSession);
+        ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
 
-            // Collect ages
-            List<int> ages = new();
-            while (ages.Count < bookingQuantity)
-            {
-                Console.Write($"Enter age for ticket {ages.Count + 1}: ");
-                if (int.TryParse(Console.ReadLine(), out int age) && age > 0 && age <= 120)
-                    ages.Add(age);
-                else
-                    Console.WriteLine("Invalid input. Please try again.");
-            }
-
-            bookingSelections[selectedSession.Id] = ages;
-
-            // Confirm booking
-            bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
-            if (!confirm)
-            {
-                Console.WriteLine("Reservation cancelled.");
-                return;
-            }
-
-            string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
-
-            int representativeAge = ages[0];  // use first age for discount calculation
-
-            decimal totalPrice = ReservationLogic.CreateSingleTicketBooking(
-                selectedSession.Id,
-                representativeAge,
-                _customerInfo,
-                orderNumber,
-                bookingQuantity
-            );
-
-            // Show details
+        bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
+        if (payment)
+        {
+            _paymentUI.StartPayment(orderNumber, _customerInfo);
+            Console.WriteLine("Reservation successful!");
             ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-
-            bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
-            if (payment)
-            {
-                PaymentUI.StartPayment(orderNumber, _customerInfo);
-                ShowSuccessMessage(orderNumber);
-                ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
-            }
-            else
-            {
-                Console.WriteLine("Payment cancelled. Your reservation is not confirmed.");
-            }
         }
-
-
-
-        public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
+        else
         {
-            Console.WriteLine("---------------------");
-            Console.WriteLine($"Order Number: {orderNumber}");
-            Console.WriteLine("Booking Details:");
-
-            var sessionCount = new Dictionary<int, List<int>>();
-
-            foreach (var (sessionId, ages) in bookingDetails)
-            {
-                int child = 0, senior = 0, adult = 0;
-                foreach (int age in ages)
-                {
-                    if (age < 12) child++;
-                    else if (age >= 65) senior++;
-                    else adult++;
-                }
-                sessionCount[sessionId] = new List<int> { child, senior, adult };
-            }
-
-            foreach (var (sessionId, _) in bookingDetails)
-            {
-                Console.WriteLine($"Session ID: {sessionId}");
-                Console.WriteLine($"  Child Tickets:  {sessionCount[sessionId][0]}");
-                Console.WriteLine($"  Senior Tickets: {sessionCount[sessionId][1]}");
-                Console.WriteLine($"  Adult Tickets:  {sessionCount[sessionId][2]}");
-            }
-
-            Console.WriteLine($"Total Price: {totalPrice:C}");
+            Console.WriteLine("Payment cancelled. Reservation NOT confirmed.");
         }
-
-
-
-    public static void ShowSuccessMessage(string orderNumber)
-    {
-        Console.WriteLine("Reservation successful! Thank you for booking with us.");
     }
 
-    public static void WeekBrowser(List<Session> sessions)
+    private void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
     {
-    week = 0;  // Initialize starting week (current week)
-    int choice = 1;
+        Console.WriteLine("---------------------");
+        Console.WriteLine($"Order Number: {orderNumber}");
+        Console.WriteLine("Booking Details:");
 
-    while (choice != 0)
-    {
-        Console.Clear();
-        
-
-        // Calculate the start and end date for the current week
-        DateTime currentDate = DateTime.Now;
-        DateTime startOfWeek = currentDate.AddDays(week * 7 - (int)currentDate.DayOfWeek);  // Calculate the start of the current week
-        DateTime endOfWeek = startOfWeek.AddDays(7);  // End of the week is 7 days after start
-
-        // Display the sessions for the calculated week
-        DisplayDates(sessions, startOfWeek, endOfWeek);
-
-        bool validInput = int.TryParse(Console.ReadLine(), out choice);
-        if (!validInput)
+        foreach (var (sessionId, ages) in bookingDetails)
         {
-            Console.WriteLine("Invalid input. Please enter a number.");
-            continue;
+            int child = ages.Count(a => a < 12);
+            int senior = ages.Count(a => a >= 65);
+            int adult = ages.Count - child - senior;
+
+            Console.WriteLine($"Session ID: {sessionId}");
+            Console.WriteLine($"  Child Tickets:  {child}");
+            Console.WriteLine($"  Senior Tickets: {senior}");
+            Console.WriteLine($"  Adult Tickets:  {adult}");
         }
 
-        // Switch block for user choices
-        switch (choice)
+        Console.WriteLine($"Total Price: {totalPrice:C}");
+    }
+
+    private void WeekBrowser(List<Session> sessions)
+    {
+        _week = 0;
+        int choice = 1;
+
+        while (choice != 0)
         {
-            case 1:
-                week++;  // Move to next week
-                break;
-            case 2:
-                if (week > 0)
-                {
-                    week--;  // Move to previous week
-                }
-                else
-                {
-                        Console.WriteLine("You can't book into the past");
-                    
-                }
-                break;
-            case 0:
-                break;
-            default:
-                Console.WriteLine("Invalid choice. Please choose a valid option.");
-                break;
+            Console.Clear();
+
+            DateTime now = DateTime.Now;
+            DateTime startOfWeek = now.AddDays(_week * 7 - (int)now.DayOfWeek);
+            DateTime endOfWeek = startOfWeek.AddDays(7);
+
+            DisplayDates(sessions, startOfWeek, endOfWeek);
+
+            bool ok = int.TryParse(Console.ReadLine(), out choice);
+            if (!ok)
+            {
+                Console.WriteLine("Invalid input. Please enter a number.");
+                continue;
+            }
+
+            switch (choice)
+            {
+                case 1: _week++; break;
+                case 2:
+                    if (_week > 0)
+                        _week--;
+                    else
+                        Console.WriteLine("Cannot browse into the past.");
+                    break;
+
+                case 0: break;
+
+                default:
+                    Console.WriteLine("Invalid option.");
+                    break;
+            }
         }
     }
 }
-
-
-
-    }

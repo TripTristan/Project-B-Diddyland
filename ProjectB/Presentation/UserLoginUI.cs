@@ -1,8 +1,15 @@
-public static class UserLoginUI
+public class UserLoginUI
 {
-    public static void StartLogin()
+    private readonly LoginLogic _loginLogic;
+
+    public UserLoginUI(LoginLogic loginLogic)
     {
-        Console.WriteLine("=== Customer Login  ===");
+        _loginLogic = loginLogic;
+    }
+
+    public void StartLogin()
+    {
+        Console.WriteLine("=== Customer Login ===");
 
         while (true)
         {
@@ -11,7 +18,6 @@ public static class UserLoginUI
             if (success)
             {
                 Console.WriteLine("Login successful!");
-
                 break;
             }
             else
@@ -28,42 +34,39 @@ public static class UserLoginUI
         }
     }
 
-
-
-    private static bool LoginAgain()
+    private bool LoginAgain()
     {
         Console.Write("Try again? (y/n): ");
         string choice = Console.ReadLine()?.Trim().ToLower();
-        
-        do
+
+        while (true)
         {
             if (choice == "y") return true;
             if (choice == "n") return false;
 
             Console.Write("Invalid input. Please enter 'y' or 'n': ");
             choice = Console.ReadLine()?.Trim().ToLower();
-        } while (true);
+        }
     }
 
-
-    private static bool UserLogin()
+    private bool UserLogin()
     {
-        string username = Input_Read("Username: ");
-        string password = Input_Read("Password: ");
+        string username = InputRead("Username: ");
+        string password = InputRead("Password: ");
 
-        bool successOrFailure = LoginLogic.AccountVerify(username, password); 
-        return successOrFailure;
+        return _loginLogic.AccountVerify(username, password);
     }
 
-    
-    private static string Input_Read(string text)
+    private string InputRead(string text)
     {
         string input;
         do
         {
             Console.Write(text);
             input = Console.ReadLine()?.Trim();
-        } while (string.IsNullOrEmpty(input));
+        }
+        while (string.IsNullOrEmpty(input));
+
         return input;
     }
 }

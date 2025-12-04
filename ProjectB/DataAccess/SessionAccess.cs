@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Dapper;
 
-public static class SessionAccess
+public class SessionAccess
 {
-    private static readonly List<string> DefaultTimes =
-        GenerateHalfHourSlots().ToList();
+    private readonly DatabaseContext _db;
+    private readonly AttractiesAccess _attractiesAccess;
 
-    public static List<Session> GetAllSessions()
-        => DBC.Connection.Query<Session>(
+    public SessionAccess(DatabaseContext db, AttractiesAccess attractiesAccess)
+    {
+        _db = db;
+        _attractiesAccess = attractiesAccess;
+    }
+
+    public List<Session> GetAllSessions()
+        => _db.Connection.Query<Session>(
             @"SELECT 
                  ID AS Id,
                  Date,
@@ -19,8 +25,8 @@ public static class SessionAccess
                  Location
               FROM Sessions").ToList();
 
-    public static Session? GetSessionById(int id)
-        => DBC.Connection.QueryFirstOrDefault<Session>(
+    public Session? GetSessionById(int id)
+        => _db.Connection.QueryFirstOrDefault<Session>(
             @"SELECT 
                  ID AS Id,
                  Date,
@@ -31,29 +37,29 @@ public static class SessionAccess
               FROM Sessions
               WHERE ID = @Id", new { Id = id });
 
-    public static void UpdateSession(Session session)
+    public void UpdateSession(Session session)
     {
         const string sql = @"UPDATE Sessions
                              SET Currentbookings = @CurrentBookings
                              WHERE ID = @Id";
-        DBC.Connection.Execute(sql, session);
+        _db.Connection.Execute(sql, session);
     }
 
-    public static void Insert(Session session)
+    public void Insert(Session session)
     {
         const string sql = @"INSERT INTO Sessions
                              (Date, Time, AttractionID, Currentbookings, Location)
                              VALUES (@Date, @Time, @AttractionID, @CurrentBookings, @Location)";
-        DBC.Connection.Execute(sql, session);
+        _db.Connection.Execute(sql, session);
     }
 
-    public static int GetCapacityBySession(Session sesh)
+    public int GetCapacityBySession(Session sesh)
     {
-        var attr = AttractiesAccess.GetById(sesh.AttractionID);
+        var attr = _attractiesAccess.GetById(sesh.AttractionID);
         return attr?.Capacity ?? 0;
     }
 
-    public static List<Session> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
+    public List<Session> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
         string day = date.ToString("yyyy-MM-dd");
 
@@ -70,7 +76,7 @@ public static class SessionAccess
                                AND Location = @Location
                              ORDER BY Time";
 
-        return DBC.Connection.Query<Session>(sql, new
+        return _db.Connection.Query<Session>(sql, new
         {
             AttractionID = attractionId,
             Date = day,
@@ -78,7 +84,7 @@ public static class SessionAccess
         }).ToList();
     }
 
-    public static List<Session> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
+    public List<Session> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
     {
         var existing = GetSessionsForAttractionOnDate(attractionId, date, location);
         if (existing.Any())
@@ -87,7 +93,7 @@ public static class SessionAccess
         var newSessions = new List<Session>();
         string day = date.ToString("yyyy-MM-dd");
 
-        foreach (var time in DefaultTimes)
+        foreach (var time in GenerateHalfHourSlots())
         {
             var session = new Session
             {
@@ -105,13 +111,14 @@ public static class SessionAccess
         return newSessions;
     }
 
-    private static IEnumerable<string> GenerateHalfHourSlots()
+    private IEnumerable<string> GenerateHalfHourSlots()
     {
         var start = new TimeSpan(9, 0, 0);
         var end = new TimeSpan(18, 0, 0);
 
         for (var t = start; t < end; t = t.Add(TimeSpan.FromMinutes(30)))
-            yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0)
-                .ToString("HH:mm");
+        {
+            yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0).ToString("HH:mm");
+        }
     }
 }

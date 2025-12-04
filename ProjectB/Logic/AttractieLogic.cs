@@ -1,29 +1,41 @@
-public static class AttractieLogic
+using System;
+using System.Collections.Generic;
+
+public class AttractieLogic
 {
-    public static IEnumerable<AttractieModel> GetAll(string? location = null) => AttractiesAccess.GetAll(location);
+    private readonly IAttractiesAccess _attractiesAccess;
 
-    public static AttractieModel? Get(int id) => AttractiesAccess.GetById(id);
-
-    public static void Add(AttractieModel m)
+    public AttractieLogic(IAttractiesAccess attractiesAccess)
     {
-        Validate(m);
-        AttractiesAccess.Insert(m);
+        _attractiesAccess = attractiesAccess;
     }
 
-    public static void Update(AttractieModel m)
+    public IEnumerable<AttractieModel> GetAll(string? location = null)
+        => _attractiesAccess.GetAll(location);
+
+    public AttractieModel? Get(int id)
+        => _attractiesAccess.GetById(id);
+
+    public void Add(AttractieModel m)
+    {
+        Validate(m);
+        _attractiesAccess.Insert(m);
+    }
+
+    public void Update(AttractieModel m)
     {
         if (m.ID <= 0) throw new ArgumentException("Missing ID for update.");
         Validate(m);
-        AttractiesAccess.Update(m);
+        _attractiesAccess.Update(m);
     }
 
-    public static void Delete(int id)
+    public void Delete(int id)
     {
         if (id <= 0) throw new ArgumentException("Invalid id.");
-        AttractiesAccess.Delete(id);
+        _attractiesAccess.Delete(id);
     }
 
-    private static void Validate(AttractieModel m)
+    private void Validate(AttractieModel m)
     {
         if (string.IsNullOrWhiteSpace(m.Name))
             throw new ArgumentException("Name is required.");

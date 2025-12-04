@@ -1,6 +1,8 @@
-﻿enum UserRole
+﻿using System;
+
+enum UserRole
 {
-    User = 0,        
+    User = 0,
     Admin = 1,
     SuperAdmin = 2
 }
@@ -8,14 +10,158 @@
 class Program
 {
     static void Main()
-    {   
-        LoginStatus.Logout();
-        
+    {
+        var loginStatus = new LoginStatus();
+        loginStatus.Logout(); 
+
+        var ui = new UiHelpers();
+
+        var db = new DatabaseContext("Data Source=DataSources/diddyland.db");
+
+        var userAccess = new UserAccess(db);
+        var attractiesAccess = new AttractiesAccess(db);
+        var sessionAccess = new SessionAccess(db, attractiesAccess);
+        var reservationAccess = new ReservationAccess(db, userAccess);
+        var menuAccess = new MenusAccess(db);
+        var complaintsAccess = new ComplaintsAccess(db);
+        var bookingAccess = new BookingAccess(db);
+
+        var userLogic = new UserLogic(userAccess);
+        var loginLogic = new LoginLogic(userAccess, loginStatus);
+        var logoutLogic = new LogoutLogic(loginStatus);
+        var updateLogic = new UserUpdateLogic(userAccess, userLogic);
+        var bookingHistoryLogic = new BookingHistoryLogic(bookingAccess);
+        var attractieLogic = new AttractieLogic(attractiesAccess);
+        var reservationLogic = new ReservationLogic(sessionAccess, reservationAccess);
+        var fastPassLogic = new FastPassLogic(sessionAccess, reservationLogic, reservationAccess, attractiesAccess);
+        var menuLogic = new MenuLogic(menuAccess);
+        var orderLogic = new OrderLogic(menuLogic);
+        var complaintLogic = new ComplaintLogic(complaintsAccess);
+
+        var registerUI = new UserRegister(userLogic);
+        var loginUI = new UserLoginUI(loginLogic);
+        var logoutUI = new UserLogoutUI(logoutLogic);
+
+        var bookingHistoryUI = new BookingHistoryUI(bookingHistoryLogic, sessionAccess, attractiesAccess);
+        var attractieMenu = new AttractieMenu(attractieLogic);
+        var menuForm = new MenuForm(menuLogic);
+        var orderForm = new OrderForm(orderLogic, menuForm);
+        var profilePage = new ProfilePage(updateLogic);
+        var parkMap = new ParkMap();
+        var adminComplaintsPage = new AdminComplaintsPage(complaintLogic, ui);
+
+        var fastPassUI = new FastPassUI(
+            fastPassLogic,
+            attractiesAccess,
+            sessionAccess,
+            ui
+        );
+
+        var reservationUI = new ReservationUI(
+            reservationLogic,
+            new PaymentUI(),
+            loginUI,
+            ui,
+            sessionAccess,
+            loginStatus
+        );
+
+        var manageAdmins = new ManageAdmins(userAccess);
+        var customerHelpPage = new CustomerHelpPage(complaintLogic, loginStatus, ui);
+
+        var guestMenu = new GuestMenu(
+            loginStatus,
+            ui,
+            attractieMenu,
+            menuForm,
+            orderForm,
+            reservationUI,
+            fastPassUI,
+            profilePage,
+            bookingHistoryUI,
+            customerHelpPage,
+            logoutUI,
+            parkMap
+        );
+
+        var adminMenu = new AdminMenu(
+            loginStatus,
+            ui,
+            attractieMenu,
+            menuForm,
+            orderForm,
+            reservationUI,
+            parkMap,
+            adminComplaintsPage,
+            logoutUI
+        );
+
+        var superAdminMenu = new SuperAdminMenu(
+            loginStatus,
+            ui,
+            attractieMenu,
+            menuForm,
+            orderForm,
+            reservationUI,
+            parkMap,
+            manageAdmins,
+            adminComplaintsPage,
+            logoutUI
+        );
+
+        var app = new Application(
+            loginStatus,
+            ui,
+            loginUI,
+            registerUI,
+            guestMenu,
+            adminMenu,
+            superAdminMenu,
+            logoutUI
+        );
+
+        app.Run();
+    }
+}
+
+public class Application
+{
+    private readonly LoginStatus _loginStatus;
+    private readonly UiHelpers _ui;
+    private readonly UserLoginUI _loginUI;
+    private readonly UserRegister _registerUI;
+    private readonly GuestMenu _guestMenu;
+    private readonly AdminMenu _adminMenu;
+    private readonly SuperAdminMenu _superAdminMenu;
+    private readonly UserLogoutUI _logoutUI;
+
+    public Application(
+        LoginStatus loginStatus,
+        UiHelpers ui,
+        UserLoginUI loginUI,
+        UserRegister registerUI,
+        GuestMenu guestMenu,
+        AdminMenu adminMenu,
+        SuperAdminMenu superAdminMenu,
+        UserLogoutUI logoutUI)
+    {
+        _loginStatus = loginStatus;
+        _ui = ui;
+        _loginUI = loginUI;
+        _registerUI = registerUI;
+        _guestMenu = guestMenu;
+        _adminMenu = adminMenu;
+        _superAdminMenu = superAdminMenu;
+        _logoutUI = logoutUI;
+    }
+
+    public void Run()
+    {
         while (true)
         {
             try
             {
-                if (LoginStatus.CurrentUserInfo == null)
+                if (_loginStatus.CurrentUserInfo == null)
                 {
                     ShowSplash();
                     Console.Write("Choose an option: ");
@@ -23,65 +169,61 @@ class Program
 
                     switch (choice)
                     {
-                        case "1": 
-                            UserLoginUI.StartLogin();
-                            UiHelpers.Pause();
+                        case "1":
+                            _loginUI.StartLogin();
+                            _ui.Pause();
                             break;
 
-                        case "2": 
-                            UserRegister.Register();
-                            UiHelpers.Pause();
+                        case "2":
+                            _registerUI.Register();
+                            _ui.Pause();
                             break;
 
-                        case "3": 
-                            EnsureGuestSession();
-                            GuestMenu.Run();
+                        case "3":
+                            _loginStatus.Login(_loginStatus.Guest);
+                            _guestMenu.Run();
                             break;
 
-                        case "0": 
+                        case "0":
                             return;
 
                         default:
-                            UiHelpers.Warn("Unknown option.");
-                            UiHelpers.Pause();
+                            _ui.Warn("Unknown option.");
+                            _ui.Pause();
                             break;
                     }
                 }
                 else
                 {
-                    var role = LoginStatus.CurrentUserInfo.Role;
-                    if (role == (int)UserRole.User)
-                    {
-                        GuestMenu.Run();
-                    }
-                    else if (role == (int)UserRole.Admin)
-                    {
-                        AdminMenu.Run();
-                    }
-                    else if (role == (int)UserRole.SuperAdmin)
-                    {
-                        SuperAdminMenu.Run();
-                    }
+                    int role = _loginStatus.CurrentUserInfo.Role;
+
+                    if (role == 0)
+                        _guestMenu.Run();
+                    else if (role == 1)
+                        _adminMenu.Run();
+                    else if (role == 2)
+                        _superAdminMenu.Run();
                     else
                     {
-                        UiHelpers.Warn("Unknown role. Logging out for safety.");
-                        new UserLogoutUI().Start();
-                        UiHelpers.Pause();
+                        _ui.Warn("Invalid role. Logging out...");
+                        _logoutUI.Start();
+                        _ui.Pause();
                     }
                 }
             }
             catch (Exception ex)
             {
-                UiHelpers.Error(ex.Message);
-                UiHelpers.Pause();
+                _ui.Error(ex.Message);
+                _ui.Pause();
             }
         }
+    }
 
-        static void ShowSplash()
-        {
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
+    private void ShowSplash()
+    {
+        Console.Clear();
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(@"
 ________  .___________  ________ _____.___.____       _____    _______  ________   
 \______ \ |   \______ \ \______ \\__  |   |    |     /  _  \   \      \ \______ \  
  |    |  \|   ||    |  \ |    |  \/   |   |    |    /  /_\  \  /   |   \ |    |  \ 
@@ -89,28 +231,28 @@ ________  .___________  ________ _____.___.____       _____    _______  ________
 /_______  /___/_______  /_______  / ______|_______ \____|__  /\____|__  /_______  /
         \/            \/        \/\/              \/       \/         \/        \/ 
 ");
-            Console.ResetColor();
-            Console.WriteLine("===================================================================================");
-            Console.WriteLine("1) Login");
-            Console.WriteLine("2) Register");
-            Console.WriteLine("3) Continue as Guest");
-            Console.WriteLine("0) Quit");
-            Console.WriteLine();
-        }
+        Console.ResetColor();
 
-        static void EnsureGuestSession()
+        Console.WriteLine("=================================================");
+        Console.WriteLine("1) Login");
+        Console.WriteLine("2) Register");
+        Console.WriteLine("3) Continue as Guest");
+        Console.WriteLine("0) Quit");
+        Console.WriteLine();
+    }
+
+    private void EnsureGuestSession()
+    {
+        _loginStatus.Login(new UserModel
         {
-            LoginStatus.Login(new UserModel
-            {
-                Id = 0,
-                Name = "Guest",
-                Email = "guest@local",
-                DateOfBirth = "",
-                Height = 0,
-                Phone = "",
-                Password = "",
-                Admin = 0 
-            });
-        }
+            Id = 0,
+            Name = "Guest",
+            Email = "guest@local",
+            Password = "",
+            Phone = "",
+            Height = 0,
+            DateOfBirth = "",
+            Admin = 0
+        });
     }
 }

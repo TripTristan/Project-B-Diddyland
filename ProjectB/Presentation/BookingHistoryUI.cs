@@ -2,9 +2,23 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-public static class BookingHistoryUI
+public class BookingHistoryUI
 {
-    public static void Display(string username)
+    private readonly BookingHistoryLogic _logic;
+    private readonly SessionAccess _sessionAccess;
+    private readonly AttractiesAccess _attractiesAccess;
+
+    public BookingHistoryUI(
+        BookingHistoryLogic logic,
+        SessionAccess sessionAccess,
+        AttractiesAccess attractiesAccess)
+    {
+        _logic = logic;
+        _sessionAccess = sessionAccess;
+        _attractiesAccess = attractiesAccess;
+    }
+
+    public void Display(string username)
     {
         Console.WriteLine("=== My Bookings ===");
 
@@ -23,11 +37,11 @@ public static class BookingHistoryUI
             _   => b => true
         };
 
-        var bookings = BookingHistoryLogic
-                        .GetUserBookingsRaw(username)
-                        .Where(filter)
-                        .OrderBy(b => b.OrderNumber)
-                        .ToList();
+        var bookings = _logic
+            .GetUserBookingsRaw(username)
+            .Where(filter)
+            .OrderBy(b => b.OrderNumber)
+            .ToList();
 
         if (bookings.Count == 0)
         {
@@ -36,19 +50,17 @@ public static class BookingHistoryUI
         }
 
         foreach (var b in bookings)
-        {
             PrintBooking(b);
-        }
     }
 
-    private static void PrintBooking(BookingModel b)
+    private void PrintBooking(BookingModel b)
     {
         string bookingDateFormatted =
             DateTime.TryParse(b.BookingDate, out var bookingDt)
             ? bookingDt.ToString("dd-MM-yyyy HH:mm")
             : b.BookingDate;
 
-        var session = SessionAccess.GetSessionById(b.SessionId);
+        var session = _sessionAccess.GetSessionById(b.SessionId);
 
         string sessionDateFormatted = "Unknown session";
 
@@ -61,8 +73,7 @@ public static class BookingHistoryUI
                     DateTimeStyles.None,
                     out var sessionDate))
             {
-                sessionDateFormatted =
-                    $"{sessionDate:dd-MM-yyyy} {session.Time}";
+                sessionDateFormatted = $"{sessionDate:dd-MM-yyyy} {session.Time}";
             }
             else
             {
@@ -71,7 +82,6 @@ public static class BookingHistoryUI
         }
 
         Console.WriteLine("\n------------------------------------------------");
-
         Console.WriteLine($"Order Number : {b.OrderNumber}");
         Console.WriteLine($"Type         : {b.Type}");
         Console.WriteLine($"Quantity     : {b.Quantity}");
@@ -79,23 +89,24 @@ public static class BookingHistoryUI
 
         if (b.Type == "FastPass" && session != null)
         {
-            var attraction = AttractiesAccess.GetById(session.AttractionID);
+            var attraction = _attractiesAccess.GetById(session.AttractionID);
             string name = attraction?.Name ?? $"Attraction #{session.AttractionID}";
             Console.WriteLine($"Attraction   : {name}");
         }
 
         Console.WriteLine($"Session Time : {sessionDateFormatted}");
         Console.WriteLine($"Final Price  : {b.FinalPrice:C}");
-
         Console.WriteLine("------------------------------------------------\n");
     }
-
-    private static string FormatCurrencyOrRaw(string value)
+    
+    private string FormatCurrencyOrRaw(string value)
     {
         if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var dec))
             return dec.ToString("C", CultureInfo.CurrentCulture);
+
         if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out dec))
             return dec.ToString("C", CultureInfo.CurrentCulture);
+
         return value ?? "";
     }
 }

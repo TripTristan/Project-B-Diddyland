@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public static class FastPassLogic
+public class FastPassLogic
 {
     public class Confirmation
     {
@@ -16,31 +16,45 @@ public static class FastPassLogic
         public decimal TotalPrice { get; set; }
     }
 
-    public static List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
+    private readonly SessionAccess _sessionAccess;
+    private readonly ReservationLogic _reservationLogic;
+    private readonly ReservationAccess _reservationAccess;
+    private readonly AttractiesAccess _attractiesAccess;
+
+    public FastPassLogic(
+        SessionAccess sessionAccess,
+        ReservationLogic reservationLogic,
+        ReservationAccess reservationAccess,
+        AttractiesAccess attractiesAccess)
     {
-        var sessionsForDay = SessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
+        _sessionAccess = sessionAccess;
+        _reservationLogic = reservationLogic;
+        _reservationAccess = reservationAccess;
+        _attractiesAccess = attractiesAccess;
+    }
+
+    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
+    {
+        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
 
         return sessionsForDay
-            .Where(s => 
-                s.Location.Equals(location, StringComparison.OrdinalIgnoreCase) &&
-                s.CurrentBookings < SessionAccess.GetCapacityBySession(s)
-            )
+            .Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s))
             .OrderBy(s => s.Time)
             .ToList();
     }
 
-    public static Confirmation BookFastPass(int sessionId, int quantity, UserModel? user, string location)
+    public Confirmation BookFastPass(int sessionId, int quantity, UserModel? user, string location)
     {
-        var session = SessionAccess.GetSessionById(sessionId)
-                    ?? throw new ArgumentException("Session not found.");
+        var session = _sessionAccess.GetSessionById(sessionId)
+                      ?? throw new ArgumentException("Session not found.");
 
-        var attraction = AttractiesAccess.GetById(session.AttractionID)
+        var attraction = _attractiesAccess.GetById(session.AttractionID)
                         ?? throw new Exception("Attraction not found.");
 
         if (!string.Equals(session.Location, attraction.Location, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("FastPass session does not belong to the same park as the attraction.");
 
-        if (!ReservationLogic.CanBookSession(sessionId, quantity))
+        if (!_reservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
 
         const decimal basePrice = 10m;
@@ -48,7 +62,7 @@ public static class FastPassLogic
         decimal discount = 0m;
         decimal final = original;
 
-        var orderNo = ReservationLogic.GenerateOrderNumber(user);
+        var orderNo = _reservationLogic.GenerateOrderNumber(user);
 
         var reservation = new ReservationModel(
             orderNo,
@@ -62,10 +76,10 @@ public static class FastPassLogic
             "FastPass"
         );
 
-        ReservationAccess.AddBooking(reservation);
+        _reservationAccess.AddBooking(reservation);
 
         session.CurrentBookings += quantity;
-        SessionAccess.UpdateSession(session);
+        _sessionAccess.UpdateSession(session);
 
         return new Confirmation
         {

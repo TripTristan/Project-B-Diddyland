@@ -1,127 +1,97 @@
-using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
 using Dapper;
 
-public static class UserAccess
+public class UserAccess : IUserAccess
 {
-
+    private readonly DatabaseContext _db;
     public const string Table = "Account";
 
-    public static void Write(UserModel account)
+    public UserAccess(DatabaseContext db)
     {
-        string sql = $"INSERT INTO {Table} (ID, Email, Password, Username, Phone, HeightInCM, DateOfBirth, Admin) VALUES (@Id, @Email, @Password, @Name, @Phone, @Height, @DateOfBirth, 0);";
-        DBC.Connection.Execute(sql, account);
-        DBC.CloseConnection();
+        _db = db;
     }
 
-    public static UserModel? GetById(int id)
+    public void Write(UserModel account)
+    {
+        string sql = $"INSERT INTO {Table} " +
+                     "(ID, Email, Password, Username, Phone, HeightInCM, DateOfBirth, Admin) " +
+                     "VALUES (@Id, @Email, @Password, @Name, @Phone, @Height, @DateOfBirth, 0);";
+
+        _db.Connection.Execute(sql, account);
+    }
+
+    public UserModel? GetById(int id)
     {
         string sql = $"SELECT Id, Username AS Name, Email, DateOfBirth, HeightInCM AS Height, Phone, Password, Admin " +
-                        $"FROM {Table} WHERE Id = @Id;";
-        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Id = id });
+                     $"FROM {Table} WHERE Id = @Id;";
+        return _db.Connection.QueryFirstOrDefault<UserModel>(sql, new { Id = id });
     }
 
-    public static UserModel? GetByEmail(string email)
+    public UserModel? GetByEmail(string email)
     {
-        string sql = $"SELECT * FROM {Table} WHERE email = @Email";
-        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
+        string sql = $"SELECT * FROM {Table} WHERE Email = @Email";
+        return _db.Connection.QueryFirstOrDefault<UserModel>(sql, new { Email = email });
     }
 
-    public static UserModel? GetByUsername(string username)
+    public UserModel? GetByUsername(string username)
     {
         const string sql = @"SELECT * FROM Account WHERE Username = @Username;";
-        return DBC.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
+        return _db.Connection.QueryFirstOrDefault<UserModel>(sql, new { Username = username });
     }
-    public static string? GetNameById(int id)
+
+    public string? GetNameById(int id)
     {
         const string sql = @"SELECT Username FROM Account WHERE Id = @Id;";
-        return DBC.Connection.QueryFirstOrDefault<string>(sql, new { Id = id });
+        return _db.Connection.QueryFirstOrDefault<string>(sql, new { Id = id });
     }
 
-    public static IEnumerable<UserModel> GetAllUsers()
+    public IEnumerable<UserModel> GetAllUsers()
     {
-        try
-        {
-            if (DBC.Connection.State != System.Data.ConnectionState.Open)
-                DBC.Connection.Open();
-
-            string sql = $"SELECT Id, Username AS Name, Email, DateOfBirth, HeightInCM AS Height, Phone, Password, Admin FROM {Table};";
-            IEnumerable<UserModel> users = DBC.Connection.Query<UserModel>(sql);
-            return users;
-        }
-        finally
-        {
-            if (DBC.Connection.State == System.Data.ConnectionState.Open)
-                DBC.Connection.Close();
-        }
+        string sql = $"SELECT Id, Username AS Name, Email, DateOfBirth, HeightInCM AS Height, Phone, Password, Admin FROM {Table};";
+        return _db.Connection.Query<UserModel>(sql);
     }
 
-    public static void SetRole(int id, int roleLevel)
+    public void SetRole(int id, int roleLevel)
     {
-        try
-        {
-            if (DBC.Connection.State != System.Data.ConnectionState.Open)
-                DBC.Connection.Open();
-
-            string sql = $"UPDATE {Table} SET Admin = @Role WHERE ID = @Id;";
-            DBC.Connection.Execute(sql, new { Id = id, Role = roleLevel });
-        }
-        finally
-        {
-            if (DBC.Connection.State == System.Data.ConnectionState.Open)
-                DBC.Connection.Close();
-        }
+        string sql = $"UPDATE {Table} SET Admin = @Role WHERE ID = @Id;";
+        _db.Connection.Execute(sql, new { Id = id, Role = roleLevel });
     }
-    
-    public static void DeleteUser(int id)
+
+    public void DeleteUser(int id)
     {
-        try
-        {
-            if (DBC.Connection.State != System.Data.ConnectionState.Open)
-                DBC.Connection.Open();
-
-            string sql = $"DELETE FROM {Table} WHERE ID = @Id;";
-            DBC.Connection.Execute(sql, new { Id = id });
-        }
-        finally
-        {
-            if (DBC.Connection.State == System.Data.ConnectionState.Open)
-                DBC.Connection.Close();
-        }
+        string sql = $"DELETE FROM {Table} WHERE ID = @Id;";
+        _db.Connection.Execute(sql, new { Id = id });
     }
 
-    public static void Update(UserModel account)
+    public void Update(UserModel account)
     {
         string sql = $@"
-                UPDATE {Table}
-                SET Email = @Email,
-                    Password = @Password,
-                    Username = @Name,
-                    Phone = @Phone,
-                    HeightInCM = @Height,
-                    DateOfBirth = @DateOfBirth,
-                    Admin = @Admin
-                WHERE Id = @Id;";
-            DBC.Connection.Execute(sql, account);
-            DBC.CloseConnection();
-        DBC.Connection.Execute(sql, account);
-        DBC.CloseConnection();
+            UPDATE {Table}
+            SET Email = @Email,
+                Password = @Password,
+                Username = @Name,
+                Phone = @Phone,
+                HeightInCM = @Height,
+                DateOfBirth = @DateOfBirth,
+                Admin = @Admin
+            WHERE Id = @Id;";
 
+        _db.Connection.Execute(sql, account);
     }
 
-    public static void Delete(UserModel account)
+    public void Delete(UserModel account)
     {
-        string sql = $"DELETE FROM {Table} WHERE id = @Id";
-        DBC.Connection.Execute(sql, new { account.Id });
-        DBC.CloseConnection();
-
+        string sql = $"DELETE FROM {Table} WHERE Id = @Id";
+        _db.Connection.Execute(sql, new { account.Id });
     }
 
-    public static int NextId()
+    public int NextId()
     {
         try
         {
             string sql = $"SELECT IFNULL(MAX(Id), 0) + 1 FROM {Table}";
-            return DBC.Connection.ExecuteScalar<int>(sql);
+            return _db.Connection.ExecuteScalar<int>(sql);
         }
         catch (Exception e)
         {
@@ -130,22 +100,9 @@ public static class UserAccess
         }
     }
 
-        public static List<string> GetAllUsernames()
+    public List<string> GetAllUsernames()
     {
-        try
-        {
-            if (DBC.Connection.State != System.Data.ConnectionState.Open)
-                DBC.Connection.Open();
-
-            string sql = $"SELECT Username FROM {Table};";
-            List<string> usernames = DBC.Connection.Query<string>(sql).AsList();
-            return usernames;
-        }
-        finally
-        {
-            if (DBC.Connection.State == System.Data.ConnectionState.Open)
-                DBC.Connection.Close();
-        }
+        string sql = $"SELECT Username FROM {Table};";
+        return _db.Connection.Query<string>(sql).AsList();
     }
-
 }

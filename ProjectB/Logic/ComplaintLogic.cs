@@ -1,8 +1,15 @@
-public static class ComplaintLogic
+public class ComplaintLogic
 {
-    public static void SubmitComplaint(string username, string category, string description, string location)
+    private readonly ComplaintsAccess _complaintsAccess;
+
+    public ComplaintLogic(ComplaintsAccess complaintsAccess)
     {
-        int nextId = ComplaintsAccess.NextId();
+        _complaintsAccess = complaintsAccess;
+    }
+
+    public void SubmitComplaint(string username, string category, string description, string location, string adminResponse)
+    {
+        int nextId = _complaintsAccess.NextId();
 
         ComplaintModel complaint = new ComplaintModel(
             nextId,
@@ -11,39 +18,37 @@ public static class ComplaintLogic
             description,
             DateTime.Now,
             "Open",
-            location
+            location,
+            adminResponse
         );
 
-        ComplaintsAccess.Write(complaint);
+        _complaintsAccess.Write(complaint);
     }
 
-    public static List<ComplaintModel> GetAllComplaints(string? location = null)
+    public List<ComplaintModel> GetAllComplaints(string? location = null)
+        => _complaintsAccess.GetAll(location);
+
+    public List<ComplaintModel> FilterComplaints(
+        string? category = null,
+        string? username = null,
+        string? status = null,
+        string? location = null)
+        => _complaintsAccess.Filter(category, username, status, location);
+
+    public void MarkComplaintHandled(int id, string adminResponse)
     {
-        return ComplaintsAccess.GetAll(location);
+        if (string.IsNullOrWhiteSpace(adminResponse))
+            adminResponse = "No further information provided.";
+
+        _complaintsAccess.SetHandled(id, adminResponse);
     }
 
-    public static List<ComplaintModel> FilterComplaints(string? category = null, string? username = null, string? status = null, string? location = null)
-    {
-        return ComplaintsAccess.Filter(category, username, status, location);
-    }
+    public void DeleteComplaint(int id)
+        => _complaintsAccess.Delete(id);
 
-    public static void UpdateStatus(int id, string status)
-    {
-        ComplaintsAccess.UpdateStatus(id, status);
-    }
+    public IEnumerable<ComplaintModel> GetByUserAndStatus(string username, string status)
+        => _complaintsAccess.Filter(username: username, status: status);
 
-    public static void DeleteComplaint(int id)
-    {
-        ComplaintsAccess.Delete(id);
-    }
-
-    public static IEnumerable<ComplaintModel> GetByUserAndStatus(string username, string status)
-    {
-        return ComplaintsAccess.Filter(username: username, status: status);
-    }
-
-    public static IEnumerable<ComplaintModel> GetPendingByUser(string username)
-    {
-        return ComplaintsAccess.Filter(username: username, status: "Open");
-    }
+    public IEnumerable<ComplaintModel> GetPendingByUser(string username)
+        => _complaintsAccess.Filter(username: username, status: "Open");
 }

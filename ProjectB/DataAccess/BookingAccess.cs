@@ -1,49 +1,51 @@
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using Dapper;
 
-public static class BookingAccess
+public class BookingAccess : IBookingAccess
 {
-    public static IEnumerable<BookingModel> GetByUsername(string username)
+    private readonly DatabaseContext _db;
+
+    public BookingAccess(DatabaseContext db)
+    {
+        _db = db;
+    }
+
+    public IEnumerable<BookingModel> GetByUsername(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
             return Enumerable.Empty<BookingModel>();
 
         const string sql = @"
-            SELECT
+            SELECT 
                 OrderNumber,
-                SessionId         AS SessionId,
-                Quantity          AS Quantity,
-                BookingDate       AS BookingDate,
-                OriginalPrice     AS OriginalPrice,
-                Discount          AS Discount,
-                FinalPrice        AS FinalPrice,
-                CAST(CustomerId AS INTEGER) AS CustomerId,  -- 🔒 force Int64 and alias to exact prop name
-                Type              AS Type
+                SessionId AS SessionId,
+                Quantity AS Quantity,
+                BookingDate AS BookingDate,
+                OriginalPrice AS OriginalPrice,
+                Discount AS Discount,
+                FinalPrice AS FinalPrice,
+                CAST(CustomerId AS INTEGER) AS CustomerId,
+                Type AS Type
             FROM Bookings
             WHERE LOWER(OrderNumber) LIKE LOWER(@pattern);
         ";
 
-        var conn = DBC.Connection;
-        var needClose = conn.State != ConnectionState.Open;
+        var pattern1 = $"%-{username}-%";
 
-        try
+        var rows = _db.Connection
+            .Query<BookingModel>(sql, new { pattern = pattern1 })
+            .ToList();
+
+        if (rows.Count == 0)
         {
-            if (needClose) conn.Open();
+            var pattern2 = $"%{username}%";
 
-            var rows = conn.Query<BookingModel>(sql, new { pattern = $"%-{username}-%" }).ToList();
-
-            if (rows.Count == 0)
-            {
-                rows = conn.Query<BookingModel>(sql, new { pattern = $"%{username}%" }).ToList();
-            }
-
-            return rows;
+            rows = _db.Connection
+                .Query<BookingModel>(sql, new { pattern = pattern2 })
+                .ToList();
         }
-        finally
-        {
-            if (needClose) conn.Close();
-        }
+
+        return rows;
     }
 }
