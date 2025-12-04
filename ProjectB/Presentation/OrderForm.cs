@@ -4,40 +4,43 @@ public static class OrderForm
 {
     public static void Run()
     {
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine(MenuForm.FormatMenu(OrderLogic.GetAllMenuItems()));
-            Console.WriteLine("Choose an order action:");
-            Console.WriteLine("[1] Add item to cart");
-            Console.WriteLine("[2] View cart");
-            Console.WriteLine("[3] Remove item from cart");
-            Console.WriteLine("[4] Finalize order");
-            Console.WriteLine("[0] Back");
-            Console.Write("Your choice: ");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            Console.Clear();
+            List<List<string>> Options = new List<List<string>> 
             {
-                case "1":
+                new List<string> {"Add item to cart"},
+                new List<string> {"View cart"},
+                new List<string> {"Remove item from cart"},
+                new List<string> {"Finalize order"},
+                new List<string> {"Back"}
+            };
+
+            MainMenu Menu = new MainMenu(Options, "Your choice: ");
+            int[] selectedIndex = Menu.Run();
+            UiHelpers.Pause();
+
+            Console.WriteLine(MenuForm.FormatMenu(OrderLogic.GetAllMenuItems()));
+
+            switch (selectedIndex[0])
+            {
+                case 0:
                     AddItemUI();
                     break;
-                case "2":
+                case 1:
                     ViewCartUI();
                     break;
-                case "3":
+                case 2:
                     RemoveItemUI();
                     break;
-                case "4":
+                case 3:
                     FinalizeUI();
                     break;
-                case "0":
+                case 4:
                     return;
                 default:
-                    Pause("Unknown option. Press any key...");
                     break;
             }
-        }
+        
     }
 
     private static void AddItemUI()
@@ -77,17 +80,26 @@ public static class OrderForm
         }
 
         PrintCart();
-        Console.WriteLine();
-        Console.WriteLine("[1] Change quantity");
-        Console.WriteLine("[0] Back");
-        Console.Write("Choice: ");
-        var ch = Console.ReadLine();
-        if (ch == "1")
+        List<List<string>> Options = new List<List<string>> 
         {
-            var id = PromptInt("Menu ID to update: ");
-            var qty = PromptInt("New quantity: ");
-            var msg = OrderLogic.UpdateQuantity(id, qty);
-            Pause(msg + " Press any key...");
+            new List<string> {"Change quantity"},
+            new List<string> {"Back"}
+        };
+
+        MainMenu Menu = new MainMenu(Options, "Choice: ");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
+
+        switch (selectedIndex[0])
+        {
+            case 0:
+                var id = PromptInt("Menu ID to update: ");
+                var qty = PromptInt("New quantity: ");
+                var msg = OrderLogic.UpdateQuantity(id, qty);
+                Pause(msg + " Press any key...");
+                break;
+            case 1:
+                break;
         }
     }
 
@@ -102,10 +114,7 @@ public static class OrderForm
         }
 
         PrintCart();
-        Console.WriteLine();
-        Console.Write("Confirm order? (Y/N): ");
-        var confirm = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
-        if (confirm != "Y")
+        if (!UiHelpers.ChoiceHelper("Confirm order?"))
         {
             Pause("Order not finalized. Press any key...");
             return;

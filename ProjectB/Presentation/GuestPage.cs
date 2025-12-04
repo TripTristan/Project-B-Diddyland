@@ -5,58 +5,53 @@ static class GuestMenu
         while (LoginStatus.CurrentUserInfo != null &&
                LoginStatus.CurrentUserInfo.Role == 0)
         {
-            Console.Clear();
-            UiHelpers.WriteHeader("Diddyland – Guest Page");
-            Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Guest)");
-            Console.WriteLine("1) Map");
-            Console.WriteLine("2) Orders");
-            Console.WriteLine("3) Reservations");
-            Console.WriteLine("4) Fastpass");
-            Console.WriteLine("5) Profile");
-            Console.WriteLine("6) Booking History");
-            Console.WriteLine("7) Customer Complaints");
-            Console.WriteLine("8) Logout");
-            Console.WriteLine();
-
-            Console.Write("Choose an option: ");
-            var choice = Console.ReadLine()?.Trim();
-
-            switch (choice)
+            string Prompt = $"Diddyland – Guest Page\nLogged in as: {LoginStatus.CurrentUserInfo.Username} (Guest)";
+            List<List<string>> Options = new List<List<string>> 
             {
-                case "1":
+                new List<string> {"Map"}, 
+                new List<string> {"Orders"}, 
+                new List<string> {"Reservations"}, 
+                new List<string> {"Fastpass"}, 
+                new List<string> {"Profile"}, 
+                new List<string> {"Customer Complaints"}, 
+                new List<string> {"Logout"}
+            };
+
+        MainMenu Menu = new MainMenu(Options, Prompt);
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
+
+            switch (selectedIndex[0])
+            {
+                case 0:
                     ParkMap.ShowInteractive();
                     break;
 
-                case "2":
+                case 1:
                     OrderForm.Run();
                     break;
 
-                case "3":
+                case 2:
                     ReservationUI.StartReservation();
                     UiHelpers.Pause();
                     break;
 
-                case "4":
+                case 3:
                     FastPassUI.Run(LoginStatus.CurrentUserInfo);
                     UiHelpers.Pause();
                     break;
 
-                case "5":
+                case 4:
                     ProfilePage.Show(LoginStatus.CurrentUserInfo.Id);
                     UiHelpers.Pause();
                     break;
-                
-                case "6": 
-                    BookingHistoryUI.Display(LoginStatus.CurrentUserInfo.Username);
-                    UiHelpers.Pause();
-                    break;
-                
-                case "7":
+
+                case 5:
                     CustomerHelpPage.Show();
                     UiHelpers.Pause();
                     break;
 
-                case "8":
+                case 6:
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
                     return;

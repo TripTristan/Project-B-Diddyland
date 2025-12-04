@@ -1,14 +1,14 @@
 public static class AttractieLogic
 {
-    public static IEnumerable<AttractieModel> GetAll() => AttractiesAccess.GetAll();
-    public static AttractieModel? Get(int id) => AttractiesAccess.GetById(id);
+    public static IEnumerable<AttractieModel> GetAll() => AttractionAccess.GetAll();
+    public static AttractieModel? Get(int id) => AttractionAccess.GetById(id);
 
     public static void Add(AttractieModel m)
 {
     try
     {
         Validate(m);
-        AttractiesAccess.Insert(m);
+        AttractionAccess.Insert(m);
     }
     catch (Exception ex)
     {
@@ -25,13 +25,13 @@ public static class AttractieLogic
     {
         if (m.ID <= 0) throw new ArgumentException("Missing ID for update.");
         Validate(m);
-        AttractiesAccess.Update(m);
+        AttractionAccess.Update(m);
     }
 
     public static void Delete(int id)
     {
         if (id <= 0) throw new ArgumentException("Invalid id.");
-        AttractiesAccess.Delete(id);
+        AttractionAccess.Delete(id);
     }
 
     private static void Validate(AttractieModel m)

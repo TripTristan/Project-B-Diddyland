@@ -3,88 +3,60 @@ public static class CustomerHelpPage
     public static void Show()
     {
         Console.Clear();
-        Console.WriteLine("Which complaint do you have?");
-        string[] menuOptions =
+
+        List<List<string>> Options = new List<List<string>> 
         {
-            "Complaint about food",
-            "Complaint about staff or service",
-            "Complaint about safety",
-            "Complaint about organization",
+            new List<string> {"Complaint about food"},
+            new List<string> {"Complaint about staff or service"}, 
+            new List<string> {"Complaint about safety"}, 
+            new List<string> {"Complaint about organization"}
         };
+        MainMenu Menu = new MainMenu(Options, "Which complaint do you have?");
+        int[] selectedIndex = Menu.Run();
+        Console.WriteLine($"{selectedIndex[0]} {selectedIndex[1]}");
+        UiHelpers.Pause();
 
-        Action[] actions =
-        {
-            ComplaintFood,
-            ComplaintStaff,
-            ComplaintSafety,
-            ComplaintOrganization
-        };
+        Console.Clear();
 
-        for (int i = 0; i < menuOptions.Length; i++)
+
+        switch (selectedIndex[0])
         {
-            Console.WriteLine($"{i + 1}. {menuOptions[i]}");
+            case 0:
+                Complain("quality@diddyland.com");
+                break;
+            case 1:
+                Complain(" hr@diddyland.com");
+                break;
+            case 2:
+                Complain("safetycoach@diddyland.com");
+                break;
+            case 3:
+                Complain("bob.bob@diddyland.com");
+                break;
+            default:
+                break;
         }
 
-        Console.Write("\nEnter your choice (1-4): ");
-        string input = Console.ReadLine();
+  
+        Console.WriteLine("\nPlease describe your complaint below:");
+        string description = Console.ReadLine();
 
-        if (int.TryParse(input, out int choice) && choice >= 1 && choice <= menuOptions.Length)
-        {
-            Console.Clear();
-            Console.WriteLine($"[{menuOptions[choice - 1]}]\n");
+        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        string category = Options[selectedIndex[0]][0];
 
-            actions[choice - 1].Invoke();
+        ComplaintLogic.SubmitComplaint(username, category, description);
 
-            Console.WriteLine("\nPlease describe your complaint below:");
-            string description = Console.ReadLine();
+        Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
+        Console.WriteLine("We appreciate your feedback and will work to improve.\n");
 
-            string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
-            string category = menuOptions[choice - 1];
-
-            ComplaintLogic.SubmitComplaint(username, category, description);
-
-            Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
-            Console.WriteLine("We appreciate your feedback and will work to improve.\n");
-        }
-        else
-        {
-            Console.WriteLine("\nInvalid choice. Please try again.\n");
-        }
     }
 
-    public static void ComplaintFood()
+    public static void Complain(string mail)
     {
-        Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: quality@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
-    }
-
-    public static void ComplaintStaff()
-    {
-        Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: hr@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
-    }
-
-    public static void ComplaintSafety()
-    {
-        Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: safetycoach@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
-    }
-
-    public static void ComplaintOrganization()
-    {
-        Console.WriteLine(@"For any small complaints, write here.
-For larger complaints, you can contact us via:
-  • E-mail: bob.bob@diddyland.com
-  • SMS: +31 0181 982513
-  • Mail: 6767FN Tripisgeweldigstraat 95");
+        Console.WriteLine($@"For any small complaints, write here.
+    For larger complaints, you can contact us via:
+    • E-mail: {mail}
+    • SMS: +31 0181 982513
+    • Mail: 6767FN Tripisgeweldigstraat 95");
     }
 }

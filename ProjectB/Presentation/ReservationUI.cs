@@ -1,13 +1,15 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Globalization;
 
     public static class ReservationUI
     {
         private static UserModel? _customerInfo;
 
+    
+    // public static int week = Calendar.GetWeekOfYear(currentDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
     public static int week = 0;
-
     public static void StartReservation()
     {
             _customerInfo = LoginStatus.CurrentUserInfo;
@@ -15,11 +17,7 @@
 
             if (_customerInfo == LoginStatus.guest)
             {
-                bool guest = ChoiceHelper(
-                    "You are not logged in. Continue as guest?",
-                    "Yes, continue as guest.",
-                    "No, I want to log in."
-                );
+                bool guest = UiHelpers.ChoiceHelper("You are not logged in. Continue as guest?");
                 if (!guest)
                 {
                     UserLoginUI.StartLogin();
@@ -27,7 +25,6 @@
                 else
                 {
                     Console.WriteLine("Continuing as guest.");
-                // can here email in //
                 }
             }
 
@@ -42,22 +39,6 @@
         SelectAndProcessSession(sessions);
     }
 
-
-
-
-    public static bool ChoiceHelper(string message, string yesOption, string noOption)
-    {
-        while (true)
-        {
-            Console.WriteLine($"{message} (y/n):\n y - {yesOption}\n n - {noOption}");
-            string choice = Console.ReadLine()?.Trim().ToLower();
-
-            if (choice == "y") return true;
-            if (choice == "n") return false;
-
-            Console.WriteLine("Invalid input. Please enter 'y' or 'n'.");
-        }
-    }
 
 
         public static int GetBookingQuantity(Session session) // Get and verify booking quantity
@@ -84,8 +65,11 @@
         }
 
 
-    public static void DisplayDates(List<Session> sessions, DateTime startOfWeek, DateTime endOfWeek)
+    public static string DisplayDates(List<Session> sessions)
     {
+        int month = FinancialMenu.monthMenu();
+        MainMenu DayChoice = new MainMenu(FinancialMenu.DaysInSelectedMonth(month), "Select the date:");
+        DateTime DateSelected = FinancialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
         Console.WriteLine("\nAvailable sessions:");
 
         var orderedGroups = sessions
@@ -94,7 +78,7 @@
 
                 DateTime sessionDate;
                 bool isValidDate = DateTime.TryParse(s.Date, out sessionDate);
-                return isValidDate && sessionDate >= startOfWeek && sessionDate < endOfWeek;
+                return isValidDate;
             })
             .GroupBy(s => DateTime.Parse(s.Date))
             .OrderBy(g => g.Key);
@@ -110,21 +94,20 @@
 
 
             Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
-            Console.WriteLine($"{seshid * (week + 1)}) ");
-            foreach (var s in orderedInDay)
+            foreach (Session s in orderedInDay)
             {
                 DateTime sessionDate = DateTime.Parse(s.Date);
-                Console.WriteLine(
-                    $"Date: {sessionDate:yyyy-MM-dd}, " +
-                    $"Time: {s.Time}, " +
-                    $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
+                if (sessionDate.ToString("ddMMyyyy") == DateSelected.ToString("ddMMyyyy"))
+                {
+                    Console.WriteLine(
+                        $"Date: {sessionDate:yyyy-MM-dd}, " +
+                        $"Time: {s.Time}, " +
+                        $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
+                }
             }
-
             Console.WriteLine();
-            seshid++;
         }
-        UiHelpers.WriteHeader($"      < {week} >      ");
-        Console.WriteLine($"0) This week\n1) View next week\n2) View last week");
+        return $"Select a week";
     }
 
     private static bool IsFastPassSlot(string time)
@@ -147,30 +130,44 @@
         }
     }
 
-        public static void ShowSessionsByDate(List<IGrouping<string, Session>> groupedByDate, int dateChoice)
+        public static int ShowSessionsByDate(List<IGrouping<string, Session>> groupedByDate, int dateChoice)
         {
             Console.WriteLine($"\nAvailable Sessions on {groupedByDate[dateChoice].Key}:");
             var sessionsOnDate = groupedByDate[dateChoice].ToList();
-            for (int i = 0; i < sessionsOnDate.Count; i++)
+            string Prompt = "Select a session";
+            List<List<string>> Options = new();
+
+            foreach (Session sesh in sessionsOnDate)
             {
-                var s = sessionsOnDate[i];
-                Console.WriteLine($"{i}. Time: {s.Time}, Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
+                Options.Add(new List<string> {$"{sesh.Date}  {sesh.Time} {ReservationLogic.GetAttractionNameByAttractionID(sesh.AttractionID)} {ReservationLogic.GetAvailableSpotsForSession(sesh)}"});
             }
+            MainMenu Menu = new MainMenu(Options, Prompt);
+            UiHelpers.Pause();
+            int[] selectedIndex = Menu.Run();
+            
+            Console.ResetColor();
+
+            return selectedIndex[0];
         }
 
 
 
         public static int GetSessionChoice(List<Session> sessionsOnDate)
         {
-            while (true)
+            string Prompt = "Select a session";
+            List<List<string>> Options = new();
+
+            foreach (Session sesh in sessionsOnDate)
             {
-                Console.Write("Select a session number: ");
-                if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice < sessionsOnDate.Count)
-                {
-                    return choice;
-                }
-                Console.WriteLine("Invalid input. Please try again.");
+                Options.Add(new List<string> {sesh.Date + sesh.Time + ReservationLogic.GetAttractionNameByAttractionID(sesh.AttractionID)});
             }
+            MainMenu Menu = new MainMenu(Options, Prompt);
+            UiHelpers.Pause();
+            int[] selectedIndex = Menu.Run();
+            
+            Console.ResetColor();
+
+            return selectedIndex[0];
         }
 
 
@@ -208,28 +205,28 @@
 
             bookingSelections[selectedSession.Id] = ages;
 
-                // bool another = ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
+                // bool another = UiHelpers.ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
                 // if (!another) 
                 break;
             }
 
 
-            bool confirm = ChoiceHelper("Do you want to confirm your reservation?", "Yes, confirm.", "No, cancel.");
+            bool confirm = UiHelpers.ChoiceHelper("Do you want to confirm your reservation?");
         if (confirm)
         {
             string orderNumber = ReservationLogic.GenerateOrderNumber(_customerInfo);
-            decimal totalPrice = 0; // for discount calculation
+            double totalPrice = 0; // for discount calculation
 
             foreach (int age in bookingSelections[selectedSession.Id])
             {
                 Console.WriteLine("part1");
-                decimal singlePrice = ReservationLogic.CreateSingleTicketBooking(selectedSession.Id, age, _customerInfo, orderNumber, bookingQuantity);
+                double singlePrice = ReservationLogic.CreateSingleTicketBooking(selectedSession.Id, age, _customerInfo, orderNumber, bookingQuantity);
                 totalPrice += singlePrice;
             }
 
             ShowBookingDetails(orderNumber, bookingSelections, totalPrice);
 
-            bool payment = ChoiceHelper("Proceed to payment?", "Yes, proceed.", "No, cancel.");
+            bool payment = UiHelpers.ChoiceHelper("Proceed to payment?");
             if (payment)
             {
                 PaymentUI.StartPayment(orderNumber, _customerInfo);
@@ -253,7 +250,7 @@
         }
 
 
-        public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
+        public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, double totalPrice)
         {
             Console.WriteLine("---------------------");
             Console.WriteLine($"Order Number: {orderNumber}");
@@ -293,55 +290,8 @@
 
     public static void WeekBrowser(List<Session> sessions)
     {
-    week = 0;  // Initialize starting week (current week)
-    int choice = 1;
-
-    while (choice != 0)
-    {
-        Console.Clear();
-        
-
-        // Calculate the start and end date for the current week
         DateTime currentDate = DateTime.Now;
-        DateTime startOfWeek = currentDate.AddDays(week * 7 - (int)currentDate.DayOfWeek);  // Calculate the start of the current week
-        DateTime endOfWeek = startOfWeek.AddDays(7);  // End of the week is 7 days after start
-
-        // Display the sessions for the calculated week
-        DisplayDates(sessions, startOfWeek, endOfWeek);
-
-        bool validInput = int.TryParse(Console.ReadLine(), out choice);
-        if (!validInput)
-        {
-            Console.WriteLine("Invalid input. Please enter a number.");
-            continue;
-        }
-
-        // Switch block for user choices
-        switch (choice)
-        {
-            case 1:
-                week++;  // Move to next week
-                break;
-            case 2:
-                if (week > 0)
-                {
-                    week--;  // Move to previous week
-                }
-                else
-                {
-                        Console.WriteLine("You can't book into the past");
-                    
-                }
-                break;
-            case 0:
-                break;
-            default:
-                Console.WriteLine("Invalid choice. Please choose a valid option.");
-                break;
-        }
+        week = System.Globalization.ISOWeek.GetWeekOfYear(currentDate);; 
     }
+
 }
-
-
-
-    }

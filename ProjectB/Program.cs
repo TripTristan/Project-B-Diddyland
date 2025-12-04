@@ -5,7 +5,7 @@
     SuperAdmin = 2
 }
 
-class Program
+partial class Program
 {
     static void Main()
     {   
@@ -18,34 +18,7 @@ class Program
                 if (LoginStatus.CurrentUserInfo == null)
                 {
                     ShowSplash();
-                    Console.Write("Choose an option: ");
-                    var choice = Console.ReadLine()?.Trim();
 
-                    switch (choice)
-                    {
-                        case "1": 
-                            UserLoginUI.StartLogin();
-                            UiHelpers.Pause();
-                            break;
-
-                        case "2": 
-                            UserRegister.Register();
-                            UiHelpers.Pause();
-                            break;
-
-                        case "3": 
-                            EnsureGuestSession();
-                            GuestMenu.Run();
-                            break;
-
-                        case "0": 
-                            return;
-
-                        default:
-                            UiHelpers.Warn("Unknown option.");
-                            UiHelpers.Pause();
-                            break;
-                    }
                 }
                 else
                 {
@@ -76,26 +49,62 @@ class Program
                 UiHelpers.Pause();
             }
         }
+    }
+
 
         static void ShowSplash()
         {
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"
+            string Prompt = @"
 ________  .___________  ________ _____.___.____       _____    _______  ________   
 \______ \ |   \______ \ \______ \\__  |   |    |     /  _  \   \      \ \______ \  
  |    |  \|   ||    |  \ |    |  \/   |   |    |    /  /_\  \  /   |   \ |    |  \ 
  |    `   \   ||    `   \|    `   \____   |    |___/    |    \/    |    \|    `   \
 /_______  /___/_______  /_______  / ______|_______ \____|__  /\____|__  /_______  /
         \/            \/        \/\/              \/       \/         \/        \/ 
-");
-            Console.ResetColor();
-            Console.WriteLine("===================================================================================");
-            Console.WriteLine("1) Login");
-            Console.WriteLine("2) Register");
-            Console.WriteLine("3) Continue as Guest");
-            Console.WriteLine("0) Quit");
-            Console.WriteLine();
+
+===================================================================================";
+
+        List<List<string>> Options = new List<List<string>> 
+        {
+            new List<string> {"Login"},
+            new List<string> {"Register"}, 
+            new List<string> {"Continue as Guest"}, 
+            new List<string> {"Quit"},
+        };
+
+        MainMenu Menu = new MainMenu(Options, Prompt);
+        int[] selectedIndex = Menu.Run();
+        
+        Console.ResetColor();
+
+        switch (selectedIndex[0])
+        {
+            case 0: 
+                UserLoginUI.StartLogin();
+                UiHelpers.Pause();
+                break;
+
+            case 1: 
+                UserRegister.Register();
+                UiHelpers.Pause();
+                break;
+
+            case 2: 
+                EnsureGuestSession();
+                GuestMenu.Run();
+                break;
+
+            case 3: 
+                return;
+            
+
+            default:
+                Console.WriteLine("");
+                break;
+        }
+ 
         }
 
         static void EnsureGuestSession()
@@ -112,5 +121,4 @@ ________  .___________  ________ _____.___.____       _____    _______  ________
                 Admin = 0 
             });
         }
-    }
 }

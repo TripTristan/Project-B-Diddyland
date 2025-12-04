@@ -44,7 +44,7 @@ public static class SessionAccess
 
     public static int GetCapacityBySession(Session sesh)
     {
-        var attr = AttractiesAccess.GetById(sesh.AttractionID);
+        var attr = AttractionAccess.GetById(sesh.AttractionID);
         return attr?.Capacity ?? 0;
     }
 
@@ -68,7 +68,7 @@ public static class SessionAccess
         var existing = GetSessionsForAttractionOnDate(attractionId, date);
         if (existing.Count > 0) return existing;
 
-        _ = AttractiesAccess.GetById(attractionId)
+        _ = AttractionAccess.GetById(attractionId)
             ?? throw new InvalidOperationException($"Attraction {attractionId} not found.");
 
         const string insertSql = @"INSERT INTO Sessions

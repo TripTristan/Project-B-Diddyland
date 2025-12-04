@@ -12,8 +12,8 @@ public static class FastPassLogic
         public string Date { get; set; } = "";
         public string Time { get; set; } = "";
         public int Quantity { get; set; }
-        public decimal PricePerPerson { get; set; }
-        public decimal TotalPrice { get; set; }
+        public double PricePerPerson { get; set; }
+        public double TotalPrice { get; set; }
     }
 
     public static List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day)
@@ -33,22 +33,31 @@ public static class FastPassLogic
         var session = SessionAccess.GetSessionById(sessionId)
                       ?? throw new ArgumentException("Session not found.");
 
-        const decimal basePrice = 10m;
-        decimal original = basePrice * quantity;
-        decimal discount = 0m;
-        decimal final = original;
+        const double basePrice = 10.0;
+        double  original = basePrice * quantity;
+        double  discount = 0.0;
+        double  final = original;
 
         var orderNo = ReservationLogic.GenerateOrderNumber(user);
-        var reservation = new ReservationModel(orderNo, sessionId, quantity,
-            user ?? new UserModel { Id = 0, Name = "Guest" },
-            DateTime.Now, original, discount, final);
+        var reservation = new ReservationModel
+        {
+            OrderNumber   = orderNo,
+            SessionId     = sessionId,
+            Quantity      = quantity,
+            CustomerID    = user.Id,
+            BookingDate   = DateTime.Now.Ticks,
+            OriginalPrice = original,
+            Discount      = discount,
+            FinalPrice    = final
+        };
+
 
         ReservationAccess.AddBooking(reservation);
 
         session.CurrentBookings += quantity;
         SessionAccess.UpdateSession(session);
 
-        var attraction = AttractiesAccess.GetById(session.AttractionID);
+        var attraction = AttractionAccess.GetById(session.AttractionID);
 
         return new Confirmation
         {

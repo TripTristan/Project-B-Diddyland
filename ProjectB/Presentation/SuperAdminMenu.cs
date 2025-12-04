@@ -9,67 +9,70 @@ static class SuperAdminMenu
         {
             Console.Clear();
             UiHelpers.WriteHeader("Diddyland – Super Admin Dashboard");
-            Console.WriteLine($"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Super Admin)");
-            Console.WriteLine();
-
-            Console.WriteLine("1) Attractions");
-            Console.WriteLine("2) Menu management");
-            Console.WriteLine("3) Orders");
-            Console.WriteLine("4) Reservations");
-            Console.WriteLine("5) Map");
-            Console.WriteLine("6) Manage Admins");
-            Console.WriteLine("7) Manage Complaints");
-            Console.WriteLine("8) Logout");
-            Console.WriteLine("0) Quit");
-            Console.WriteLine();
-
-            Console.Write("Choose an option: ");
-            var choice = Console.ReadLine()?.Trim();
-
-            switch (choice)
+            string Prompt = $"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Super Admin)";
+            List<List<string>> Options = new List<List<string>> 
             {
-                case "1":
+                new List<string> {"Financial Dashboard (NEW)"},
+                new List<string> {"Attractions"},
+                new List<string> {"Menu management"}, 
+                new List<string> {"Orders"}, 
+                new List<string> {"Reservations"},
+                new List<string> {"Map"},
+                new List<string> {"Manage Admins"},
+                new List<string> {"Manage Complaints"},
+                new List<string> {"Logout"},
+                new List<string> {"Quit"},
+            };
+
+            MainMenu Menu = new MainMenu(Options, Prompt);
+            int[] selectedIndex = Menu.Run();
+            UiHelpers.Pause();
+
+            switch (selectedIndex[0])
+            {
+                case 0:
+                    FinancialMenu.Start();
+                    break;
+                case 1:
                     AttractieMenu.Start();
                     break;
 
-                case "2":
+                case 2:
                     MenuForm.Run();
                     break;
 
-                case "3":
+                case 3:
                     OrderForm.Run();
                     break;
 
-                case "4":
+                case 4:
                     ReservationUI.StartReservation();
                     UiHelpers.Pause();
                     break;
 
-                case "5":
+                case 5:
                     ParkMap.ShowInteractive();
                     break;
 
-                case "6":
+                case 6:
                     ManageAdmins.Show();
                     break;
 
-                case "7":
+                case 7:
                     AdminComplaintsPage.Show();
                     break;
                 
 
-                case "8":
+                case 8:
                     new UserLogoutUI().Start();
                     UiHelpers.Pause();
                     return;
 
-                case "0":
+                case 9:
                     Environment.Exit(0);
                     return;
 
                 default:
-                    UiHelpers.Warn("Unknown option.");
-                    UiHelpers.Pause();
                     break;
             }
         }

@@ -7,17 +7,11 @@ public static class ComplaintsAccess
 {
     public static void Write(ComplaintModel complaint)
     {
-        try
-        {
-            DBC.Connection.Open();
+
             string sql = "INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status) " +
                          "VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status);";
             DBC.Connection.Execute(sql, complaint);
-        }
-        finally
-        {
-            DBC.CloseConnection();
-        }
+
     }
 
     public static List<ComplaintModel> GetAll()
@@ -39,7 +33,6 @@ public static class ComplaintsAccess
     {
         try
         {
-            DBC.Connection.Open();
             string sql = "SELECT IFNULL(MAX(Id), 0) + 1 FROM Complaints";
             int next = DBC.Connection.ExecuteScalar<int>(sql);
             return next;
@@ -49,10 +42,7 @@ public static class ComplaintsAccess
             Console.WriteLine("Error getting next ID: " + e.Message);
             return 1;
         }
-        finally
-        {
-            DBC.CloseConnection();
-        }
+
     }
 
     public static List<ComplaintModel> Filter(string? category = null, string? username = null, string? status = null)

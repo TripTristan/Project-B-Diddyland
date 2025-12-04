@@ -15,7 +15,7 @@ public static class ReservationLogic
     }
 
     // Called once per ticket from UI:
-    public static decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
+    public static double CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
     {
 
         var session = SessionAccess.GetSessionById(sessionId)
@@ -25,11 +25,20 @@ public static class ReservationLogic
 
         // price & discount
         // decimal basePrice = session.PricePerPerson;
-        decimal basePrice = 15;
+        double  basePrice = 15.0;
         var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
 
-        // persist ticket
-        ReservationModel booking = new(orderNumber, sessionId, qty, customer, DateTime.Now,  basePrice, discount, finalPrice);
+        ReservationModel booking = new ReservationModel
+        {
+            OrderNumber   = orderNumber,
+            SessionId     = sessionId,
+            Quantity      = qty,
+            CustomerID    = customer.Id,
+            BookingDate   = DateTime.Now.Ticks,
+            OriginalPrice = basePrice,
+            Discount      = discount,
+            FinalPrice    = finalPrice
+        };
 
         ReservationAccess.AddBooking(booking);
 
@@ -53,13 +62,23 @@ public static class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-    public static (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
+    public static (double discount, double finalPrice) CalculateDiscountedPrice(double basePrice, int age)
     {
-        decimal discount = 0m;
-        if (age <= 12) discount = 0.5m;     // children
-        else if (age >= 65) discount = 0.3m; // seniors
+        double discount = 0.0;
+        if (age <= 12) discount = 0.5;     // children
+        else if (age >= 65) discount = 0.3; // seniors
 
-        decimal finalPrice = basePrice * (1 - discount);
+        double finalPrice = basePrice * (1 - discount);
         return (discount, finalPrice);
+    }
+
+    public static string GetAttractionNameByAttractionID(int id)
+    {
+        return AttractionAccess.GetById(id).Name;
+    }
+
+    public static int GetAvailableSpotsForSession(Session sesh)
+    {
+        return SessionAccess.GetCapacityBySession(sesh) - sesh.CurrentBookings;
     }
 }

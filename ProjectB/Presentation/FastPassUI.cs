@@ -9,7 +9,7 @@ public static class FastPassUI
         Console.Clear();
         Console.WriteLine("=== FastPass Reservation ===\n");
 
-        var attractions = AttractiesAccess.GetAll().ToList();
+        var attractions = AttractionAccess.GetAll().ToList();
         if (attractions.Count == 0)
         {
             Console.WriteLine("No attractions found. Please add attractions first.");

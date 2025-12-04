@@ -11,28 +11,30 @@ public class AttractieMenu
         {
             Console.Clear();
             Header("Diddyland – Attractions");
+            List<List<string>> Options = new List<List<string>> 
+            {
+                new List<string> {"List all"},
+                new List<string> {"View by ID"}, 
+                new List<string> {"Add"}, 
+                new List<string> {"Edit"},
+                new List<string> {"Delete"}, 
+                new List<string> {"Quit"} 
+            };
 
-            Console.WriteLine("1) List all");
-            Console.WriteLine("2) View by ID");
-            Console.WriteLine("3) Add");
-            Console.WriteLine("4) Edit");
-            Console.WriteLine("5) Delete");
-            Console.WriteLine("6) Quit");
-            Console.WriteLine();
-
-            var choice = ReadInt("Choose an option", min: 1, max: 6);
-            Console.WriteLine();
+            MainMenu Menu = new MainMenu(Options, "");
+            int[] selectedIndex = Menu.Run();
+            UiHelpers.Pause();
 
             try
             {
                 switch (choice)
                 {
-                    case 1: ListAll(); break;
-                    case 2: ViewById(); break;
-                    case 3: Add(); break;
-                    case 4: Edit(); break;
-                    case 5: Delete(); break;
-                    case 6: return;
+                    case 0: ListAll(); break;
+                    case 1: ViewById(); break;
+                    case 2: Add(); break;
+                    case 3: Edit(); break;
+                    case 4: Delete(); break;
+                    case 5: return;
                 }
             }
             catch (Exception ex)
@@ -118,9 +120,8 @@ public class AttractieMenu
         if (m == null) { Warn($"Attraction with ID {id} not found."); return; }
 
         PrintOne(m);
-        Console.Write("Are you sure you want to delete this? (y/N): ");
-        var confirm = Console.ReadLine()?.Trim().ToLowerInvariant();
-        if (confirm == "y" || confirm == "yes")
+        
+        if (UiHelpers.ChoiceHelper("Are you sure you want to delete this? (y/N): "))
         {
             AttractieLogic.Delete(id);
             Success("Deleted.");

@@ -32,17 +32,7 @@ public static class UserLoginUI
 
     private static bool LoginAgain()
     {
-        Console.Write("Try again? (y/n): ");
-        string choice = Console.ReadLine()?.Trim().ToLower();
-        
-        do
-        {
-            if (choice == "y") return true;
-            if (choice == "n") return false;
-
-            Console.Write("Invalid input. Please enter 'y' or 'n': ");
-            choice = Console.ReadLine()?.Trim().ToLower();
-        } while (true);
+        return UiHelpers.ChoiceHelper("Try again? ");
     }
 
 

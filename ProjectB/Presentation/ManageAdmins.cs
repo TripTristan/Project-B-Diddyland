@@ -8,40 +8,44 @@ public static class ManageAdmins
 
         while (running)
         {
-            Console.Clear();
-            Console.WriteLine("=== Superadmin Control Panel ===");
-            Console.WriteLine("1. View all users");
-            Console.WriteLine("2. Promote user to Admin");
-            Console.WriteLine("3. Demote Admin to User");
-            Console.WriteLine("4. Promote Admin to Superadmin");
-            Console.WriteLine("5. Demote Superadmin to Admin");
-            Console.WriteLine("6. Delete user");
-            Console.WriteLine("0. Back to main menu");
-            Console.Write("\nChoose an option: ");
+            string Prompt = "=== Superadmin Control Panel ===";
 
-            string choice = Console.ReadLine();
-
-            switch (choice)
+            List<List<string>> Options = new List<List<string>> 
             {
-                case "1":
+                new List<string> {"View all users"},
+                new List<string> {"Promote user to Admin"},       
+                new List<string> {"Demote Admin to User"},
+                new List<string> {"Promote Admin to Superadmin"},
+                new List<string> {"Demote Superadmin to Admin"},
+                new List<string> {"Delete user"},
+                new List<string> {"Back to main menu"}
+            };
+
+            MainMenu Menu = new MainMenu(Options, Prompt);
+            int[] selectedIndex = Menu.Run();
+            UiHelpers.Pause();
+
+            switch (selectedIndex[0])
+            {
+                case 0:
                     ViewAllUsers();
                     break;
-                case "2":
+                case 1:
                     ChangeRole(1, "promote to Admin");
                     break;
-                case "3":
+                case 2:
                     ChangeRole(0, "demote to User");
                     break;
-                case "4":
+                case 3:
                     ChangeRole(2, "promote to Superadmin");
                     break;
-                case "5":
+                case 4:
                     ChangeRole(1, "demote to Admin");
                     break;
-                case "6":
+                case 5:
                     Delete();
                     break;
-                case "0":
+                case 6:
                     running = false;
                     break;
                 default:

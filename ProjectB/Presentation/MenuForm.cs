@@ -32,36 +32,34 @@ public static class MenuForm
 
     public static void Run()
     {
-        while (true)
+        Console.WriteLine(FormatMenu(MenuLogic.GetAll())); // only run this for non amdin users
+        List<List<string>> Options = new List<List<string>> 
         {
-            Console.Clear();
-            Console.WriteLine(FormatMenu(MenuLogic.GetAll())); // only run this for non amdin users
-            Console.WriteLine();
-            Console.WriteLine("Choose an action:");
-            Console.WriteLine("[1] Add FOOD");
-            Console.WriteLine("[2] Add DRINK");
-            Console.WriteLine("[3] Remove item");
-            Console.WriteLine("[0] Exit");
-            Console.Write("Your choice: ");
+            new List<string> {"Add FOOD"},
+            new List<string> {"Add DRINK"}, 
+            new List<string> {"Remove item"}, 
+            new List<string> {"Exit"}
+        };
 
-            var choice = Console.ReadLine();
-            switch (choice)
-            {
-                case "1":
-                    AddFoodUI();
-                    break;
-                case "2":
-                    AddDrinkUI();
-                    break;
-                case "3":
-                    RemoveItemUI();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Pause("Unknown option. Press any key...");
-                    break;
-            }
+        MainMenu Menu = new MainMenu(Options, "Choose an action:");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
+
+        switch (selectedIndex[0])
+        {
+            case 0:
+                AddFoodUI();
+                break;
+            case 1:
+                AddDrinkUI();
+                break;
+            case 2:
+                RemoveItemUI();
+                break;
+            case 3:
+                return;
+            default:
+                break;
         }
     }
 

@@ -12,26 +12,42 @@ public static class ParkMap
 
     public static void ShowInteractive()
     {
+        Zone? filter = new();
         Console.Clear();
-        Console.WriteLine("=== Diddyland Park Map ===\n");
-        Console.WriteLine("Which zone would you like to view?");
-        Console.WriteLine("  1) Adventure Zone");
-        Console.WriteLine("  2) Coastal Zone");
-        Console.WriteLine("  3) Jungle Zone");
-        Console.WriteLine("  4) Retro Zone ");
-        Console.WriteLine("  0) All zones");
-        Console.WriteLine();
+        string Prompt = "=== Diddyland Park Map ===\n\nWhich zone would you like to view?";
+        List<List<string>> Options = new List<List<string>> 
+        {
+            new List<string> {"Adventure Zone"},
+            new List<string> {"Coastal Zone"}, 
+            new List<string> {"Jungle Zone"}, 
+            new List<string> {"Retro Zone"},
+            new List<string> {"All zones"}
+        };
 
-        Console.Write("Enter a number or name: ");
-        var input = Console.ReadLine()?.Trim()?.ToLowerInvariant() ?? "0";
-        Zone? filter = ParseFilter(input);
+        MainMenu Menu = new MainMenu(Options, Prompt);
+        int[] selectedIndex = Menu.Run();
+
+        switch (selectedIndex[0])
+        {
+            case 0:
+                filter = Zone.Adventure;
+                break;
+            case 1:
+                filter = Zone.Coastal;
+                break;
+            case 2:
+                filter = Zone.Jungle;
+                break;
+            case 3:
+                filter = Zone.Retro;
+                break;
+            default:
+                break;
+        }
+
 
         Console.Clear();
         Show(filter);
-
-        Console.WriteLine();
-        Console.Write("Press Enter to return...");
-        Console.ReadLine();
     }
 
     public static void Show(Zone? filter)
@@ -44,6 +60,7 @@ public static class ParkMap
         Render();
         Console.WriteLine(RESET);
         PrintLegend(filter);
+        UiHelpers.Pause();
     }
 
     // --- DRAWING METHODS ---
@@ -206,14 +223,4 @@ public static class ParkMap
             Console.WriteLine("\nShowing all zones");
     }
 
-    private static Zone? ParseFilter(string s)
-    {
-        if (s is "0" or "all" or "*" or "") return null;
-        if (int.TryParse(s, out int n) && n is >= 1 and <= 4) return (Zone)n;
-        if (s.StartsWith("adv")) return Zone.Adventure;
-        if (s.StartsWith("coa")) return Zone.Coastal;
-        if (s.StartsWith("jun")) return Zone.Jungle;
-        if (s.StartsWith("ret")) return Zone.Retro;
-        return null;
-    }
 }

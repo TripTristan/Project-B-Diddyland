@@ -16,33 +16,39 @@ public static class ProfilePage
 
                 RenderProfile(user);
 
-                Console.WriteLine();
-                Console.WriteLine("Options:  [E]dit   [B]ack");
-                Console.Write("Choose: ");
-                var choice = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
-
-                if (choice == "B")
-                    return;
-
-                if (choice == "E")
+                List<List<string>> Options = new List<List<string>> 
                 {
-                    var edited = EditFlow(user);
-                    if (edited != null)
-                    {
-                        var (ok, error) = _service.UpdateProfile(edited);
-                        if (ok)
+                    new List<string> {"Edit"},
+                    new List<string> {"Back"}
+                };
+
+                MainMenu Menu = new MainMenu(Options, "Options:");
+                int[] selectedIndex = Menu.Run();
+                UiHelpers.Pause();
+
+                switch (selectedIndex[0])
+                {
+                    case 0:
+                        return;
+                    case 1:
+                        var edited = EditFlow(user);
+                        if (edited != null)
                         {
-                            Console.WriteLine();
-                            Console.WriteLine("Profile updated successfully.");
-                            Pause();
+                            var (ok, error) = _service.UpdateProfile(edited);
+                            if (ok)
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine("Profile updated successfully.");
+                                Pause();
+                            }
+                            else
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine($"{error}");
+                                Pause();
+                            }
                         }
-                        else
-                        {
-                            Console.WriteLine();
-                            Console.WriteLine($"{error}");
-                            Pause();
-                        }
-                    }
+                        break;
                 }
             }
         }
@@ -78,10 +84,8 @@ public static class ProfilePage
                 Admin = current.Admin
             };
 
-            Console.WriteLine();
-            Console.Write("Save changes? [Y]es  [N]o: ");
-            var save = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
-            if (save == "Y")
+            
+            if (UiHelpers.ChoiceHelper("Save changes?"))
             {
                 return draft;
             }

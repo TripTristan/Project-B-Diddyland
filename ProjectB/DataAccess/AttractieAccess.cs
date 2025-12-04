@@ -3,7 +3,7 @@ using System.Data.SQLite;
 using Dapper;
 using System.Data;
 
-public static class AttractiesAccess
+public static class AttractionAccess
 {
     public static void Insert(AttractieModel attractie)
     {

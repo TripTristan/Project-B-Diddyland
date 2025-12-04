@@ -22,11 +22,42 @@ static class UiHelpers
         Console.WriteLine(msg);
         Console.ResetColor();
     }
+    public static void Good(string msg)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(msg);
+        Console.ForegroundColor = ConsoleColor.White;
+    }
 
     public static void Pause()
     {
         Console.WriteLine();
         Console.Write("Press Enter to continue...");
         Console.ReadLine();
+    }
+
+    public static bool ChoiceHelper(string message)
+    {
+        List<List<string>> Options = new List<List<string>> 
+        {
+            new List<string> {"Yes"},
+            new List<string> {"No"}, 
+        };
+
+        MainMenu Menu = new MainMenu(Options, message);
+        Pause();
+        int[] selectedIndex = Menu.Run();
+        
+        Console.ResetColor();
+
+        switch (selectedIndex[0])
+        {
+            case 0:
+                return true;
+            case 1:
+                return false;
+            default:
+                return false;
+        }
     }
 }

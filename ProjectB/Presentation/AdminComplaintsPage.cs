@@ -1,44 +1,49 @@
 static class AdminComplaintsPage
 {
+    static string status;
     public static void Show()
     {
         while (true)
         {
             Console.Clear();
-            UiHelpers.WriteHeader("Admin – Complaint Management");
-            Console.WriteLine("1) View all complaints");
-            Console.WriteLine("2) Filter by category");
-            Console.WriteLine("3) Filter by username");
-            Console.WriteLine("4) Filter by status");
-            Console.WriteLine("5) Mark complaint as handled");
-            Console.WriteLine("6) Delete complaint");
-            Console.WriteLine("0) Back");
-            Console.WriteLine();
+            string Prompt = "Admin – Complaint Management";
 
-            Console.Write("Choose an option: ");
-            string? choice = Console.ReadLine();
-
-            switch (choice)
+            List<List<string>> Options = new List<List<string>> 
             {
-                case "1":
+                new List<string> {"View all complaints"},
+                new List<string> {"Filter by category"},       
+                new List<string> {"Filter by username"},
+                new List<string> {"Filter by status"},
+                new List<string> {"Mark complaint as handled"},
+                new List<string> {"Delete complaint"},
+                new List<string> {"Back"}
+            };
+
+            MainMenu Menu = new MainMenu(Options, Prompt);
+            int[] selectedIndex = Menu.Run();
+            UiHelpers.Pause();
+
+            switch (selectedIndex[0])
+            {
+                case 0:
                     ViewAll();
                     break;
-                case "2":
+                case 1:
                     FilterByCategory();
                     break;
-                case "3":
+                case 2:
                     FilterByUser();
                     break;
-                case "4":
+                case 3:
                     FilterByStatus();
                     break;
-                case "5":
+                case 4:
                     MarkHandled();
                     break;
-                case "6":
+                case 5:
                     DeleteComplaint();
                     break;
-                case "0":
+                case 6:
                     return;
                 default:
                     UiHelpers.Warn("Invalid choice.");
@@ -96,8 +101,25 @@ static class AdminComplaintsPage
 
     private static void FilterByStatus()
     {
-        Console.Write("Enter status (e.g. Open or Handled): ");
-        string? status = Console.ReadLine();
+        
+        List<List<string>> Options = new List<List<string>> 
+        {
+            new List<string> {"Open"},
+            new List<string> {"Handled"}
+        };
+
+        MainMenu Menu = new MainMenu(Options, "Filter Status");
+        int[] selectedIndex = Menu.Run();
+
+        switch (selectedIndex[0])
+        {
+            case 0:
+                status = "Open";
+                break;
+            case 1:
+                status = "Handled";
+                break;
+        }
         List<ComplaintModel> complaints = ComplaintsAccess.Filter(status: status);
         Console.Clear();
         UiHelpers.WriteHeader($"Complaints with status {status}");
