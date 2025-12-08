@@ -1,9 +1,31 @@
-public static class LoginStatus
+public class LoginStatus
 {
-    public static UserModel guest = new(0, "GUEST", "", "", 170, "", "");
-    public static UserModel? CurrentUserInfo = guest; // wie is ingelogd // current user
+    public UserModel Guest { get; }
+    public UserModel? CurrentUserInfo { get; private set; }
 
-    public static void Login(UserModel accountInfo) => CurrentUserInfo = accountInfo; 
+    public LoginStatus()
+    {
+        Guest = new UserModel
+        {
+            Id = 0,
+            Name = "Guest",
+            Email = "guest@local",
+            Role = 0,
+            Height = 0,
+            Phone = "",
+            DateOfBirth = ""
+        };
 
-    public static void Logout() => CurrentUserInfo = null;
+        CurrentUserInfo = null; 
+    }
+
+    public void Login(UserModel accountInfo)
+    {
+        CurrentUserInfo = accountInfo;
+    }
+
+    public void Logout()
+    {
+        CurrentUserInfo = null;
+    }
 }

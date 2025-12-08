@@ -1,106 +1,108 @@
-using Microsoft.Data.Sqlite;
-using Dapper;
 using System;
 using System.Collections.Generic;
+using Dapper;
 
-public static class ComplaintsAccess
+public class ComplaintsAccess
 {
-    public static void Write(ComplaintModel complaint)
+    private readonly DatabaseContext _db;
+
+    public ComplaintsAccess(DatabaseContext db)
     {
+<<<<<<< HEAD
 
             string sql = "INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status) " +
                          "VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status);";
             DBC.Connection.Execute(sql, complaint);
 
+=======
+        _db = db;
+>>>>>>> main
     }
 
-    public static List<ComplaintModel> GetAll()
+    public void Write(ComplaintModel complaint)
+    {
+        const string sql = @"
+            INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status, Location)
+            VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status, @Location);";
+
+        _db.Connection.Execute(sql, complaint);
+    }
+
+    public List<ComplaintModel> GetAll(string? location = null)
+    {
+        string sql = "SELECT * FROM Complaints";
+        if (!string.IsNullOrEmpty(location))
+        {
+            sql += " WHERE Location = @Location";
+        }
+        sql += " ORDER BY CreatedAt DESC;";
+
+        var result = _db.Connection.Query<ComplaintModel>(sql, new { Location = location }).AsList();
+        return result;
+    }
+
+    public int NextId()
     {
         try
         {
-            DBC.Connection.Open();
-            string sql = "SELECT * FROM Complaints ORDER BY CreatedAt DESC;";
-            List<ComplaintModel> result = DBC.Connection.Query<ComplaintModel>(sql).AsList();
-            return result;
-        }
-        finally
-        {
-            DBC.CloseConnection();
-        }
-    }
-
-    public static int NextId()
-    {
-        try
-        {
+<<<<<<< HEAD
             string sql = "SELECT IFNULL(MAX(Id), 0) + 1 FROM Complaints";
             int next = DBC.Connection.ExecuteScalar<int>(sql);
+=======
+            const string sql = "SELECT IFNULL(MAX(Id), 0) + 1 FROM Complaints";
+            int next = _db.Connection.ExecuteScalar<int>(sql);
+>>>>>>> main
             return next;
         }
-        catch (Exception e)
+        catch
         {
-            Console.WriteLine("Error getting next ID: " + e.Message);
             return 1;
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     }
 
-    public static List<ComplaintModel> Filter(string? category = null, string? username = null, string? status = null)
+    public List<ComplaintModel> Filter(
+        string? category = null,
+        string? username = null,
+        string? status = null,
+        string? location = null)
     {
-        try
-        {
-            DBC.Connection.Open();
-            string sql = "SELECT * FROM Complaints WHERE 1=1";
+        string sql = "SELECT * FROM Complaints WHERE 1=1";
 
-            if (!string.IsNullOrEmpty(category))
-                sql += " AND Category = @Category";
+        if (!string.IsNullOrEmpty(category))
+            sql += " AND Category = @Category";
 
-            if (!string.IsNullOrEmpty(username))
-                sql += " AND Username = @Username";
+        if (!string.IsNullOrEmpty(username))
+            sql += " AND Username = @Username";
 
-            if (!string.IsNullOrEmpty(status))
-                sql += " AND Status = @Status";
+        if (!string.IsNullOrEmpty(status))
+            sql += " AND Status = @Status";
 
-            sql += " ORDER BY CreatedAt DESC;";
+        if (!string.IsNullOrEmpty(location))
+            sql += " AND Location = @Location";
 
-            List<ComplaintModel> result = DBC.Connection.Query<ComplaintModel>(
-                sql,
-                new { Category = category, Username = username, Status = status }
-            ).AsList();
+        sql += " ORDER BY CreatedAt DESC;";
 
-            return result;
-        }
-        finally
-        {
-            DBC.CloseConnection();
-        }
+        var result = _db.Connection.Query<ComplaintModel>(
+            sql,
+            new { Category = category, Username = username, Status = status, Location = location }
+        ).AsList();
+
+        return result;
     }
 
-    public static void UpdateStatus(int id, string status)
+    public void UpdateStatus(int id, string status)
     {
-        try
-        {
-            DBC.Connection.Open();
-            string sql = "UPDATE Complaints SET Status = @Status WHERE Id = @Id;";
-            DBC.Connection.Execute(sql, new { Id = id, Status = status });
-        }
-        finally
-        {
-            DBC.CloseConnection();
-        }
+        const string sql = "UPDATE Complaints SET Status = @Status WHERE Id = @Id;";
+        _db.Connection.Execute(sql, new { Id = id, Status = status });
     }
 
-    public static void Delete(int id)
+    public void Delete(int id)
     {
-        try
-        {
-            DBC.Connection.Open();
-            string sql = "DELETE FROM Complaints WHERE Id = @Id;";
-            DBC.Connection.Execute(sql, new { Id = id });
-        }
-        finally
-        {
-            DBC.CloseConnection();
-        }
+        const string sql = "DELETE FROM Complaints WHERE Id = @Id;";
+        _db.Connection.Execute(sql, new { Id = id });
     }
 }

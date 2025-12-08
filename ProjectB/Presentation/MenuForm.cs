@@ -3,9 +3,16 @@ using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
 
-public static class MenuForm
+public class MenuForm
 {
-    public static string FormatMenu(IEnumerable<MenuModel> items)
+    private readonly MenuLogic _menuLogic;
+
+    public MenuForm(MenuLogic menuLogic)
+    {
+        _menuLogic = menuLogic;
+    }
+
+    public string FormatMenu(IEnumerable<MenuModel> items)
     {
         var list = items.ToList();
         if (list.Count == 0)
@@ -22,7 +29,7 @@ public static class MenuForm
             if (!string.IsNullOrWhiteSpace(m.Drink))
                 nameParts.Add(m.Drink!);
 
-            var label = nameParts.Count > 0 ? string.Join(" / ", nameParts) : "(Unnamed)";
+            var label = nameParts.Any() ? string.Join(" / ", nameParts) : "(Unnamed)";
             sb.AppendLine($"#{m.ID,-3} {label,-30} €{m.Price:0.00}");
         }
 
@@ -30,7 +37,7 @@ public static class MenuForm
         return sb.ToString();
     }
 
-    public static void Run()
+    public void Run()
     {
         Console.WriteLine(FormatMenu(MenuLogic.GetAll())); // only run this for non amdin users
         List<List<string>> Options = new List<List<string>> 
@@ -63,39 +70,48 @@ public static class MenuForm
         }
     }
 
-    private static void AddFoodUI()
+    private void AddFoodUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add FOOD ===");
+        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
+        Console.WriteLine();
+
         var name = PromptNonEmpty("Food name: ");
         var price = PromptPrice("Price (€): ");
 
-        var result = MenuLogic.AddFood(name, price);
+        var result = _menuLogic.AddFood(name, price);
         Pause(result + " Press any key...");
     }
 
-    private static void AddDrinkUI()
+    private void AddDrinkUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add DRINK ===");
+        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
+        Console.WriteLine();
+
         var name = PromptNonEmpty("Drink name: ");
         var price = PromptPrice("Price (€): ");
 
-        var result = MenuLogic.AddDrink(name, price);
+        var result = _menuLogic.AddDrink(name, price);
         Pause(result + " Press any key...");
     }
 
-    private static void RemoveItemUI()
+    private void RemoveItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Remove item ===");
-        var id = PromptInt("Menu ID to remove: ");
+        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
+        Console.WriteLine();
 
-        var result = MenuLogic.RemoveItem(id);
+        var id = PromptInt("Menu ID to remove: ");
+        var result = _menuLogic.RemoveItem(id);
+
         Pause(result + " Press any key...");
     }
 
-    private static string PromptNonEmpty(string label)
+    private string PromptNonEmpty(string label)
     {
         while (true)
         {
@@ -108,11 +124,15 @@ public static class MenuForm
         }
     }
 
-    private static double PromptPrice(string label)
+    private double PromptPrice(string label)
     {
-        // Acceprts both , and . as decimal 
         var styles = NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands;
-        var cultures = new[] { CultureInfo.CurrentCulture, CultureInfo.GetCultureInfo("nl-NL"), CultureInfo.InvariantCulture };
+        var cultures = new[] 
+        { 
+            CultureInfo.CurrentCulture, 
+            CultureInfo.GetCultureInfo("nl-NL"), 
+            CultureInfo.InvariantCulture 
+        };
 
         while (true)
         {
@@ -136,7 +156,7 @@ public static class MenuForm
         }
     }
 
-    private static int PromptInt(string label)
+    private int PromptInt(string label)
     {
         while (true)
         {
@@ -149,7 +169,7 @@ public static class MenuForm
         }
     }
 
-    private static void Pause(string message)
+    private void Pause(string message)
     {
         Console.WriteLine(message);
         Console.ReadKey(true);

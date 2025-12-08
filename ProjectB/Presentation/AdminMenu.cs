@@ -1,11 +1,43 @@
 using System;
 
-static class AdminMenu
+public class AdminMenu
 {
-    public static void Run()
+    private readonly LoginStatus _loginStatus;
+    private readonly UiHelpers _ui;
+    private readonly AttractieMenu _attractieMenu;
+    private readonly MenuForm _menuForm;
+    private readonly OrderForm _orderForm;
+    private readonly ReservationUI _reservationUI;
+    private readonly ParkMap _parkMap;
+    private readonly AdminComplaintsPage _adminComplaintsPage;
+    private readonly UserLogoutUI _logoutUi;
+
+    public AdminMenu(
+        LoginStatus loginStatus,
+        UiHelpers ui,
+        AttractieMenu attractieMenu,
+        MenuForm menuForm,
+        OrderForm orderForm,
+        ReservationUI reservationUI,
+        ParkMap parkMap,
+        AdminComplaintsPage adminComplaintsPage,
+        UserLogoutUI logoutUi)
     {
-        while (LoginStatus.CurrentUserInfo != null &&
-               LoginStatus.CurrentUserInfo.Role == (int)UserRole.Admin)
+        _loginStatus = loginStatus;
+        _ui = ui;
+        _attractieMenu = attractieMenu;
+        _menuForm = menuForm;
+        _orderForm = orderForm;
+        _reservationUI = reservationUI;
+        _parkMap = parkMap;
+        _adminComplaintsPage = adminComplaintsPage;
+        _logoutUi = logoutUi;
+    }
+
+    public void Run()
+    {
+        while (_loginStatus.CurrentUserInfo != null &&
+               _loginStatus.CurrentUserInfo.Role == (int)UserRole.Admin)
         {
             Console.Clear();
             UiHelpers.WriteHeader("Diddyland – Admin Dashboard");
@@ -21,6 +53,11 @@ static class AdminMenu
                 new List<string> {"Manage Complaints"}, 
                 new List<string> {"Quit"}
             };
+            List<List<string>> MapOptions = new List<List<string>> 
+            {
+                new List<string> {"Rotterdam"}, 
+                new List<string> {"Amsterdam"}
+            };
 
             MainMenu Menu = new MainMenu(Options, Prompt);
             int[] selectedIndex = Menu.Run();
@@ -30,7 +67,12 @@ static class AdminMenu
             switch (selectedIndex[0])
             {
                 case 0:
-                    ParkMap.ShowInteractive();
+                    Console.Clear();
+                    MainMenu Menu = new MainMenu(MapOptions, Prompt);
+                    int[] selectedIndex = Menu.Run();
+                    string location = MapOptions[selectedIndex][0] == "2" ? "Amsterdam" : "Rotterdam";
+
+                    _parkMap.ShowInteractive(location);
                     break;
                 case 1:
                     AttractieMenu.Start();

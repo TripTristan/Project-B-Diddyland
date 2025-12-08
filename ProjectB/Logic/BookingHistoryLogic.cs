@@ -4,8 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-public static class BookingHistoryLogic
+public class BookingHistoryLogic
 {
+    private readonly IBookingAccess _bookingAccess;
+
     private static readonly Regex AnyTimestamp14 =
         new(@"(?<ts>\d{14})", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
@@ -20,10 +22,17 @@ public static class BookingHistoryLogic
         "o"
     };
 
-    public static IEnumerable<IGrouping<int, IGrouping<int, BookingModel>>>
+    private readonly Dictionary<string, DateTime> _cache = new();
+
+    public BookingHistoryLogic(IBookingAccess bookingAccess)
+    {
+        _bookingAccess = bookingAccess;
+    }
+
+    public IEnumerable<IGrouping<int, IGrouping<int, BookingModel>>>
         GetUserBookingsGroupedByYearMonth(string username)
     {
-        var rowsWithWhen = BookingAccess.GetByUsername(username)
+        var rowsWithWhen = _bookingAccess.GetByUsername(username)
             .Select(b => new { Booking = b, When = TryGetDate(b) })
             .OrderBy(x => x.When ?? DateTime.MaxValue)
             .ToList();
@@ -41,25 +50,23 @@ public static class BookingHistoryLogic
             as IEnumerable<IGrouping<int, IGrouping<int, BookingModel>>>;
     }
 
-    public static List<BookingModel> GetUserBookingsRaw(string username)
-        => BookingAccess.GetByUsername(username).ToList();
+    public List<BookingModel> GetUserBookingsRaw(string username)
+        => _bookingAccess.GetByUsername(username).ToList();
 
-    private static readonly Dictionary<string, DateTime> Cache = new();
-
-    private static DateTime EnsureDate(BookingModel b)
+    private DateTime EnsureDate(BookingModel b)
     {
         if (b == null || string.IsNullOrEmpty(b.OrderNumber))
             return DateTime.MinValue;
 
-        if (Cache.TryGetValue(b.OrderNumber, out var dt))
+        if (_cache.TryGetValue(b.OrderNumber, out var dt))
             return dt;
 
         var parsed = TryGetDate(b) ?? DateTime.MinValue;
-        Cache[b.OrderNumber] = parsed;
+        _cache[b.OrderNumber] = parsed;
         return parsed;
     }
 
-    private static DateTime? TryGetDate(BookingModel b)
+    private DateTime? TryGetDate(BookingModel b)
     {
         if (!string.IsNullOrWhiteSpace(b.BookingDate))
         {
@@ -71,7 +78,6 @@ public static class BookingHistoryLogic
                 return loose;
         }
 
-
         if (!string.IsNullOrWhiteSpace(b.OrderNumber))
         {
             var m = AnyTimestamp14.Match(b.OrderNumber);
@@ -80,13 +86,6 @@ public static class BookingHistoryLogic
                                        CultureInfo.InvariantCulture, DateTimeStyles.None,
                                        out var fromOrd))
                 return fromOrd;
-        }
-
-        if (!string.IsNullOrWhiteSpace(b.OriginalPrice))
-        {
-            if (DateTime.TryParseExact(b.OriginalPrice, BookingDateFormats,
-                                       CultureInfo.InvariantCulture, DateTimeStyles.None, out var fromPrice))
-                return fromPrice;
         }
 
         return null;

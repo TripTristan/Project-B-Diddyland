@@ -1,6 +1,8 @@
-static class UiHelpers
+using System;
+
+public class UiHelpers
 {
-    public static void WriteHeader(string text, ConsoleColor color = ConsoleColor.Cyan)
+    public void WriteHeader(string text, ConsoleColor color = ConsoleColor.Cyan)
     {
         Console.ForegroundColor = color;
         Console.WriteLine(text);
@@ -9,14 +11,14 @@ static class UiHelpers
         Console.WriteLine();
     }
 
-    public static void Warn(string msg)
+    public void Warn(string msg)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine(msg);
         Console.ResetColor();
     }
 
-    public static void Error(string msg)
+    public void Error(string msg)
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(msg);
@@ -29,10 +31,9 @@ static class UiHelpers
         Console.ForegroundColor = ConsoleColor.White;
     }
 
-    public static void Pause()
+    public void Pause()
     {
-        Console.WriteLine();
-        Console.Write("Press Enter to continue...");
+        Console.Write("\nPress Enter to continue...");
         Console.ReadLine();
     }
 

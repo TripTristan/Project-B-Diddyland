@@ -1,12 +1,21 @@
-public static class LoginLogic
+public class LoginLogic
 {
-    public static bool AccountVerify(string username, string password)
+    private readonly UserAccess _userAccess;
+    private readonly LoginStatus _loginStatus;
+
+    public LoginLogic(UserAccess userAccess, LoginStatus loginStatus)
     {
-        UserModel account = UserAccess.GetByUsername(username.ToLower()); 
+        _userAccess = userAccess;
+        _loginStatus = loginStatus;
+    }
+
+    public bool AccountVerify(string username, string password)
+    {
+        var account = _userAccess.GetByUsername(username.ToLower());
         if (account == null) return false;
         if (account.Password != password) return false;
 
-        LoginStatus.Login(account);
+        _loginStatus.Login(account);
         return true;
     }
 }

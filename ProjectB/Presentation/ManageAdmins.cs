@@ -1,8 +1,15 @@
 using System;
 
-public static class ManageAdmins
+public class ManageAdmins
 {
-    public static void Show()
+    private readonly UserAccess _userAccess;
+
+    public ManageAdmins(UserAccess userAccess)
+    {
+        _userAccess = userAccess;
+    }
+
+    public void Show()
     {
         bool running = true;
 
@@ -48,6 +55,7 @@ public static class ManageAdmins
                 case 6:
                     running = false;
                     break;
+
                 default:
                     Console.WriteLine("Invalid choice.");
                     Pause();
@@ -56,11 +64,13 @@ public static class ManageAdmins
         }
     }
 
-    private static void ViewAllUsers()
+    private void ViewAllUsers()
     {
-        var users = UserAccess.GetAllUsers();
+        var users = _userAccess.GetAllUsers();
+
         Console.Clear();
         Console.WriteLine("=== All Users ===");
+
         foreach (var user in users)
         {
             string role = user.Admin switch
@@ -70,42 +80,48 @@ public static class ManageAdmins
                 2 => "Superadmin",
                 _ => "Unknown"
             };
+
             Console.WriteLine($"{user.Id,-4} {user.Username,-20} {role}");
         }
+
         Pause();
     }
 
-    private static void ChangeRole(int newRole, string action)
+    private void ChangeRole(int newRole, string action)
     {
         Console.Write($"Enter user ID to {action}: ");
+
         if (int.TryParse(Console.ReadLine(), out int id))
         {
-            UserAccess.SetRole(id, newRole);
+            _userAccess.SetRole(id, newRole);
             Console.WriteLine($"User {id} updated to role {newRole}.");
         }
         else
         {
             Console.WriteLine("Invalid ID.");
         }
+
         Pause();
     }
 
-    private static void Delete()
+    private void Delete()
     {
         Console.Write("Enter user ID to delete: ");
+
         if (int.TryParse(Console.ReadLine(), out int id))
         {
-            UserAccess.DeleteUser(id);
+            _userAccess.DeleteUser(id);
             Console.WriteLine("User deleted successfully.");
         }
         else
         {
             Console.WriteLine("Invalid ID.");
         }
+
         Pause();
     }
 
-    private static void Pause()
+    private void Pause()
     {
         Console.WriteLine("\nPress Enter to continue...");
         Console.ReadLine();

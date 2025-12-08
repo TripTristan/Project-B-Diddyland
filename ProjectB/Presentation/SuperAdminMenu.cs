@@ -1,11 +1,46 @@
 using System;
 
-static class SuperAdminMenu
+public class SuperAdminMenu
 {
-    public static void Run()
+    private readonly LoginStatus _loginStatus;
+    private readonly UiHelpers _ui;
+    private readonly AttractieMenu _attractieMenu;
+    private readonly MenuForm _menuForm;
+    private readonly OrderForm _orderForm;
+    private readonly ReservationUI _reservationUI;
+    private readonly ParkMap _parkMap;
+    private readonly ManageAdmins _manageAdmins;
+    private readonly AdminComplaintsPage _adminComplaintsPage;
+    private readonly UserLogoutUI _logoutUi;
+
+    public SuperAdminMenu(
+        LoginStatus loginStatus,
+        UiHelpers ui,
+        AttractieMenu attractieMenu,
+        MenuForm menuForm,
+        OrderForm orderForm,
+        ReservationUI reservationUI,
+        ParkMap parkMap,
+        ManageAdmins manageAdmins,
+        AdminComplaintsPage adminComplaintsPage,
+        UserLogoutUI logoutUi)
     {
-        while (LoginStatus.CurrentUserInfo != null &&
-               LoginStatus.CurrentUserInfo.Role == (int)UserRole.SuperAdmin)
+        _loginStatus = loginStatus;
+        _ui = ui;
+        _attractieMenu = attractieMenu;
+        _menuForm = menuForm;
+        _orderForm = orderForm;
+        _reservationUI = reservationUI;
+        _parkMap = parkMap;
+        _manageAdmins = manageAdmins;
+        _adminComplaintsPage = adminComplaintsPage;
+        _logoutUi = logoutUi;
+    }
+
+    public void Run()
+    {
+        while (_loginStatus.CurrentUserInfo != null &&
+               _loginStatus.CurrentUserInfo.Role == (int)UserRole.SuperAdmin)
         {
             Console.Clear();
             UiHelpers.WriteHeader("Diddyland – Super Admin Dashboard");
@@ -61,7 +96,6 @@ static class SuperAdminMenu
                 case 7:
                     AdminComplaintsPage.Show();
                     break;
-                
 
                 case 8:
                     new UserLogoutUI().Start();

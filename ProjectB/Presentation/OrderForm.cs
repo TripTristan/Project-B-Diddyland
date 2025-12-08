@@ -1,8 +1,17 @@
 using System.Text;
 
-public static class OrderForm
+public class OrderForm
 {
-    public static void Run()
+    private readonly OrderLogic _orderLogic;
+    private readonly MenuForm _menuForm;
+
+    public OrderForm(OrderLogic orderLogic, MenuForm menuForm)
+    {
+        _orderLogic = orderLogic;
+        _menuForm = menuForm;
+    }
+
+    public void Run()
     {
 
             Console.Clear();
@@ -43,21 +52,23 @@ public static class OrderForm
         
     }
 
-    private static void AddItemUI()
+    private void AddItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add item to cart ===");
         var id = PromptInt("Enter Menu ID: ");
         var qty = PromptInt("Quantity: ");
-        var result = OrderLogic.AddToCart(id, qty);
+
+        var result = _orderLogic.AddToCart(id, qty);
         Pause(result + " Press any key...");
     }
 
-    private static void RemoveItemUI()
+    private void RemoveItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Remove item from cart ===");
-        if (OrderLogic.IsCartEmpty())
+
+        if (_orderLogic.IsCartEmpty())
         {
             Pause("Cart is empty. Press any key...");
             return;
@@ -65,15 +76,17 @@ public static class OrderForm
 
         PrintCart();
         var id = PromptInt("Enter Menu ID to remove: ");
-        var result = OrderLogic.RemoveFromCart(id);
+        var result = _orderLogic.RemoveFromCart(id);
+
         Pause(result + " Press any key...");
     }
 
-    private static void ViewCartUI()
+    private void ViewCartUI()
     {
         Console.Clear();
         Console.WriteLine("=== Cart ===");
-        if (OrderLogic.IsCartEmpty())
+
+        if (_orderLogic.IsCartEmpty())
         {
             Pause("Your cart is empty. Press any key...");
             return;
@@ -103,11 +116,12 @@ public static class OrderForm
         }
     }
 
-    private static void FinalizeUI()
+    private void FinalizeUI()
     {
         Console.Clear();
         Console.WriteLine("=== Finalize Order ===");
-        if (OrderLogic.IsCartEmpty())
+
+        if (_orderLogic.IsCartEmpty())
         {
             Pause("Your cart is empty. Add items before finalizing. Press any key...");
             return;
@@ -120,7 +134,8 @@ public static class OrderForm
             return;
         }
 
-        var summary = OrderLogic.FinalizeOrder();
+        var summary = _orderLogic.FinalizeOrder();
+
         Console.Clear();
         Console.WriteLine("=== Order Confirmed ===");
         Console.WriteLine($"Time: {summary.Timestamp:G}");
@@ -129,17 +144,22 @@ public static class OrderForm
 
         var sb = new StringBuilder();
         sb.AppendLine("Items:");
+
         foreach (var line in summary.Lines)
             sb.AppendLine($"- {line.Quantity} × {line.Label} @ €{line.Price:0.00} = €{line.Subtotal:0.00}");
+
         sb.AppendLine("---------------------------------");
         sb.AppendLine($"TOTAL: €{summary.Total:0.00}");
+
         Console.WriteLine(sb.ToString());
+
         Pause("Thank you! Press any key...");
     }
 
-    private static void PrintCart()
+    private void PrintCart()
     {
-        var cart = OrderLogic.GetCart();
+        var cart = _orderLogic.GetCart();
+
         var lines = cart.Select(c =>
         {
             var label = CartLine.BuildLabel(c.Item);
@@ -156,33 +176,38 @@ public static class OrderForm
         var sb = new StringBuilder();
         sb.AppendLine("ID   Item                           Qty   Unit      Subtotal");
         sb.AppendLine("---- ------------------------------ ---- --------- ---------");
+
         foreach (var l in lines)
             sb.AppendLine($"{l.ID,-4} {TrimPad(l.Label, 30),-30} {l.Quantity,4} €{l.Unit,7:0.00} €{l.Subtotal,7:0.00}");
+
         sb.AppendLine("------------------------------------------------------------");
-        sb.AppendLine($"TOTAL: €{OrderLogic.GetTotal():0.00}");
+        sb.AppendLine($"TOTAL: €{_orderLogic.GetTotal():0.00}");
+
         Console.WriteLine(sb.ToString());
     }
 
-    private static string TrimPad(string s, int len)
+    private string TrimPad(string s, int len)
     {
         if (s.Length == len) return s;
         if (s.Length < len) return s.PadRight(len);
         return s.Substring(0, len - 1) + "…";
     }
 
-    private static int PromptInt(string label)
+    private int PromptInt(string label)
     {
         while (true)
         {
             Console.Write(label);
             var input = (Console.ReadLine() ?? "").Trim();
+
             if (int.TryParse(input, out var value) && value >= 0)
                 return value;
+
             Console.WriteLine("Please enter a valid non-negative integer.");
         }
     }
 
-    private static void Pause(string message)
+    private void Pause(string message)
     {
         Console.WriteLine(message);
         Console.ReadKey(true);

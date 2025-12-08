@@ -1,5 +1,6 @@
 public class BookingModel
 {
+<<<<<<< HEAD
     public string OrderNumber;
     public int SessionId;
     public int Quantity;
@@ -20,4 +21,15 @@ public class BookingModel
         FinalPrice = finalPrice;
         CustomerId = customerId;
     }
+=======
+    public string OrderNumber { get; set; } = "";
+    public int SessionId { get; set; }
+    public int Quantity { get; set; }
+    public string BookingDate { get; set; } = "";
+    public decimal OriginalPrice { get; set; } 
+    public decimal Discount { get; set; }     
+    public decimal FinalPrice { get; set; }    
+    public long? CustomerId { get; set; }
+    public string Type { get; set; } = "Reservation"; 
+>>>>>>> main
 }

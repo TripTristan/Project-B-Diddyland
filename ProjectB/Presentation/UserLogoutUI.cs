@@ -1,8 +1,16 @@
 public class UserLogoutUI
 {
-    private readonly LogoutLogic _logic = new();
-    
-    public void Start() => ShowLogoutMenu();
+    private readonly LogoutLogic _logic;
+
+    public UserLogoutUI(LogoutLogic logic)
+    {
+        _logic = logic;
+    }
+
+    public void Start()
+    {
+        ShowLogoutMenu();
+    }
 
     private void ShowLogoutMenu()
     {
@@ -20,5 +28,4 @@ public class UserLogoutUI
         string message = _logic.Logout();
         Console.WriteLine(message);
     }
-
 }
