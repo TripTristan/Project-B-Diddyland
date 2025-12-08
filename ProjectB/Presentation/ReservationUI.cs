@@ -12,23 +12,7 @@
     public static int week = 0;
     public static void StartReservation()
     {
-            _customerInfo = LoginStatus.CurrentUserInfo;
-            Console.WriteLine("=== Reservation ===");
-
-            if (_customerInfo == LoginStatus.guest)
-            {
-                bool guest = UiHelpers.ChoiceHelper("You are not logged in. Continue as guest?");
-                if (!guest)
-                {
-                    UserLoginUI.StartLogin();
-                }
-                else
-                {
-                    Console.WriteLine("Continuing as guest.");
-                }
-            }
-
-            List<Session> sessions = ReservationLogic.GetAvailableSessions();
+        List<Session> sessions = ReservationLogic.GetAvailableSessions();
         if (sessions.Count == 0)
         {
             Console.WriteLine("No available sessions.");
@@ -94,17 +78,7 @@
 
 
             Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
-            foreach (Session s in orderedInDay)
-            {
-                DateTime sessionDate = DateTime.Parse(s.Date);
-                if (sessionDate.ToString("ddMMyyyy") == DateSelected.ToString("ddMMyyyy"))
-                {
-                    Console.WriteLine(
-                        $"Date: {sessionDate:yyyy-MM-dd}, " +
-                        $"Time: {s.Time}, " +
-                        $"Available Spots: {SessionAccess.GetCapacityBySession(s) - s.CurrentBookings}");
-                }
-            }
+            
             Console.WriteLine();
         }
         return $"Select a week";

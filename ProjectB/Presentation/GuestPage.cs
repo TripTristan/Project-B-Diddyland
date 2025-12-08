@@ -8,12 +8,12 @@ static class GuestMenu
             string Prompt = $"Diddyland – Guest Page\nLogged in as: {LoginStatus.CurrentUserInfo.Username} (Guest)";
             List<List<string>> Options = new List<List<string>> 
             {
-                new List<string> {"Map"}, 
-                new List<string> {"Orders"}, 
-                new List<string> {"Reservations"}, 
-                new List<string> {"Fastpass"}, 
-                new List<string> {"Profile"}, 
-                new List<string> {"Customer Complaints"}, 
+                new List<string> {"Make Reservation"}, 
+                new List<string> {"Buy Fastpass"}, 
+                new List<string> {"Submit A Complaint"}, 
+                new List<string> {"View Map"}, 
+                new List<string> {"View Orders"}, 
+                new List<string> {"View Profile"}, 
                 new List<string> {"Logout"}
             };
 
@@ -24,31 +24,30 @@ static class GuestMenu
             switch (selectedIndex[0])
             {
                 case 0:
-                    ParkMap.ShowInteractive();
+                    ReservationUI.StartReservation();
                     break;
 
                 case 1:
-                    OrderForm.Run();
+                    FastPassUI.Run(LoginStatus.CurrentUserInfo);
                     break;
 
                 case 2:
-                    ReservationUI.StartReservation();
+                    CustomerHelpPage.Show();
                     UiHelpers.Pause();
                     break;
 
                 case 3:
-                    FastPassUI.Run(LoginStatus.CurrentUserInfo);
+                    ParkMap.ShowInteractive();
                     UiHelpers.Pause();
                     break;
 
                 case 4:
-                    ProfilePage.Show(LoginStatus.CurrentUserInfo.Id);
+                    OrderForm.Run();
                     UiHelpers.Pause();
                     break;
 
                 case 5:
-                    CustomerHelpPage.Show();
-                    UiHelpers.Pause();
+                    ProfilePage.Show(LoginStatus.CurrentUserInfo.Id);
                     break;
 
                 case 6:

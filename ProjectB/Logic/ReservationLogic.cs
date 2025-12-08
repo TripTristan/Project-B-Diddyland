@@ -4,7 +4,7 @@ public static class ReservationLogic
     public static List<Session> GetAvailableSessions()
     {
         var all = SessionAccess.GetAllSessions();
-        return all.Where(s => s.CurrentBookings < SessionAccess.GetCapacityBySession(s)).ToList();
+        return all.Where(s => s.CurrentBookings < SessionAccess.GetCapacityBySession(s) && s.Date.Ticks >= DateTime.Now.Ticks).ToList();
     }
 
     public static bool CanBookSession(int sessionId, int quantity)

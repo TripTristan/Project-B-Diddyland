@@ -27,7 +27,7 @@ public class AttractieMenu
 
             try
             {
-                switch (choice)
+                switch (selectedIndex[0])
                 {
                     case 0: ListAll(); break;
                     case 1: ViewById(); break;
