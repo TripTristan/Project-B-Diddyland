@@ -2,11 +2,7 @@ using Dapper;
 using System;
 using System.Collections.Generic;
 
-<<<<<<< HEAD
-public static class AttractionAccess
-=======
 public class AttractiesAccess : IAttractiesAccess
->>>>>>> main
 {
     private readonly DatabaseContext _db;
 

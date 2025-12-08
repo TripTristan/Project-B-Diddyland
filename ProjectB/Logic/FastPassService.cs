@@ -55,44 +55,24 @@ public class FastPassLogic
         double  discount = 0.0;
         double  final = original;
 
-<<<<<<< HEAD
-        var orderNo = ReservationLogic.GenerateOrderNumber(user);
-        var reservation = new ReservationModel
-        {
-            OrderNumber   = orderNo,
-            SessionId     = sessionId,
-            Quantity      = quantity,
-            CustomerID    = user.Id,
-            BookingDate   = DateTime.Now.Ticks,
-            OriginalPrice = original,
-            Discount      = discount,
-            FinalPrice    = final
-        };
-
-=======
         var orderNo = _reservationLogic.GenerateOrderNumber(user);
         var reservation = new ReservationModel(
             orderNo,
             sessionId,
             quantity,
             user ?? new UserModel { Id = 0, Name = "Guest" },
-            DateTime.Now,
+            DateTime.Now.Ticks,
             original,
             discount,
             final,
             "FastPass");
->>>>>>> main
 
         _reservationAccess.AddBooking(reservation);
 
         session.CurrentBookings += quantity;
         _sessionAccess.UpdateSession(session);
 
-<<<<<<< HEAD
-        var attraction = AttractionAccess.GetById(session.AttractionID);
-=======
         var attraction = _attractiesAccess.GetById(session.AttractionID);
->>>>>>> main
 
         return new Confirmation
         {

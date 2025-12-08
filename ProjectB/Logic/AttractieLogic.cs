@@ -1,12 +1,5 @@
-<<<<<<< HEAD
-public static class AttractieLogic
-{
-    public static IEnumerable<AttractieModel> GetAll() => AttractionAccess.GetAll();
-    public static AttractieModel? Get(int id) => AttractionAccess.GetById(id);
-=======
 using System;
 using System.Collections.Generic;
->>>>>>> main
 
 public class AttractieLogic
 {
@@ -26,32 +19,20 @@ public class AttractieLogic
     public void Add(AttractieModel m)
     {
         Validate(m);
-<<<<<<< HEAD
-        AttractionAccess.Insert(m);
-=======
         _attractiesAccess.Insert(m);
->>>>>>> main
     }
 
     public void Update(AttractieModel m)
     {
         if (m.ID <= 0) throw new ArgumentException("Missing ID for update.");
         Validate(m);
-<<<<<<< HEAD
-        AttractionAccess.Update(m);
-=======
         _attractiesAccess.Update(m);
->>>>>>> main
     }
 
     public void Delete(int id)
     {
         if (id <= 0) throw new ArgumentException("Invalid id.");
-<<<<<<< HEAD
-        AttractionAccess.Delete(id);
-=======
         _attractiesAccess.Delete(id);
->>>>>>> main
     }
 
     private void Validate(AttractieModel m)

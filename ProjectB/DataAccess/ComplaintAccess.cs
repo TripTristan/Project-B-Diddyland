@@ -8,15 +8,7 @@ public class ComplaintsAccess
 
     public ComplaintsAccess(DatabaseContext db)
     {
-<<<<<<< HEAD
-
-            string sql = "INSERT INTO Complaints (Id, Username, Category, Description, CreatedAt, Status) " +
-                         "VALUES (@Id, @Username, @Category, @Description, @CreatedAt, @Status);";
-            DBC.Connection.Execute(sql, complaint);
-
-=======
         _db = db;
->>>>>>> main
     }
 
     public void Write(ComplaintModel complaint)
@@ -45,23 +37,14 @@ public class ComplaintsAccess
     {
         try
         {
-<<<<<<< HEAD
-            string sql = "SELECT IFNULL(MAX(Id), 0) + 1 FROM Complaints";
-            int next = DBC.Connection.ExecuteScalar<int>(sql);
-=======
             const string sql = "SELECT IFNULL(MAX(Id), 0) + 1 FROM Complaints";
             int next = _db.Connection.ExecuteScalar<int>(sql);
->>>>>>> main
             return next;
         }
         catch
         {
             return 1;
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> main
     }
 
     public List<ComplaintModel> Filter(

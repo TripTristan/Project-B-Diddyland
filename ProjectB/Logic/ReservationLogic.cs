@@ -9,13 +9,8 @@ public class ReservationLogic
 
     public ReservationLogic(SessionAccess sessionAccess, ReservationAccess reservationAccess)
     {
-<<<<<<< HEAD
-        var all = SessionAccess.GetAllSessions();
-        return all.Where(s => s.CurrentBookings < SessionAccess.GetCapacityBySession(s) && s.Date.Ticks >= DateTime.Now.Ticks).ToList();
-=======
         _sessionAccess = sessionAccess;
         _reservationAccess = reservationAccess;
->>>>>>> main
     }
 
     public List<Session> GetAvailableSessions()
@@ -32,12 +27,7 @@ public class ReservationLogic
         return session.CurrentBookings + quantity <= _sessionAccess.GetCapacityBySession(session);
     }
 
-<<<<<<< HEAD
-    // Called once per ticket from UI:
-    public static double CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
-=======
-    public decimal CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
->>>>>>> main
+    public double CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
     {
         var session = _sessionAccess.GetSessionById(sessionId)
                      ?? throw new ArgumentException("Invalid session ID.");
@@ -45,7 +35,6 @@ public class ReservationLogic
         if (session.CurrentBookings + 1 > _sessionAccess.GetCapacityBySession(session))
             throw new InvalidOperationException("Not enough available seats.");
 
-<<<<<<< HEAD
         // price & discount
         // decimal basePrice = session.PricePerPerson;
         double  basePrice = 15.0;
@@ -62,21 +51,6 @@ public class ReservationLogic
             Discount      = discount,
             FinalPrice    = finalPrice
         };
-=======
-        decimal basePrice = 15;
-        var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
-
-        var booking = new ReservationModel(
-            orderNumber,
-            sessionId,
-            qty,
-            customer,
-            DateTime.Now,
-            basePrice,
-            discount,
-            finalPrice,
-            "Reservation");
->>>>>>> main
 
         _reservationAccess.AddBooking(booking);
 
@@ -99,19 +73,11 @@ public class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-<<<<<<< HEAD
     public static (double discount, double finalPrice) CalculateDiscountedPrice(double basePrice, int age)
     {
         double discount = 0.0;
         if (age <= 12) discount = 0.5;     // children
         else if (age >= 65) discount = 0.3; // seniors
-=======
-    public (decimal discount, decimal finalPrice) CalculateDiscountedPrice(decimal basePrice, int age)
-    {
-        decimal discount = 0m;
-        if (age <= 12) discount = 0.5m;
-        else if (age >= 65) discount = 0.3m;
->>>>>>> main
 
         double finalPrice = basePrice * (1 - discount);
         return (discount, finalPrice);

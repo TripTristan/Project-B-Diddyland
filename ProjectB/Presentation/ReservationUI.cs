@@ -49,20 +49,11 @@ public class ReservationUI
 
 
 
-        public static int GetBookingQuantity(Session session) // Get and verify booking quantity
+        public static int GetBookingQuantity(Session session, quantity) 
         {
-            Console.Write("Enter the number of bookings you want: ");
-            if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
-            {
-                if (_reservationLogic.CanBookSession(session.Id, quantity))
-                    return quantity;
 
-                Console.WriteLine("Not enough available seats. Please try again.");
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter a positive number.");
-            }
+            if (_reservationLogic.CanBookSession(session.Id, quantity))
+            {return quantity;}
         }
     
 
@@ -71,7 +62,6 @@ public class ReservationUI
         int month = FinancialMenu.monthMenu();
         MainMenu DayChoice = new MainMenu(FinancialMenu.DaysInSelectedMonth(month), "Select the date:");
         DateTime DateSelected = FinancialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
-        Console.WriteLine("\nAvailable sessions:");
 
         var orderedGroups = sessions
             .Where(s =>
@@ -95,30 +85,13 @@ public class ReservationUI
                 .OrderBy(s => s.Time);
 
             Console.WriteLine($"\nDate: {group.Key:yyyy-MM-dd}\nTime Slots:");
-            
-            Console.WriteLine();
         }
-        return $"Select a week";
     }
 
     private bool IsFastPassSlot(string time)
     {
         if (string.IsNullOrWhiteSpace(time)) return false;
         return TimeSpan.TryParse(time.Trim().ToLower(), out _);
-    }
-
-    private int GetDateChoice(List<IGrouping<string, Session>> groupedByDate)
-    {
-        while (true)
-        {
-            Console.Write("Please select a date number: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) &&
-                choice >= 0 &&
-                choice < groupedByDate.Count)
-                return choice;
-
-            Console.WriteLine("Invalid input. Please try again.");
-        }
     }
 
     private void ShowSessionsByDate(List<IGrouping<string, Session>> groupedByDate, int dateChoice)
@@ -218,7 +191,6 @@ public class ReservationUI
                 // bool another = UiHelpers.ChoiceHelper("Do you want to book another session?", "Yes, continue.", "No, stop booking.");
                 // if (!another) 
                 break;
-            }
 
 
         confirm = UiHelpers.ChoiceHelper("Do you want to confirm your reservation?");
@@ -258,7 +230,7 @@ public class ReservationUI
         }
 
 
-        public static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, double totalPrice)
+        private static void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, double totalPrice)
         {
             Console.WriteLine("---------------------");
             Console.WriteLine($"Order Number: {orderNumber}");
@@ -291,7 +263,7 @@ public class ReservationUI
 
 
 
-    public static void ShowSuccessMessage(string orderNumber)
+    private static void ShowSuccessMessage(string orderNumber)
     {
         Console.WriteLine("Reservation successful! Thank you for booking with us.");
     }
@@ -301,8 +273,4 @@ public class ReservationUI
         DateTime currentDate = DateTime.Now;
         week = System.Globalization.ISOWeek.GetWeekOfYear(currentDate);; 
     }
-
-
-
-
-NEED REWORKK
+}

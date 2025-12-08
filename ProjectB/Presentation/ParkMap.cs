@@ -309,8 +309,6 @@ public class ParkMap
             Console.WriteLine("\nShowing all zones");
     }
 
-<<<<<<< HEAD
-=======
     private Zone? ParseFilter(string s)
     {
         if (s is "0" or "all" or "*" or "") return null;
@@ -354,5 +352,4 @@ public class ParkMap
             Console.ReadLine();
         }
     }
->>>>>>> main
 }

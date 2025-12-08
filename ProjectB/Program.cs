@@ -245,8 +245,6 @@ ________  .___________  ________ _____.___.____       _____    _______  ________
  
         }
 
-    }
-
     private void EnsureGuestSession()
     {
         _loginStatus.Login(new UserModel
