@@ -75,8 +75,7 @@ public class AdminComplaintsPage
         foreach (var c in complaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category} - {c.Status}");
-            Console.WriteLine($"    {c.Description}");
-            Console.WriteLine();
+            Console.WriteLine($"    {c.Description}\n");
         }
         _ui.Pause();
     }
@@ -96,9 +95,7 @@ public class AdminComplaintsPage
 
         Console.WriteLine("Available categories:");
         for (int i = 0; i < categories.Length; i++)
-        {
             Console.WriteLine($"{i + 1}. {categories[i]}");
-        }
 
         Console.Write("\nEnter category number (1–4): ");
         string? input = Console.ReadLine();
@@ -114,6 +111,7 @@ public class AdminComplaintsPage
 
         Console.Clear();
         _ui.WriteHeader($"Complaints in category: {category} ({location})");
+
         if (complaints.Count == 0)
         {
             Console.WriteLine("No complaints found for this category.");
@@ -123,8 +121,7 @@ public class AdminComplaintsPage
             foreach (var c in complaints)
             {
                 Console.WriteLine($"[{c.Id}] {c.Username} - {c.Status}");
-                Console.WriteLine($"    {c.Description}");
-                Console.WriteLine();
+                Console.WriteLine($"    {c.Description}\n");
             }
         }
         _ui.Pause();
@@ -171,8 +168,7 @@ public class AdminComplaintsPage
         foreach (var c in complaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Category} - {c.Status}");
-            Console.WriteLine($"    {c.Description}");
-            Console.WriteLine();
+            Console.WriteLine($"    {c.Description}\n");
         }
         _ui.Pause();
     }
@@ -218,8 +214,7 @@ public class AdminComplaintsPage
         foreach (var c in complaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category}");
-            Console.WriteLine($"    {c.Description}");
-            Console.WriteLine();
+            Console.WriteLine($"    {c.Description}\n");
         }
         _ui.Pause();
     }
@@ -237,31 +232,35 @@ public class AdminComplaintsPage
 
         Console.Clear();
         _ui.WriteHeader("Open Complaints");
+
         foreach (var c in openComplaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category} - {c.Status}");
-            Console.WriteLine($"    {c.Description}");
-            Console.WriteLine();
+            Console.WriteLine($"    {c.Description}\n");
         }
 
         Console.Write("Enter complaint ID to mark as handled: ");
-        if (int.TryParse(Console.ReadLine(), out int id))
-        {
-            if (!openComplaints.Any(c => c.Id == id))
-            {
-                Console.WriteLine("Invalid ID or complaint already handled.");
-            }
-            else
-            {
-                _complaintLogic.UpdateStatus(id, "Handled");
-                Console.WriteLine("✅ Complaint marked as handled.");
-            }
-        }
-        else
+        if (!int.TryParse(Console.ReadLine(), out int id))
         {
             Console.WriteLine("Invalid ID.");
+            _ui.Pause();
+            return;
         }
 
+        var selected = openComplaints.FirstOrDefault(c => c.Id == id);
+        if (selected == null)
+        {
+            Console.WriteLine("Invalid ID or complaint already handled.");
+            _ui.Pause();
+            return;
+        }
+
+        Console.Write("\nEnter admin response message: ");
+        string response = Console.ReadLine() ?? "";
+
+        _complaintLogic.MarkComplaintHandled(id, response);
+
+        Console.WriteLine("✔ Complaint marked as handled with admin response.");
         _ui.Pause();
     }
 

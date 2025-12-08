@@ -67,7 +67,7 @@ class Program
         );
 
         var manageAdmins = new ManageAdmins(userAccess);
-        var customerHelpPage = new CustomerHelpPage(complaintLogic, loginStatus);
+        var customerHelpPage = new CustomerHelpPage(complaintLogic, loginStatus, ui);
 
         var guestMenu = new GuestMenu(
             loginStatus,

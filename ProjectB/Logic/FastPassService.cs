@@ -33,22 +33,29 @@ public class FastPassLogic
         _attractiesAccess = attractiesAccess;
     }
 
-    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day)
+    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
     {
-        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
+        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
+
         return sessionsForDay
             .Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s))
             .OrderBy(s => s.Time)
             .ToList();
     }
 
-    public Confirmation BookFastPass(int sessionId, int quantity, UserModel? user)
+    public Confirmation BookFastPass(int sessionId, int quantity, UserModel? user, string location)
     {
-        if (!_reservationLogic.CanBookSession(sessionId, quantity))
-            throw new InvalidOperationException("Not enough capacity for this timeslot.");
-
         var session = _sessionAccess.GetSessionById(sessionId)
                       ?? throw new ArgumentException("Session not found.");
+
+        var attraction = _attractiesAccess.GetById(session.AttractionID)
+                        ?? throw new Exception("Attraction not found.");
+
+        if (!string.Equals(session.Location, attraction.Location, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("FastPass session does not belong to the same park as the attraction.");
+
+        if (!_reservationLogic.CanBookSession(sessionId, quantity))
+            throw new InvalidOperationException("Not enough capacity for this timeslot.");
 
         const decimal basePrice = 10m;
         decimal original = basePrice * quantity;
@@ -56,6 +63,7 @@ public class FastPassLogic
         decimal final = original;
 
         var orderNo = _reservationLogic.GenerateOrderNumber(user);
+
         var reservation = new ReservationModel(
             orderNo,
             sessionId,
@@ -65,19 +73,18 @@ public class FastPassLogic
             original,
             discount,
             final,
-            "FastPass");
+            "FastPass"
+        );
 
         _reservationAccess.AddBooking(reservation);
 
         session.CurrentBookings += quantity;
         _sessionAccess.UpdateSession(session);
 
-        var attraction = _attractiesAccess.GetById(session.AttractionID);
-
         return new Confirmation
         {
             OrderNumber = orderNo,
-            Attraction = attraction?.Name ?? $"Attraction #{session.AttractionID}",
+            Attraction = attraction.Name,
             Type = "FastPass",
             Date = session.Date,
             Time = session.Time,

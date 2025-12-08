@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 public class ComplaintLogic
 {
     private readonly ComplaintsAccess _complaintsAccess;
@@ -9,7 +7,7 @@ public class ComplaintLogic
         _complaintsAccess = complaintsAccess;
     }
 
-    public void SubmitComplaint(string username, string category, string description, string location)
+    public void SubmitComplaint(string username, string category, string description, string location, string adminResponse)
     {
         int nextId = _complaintsAccess.NextId();
 
@@ -20,7 +18,8 @@ public class ComplaintLogic
             description,
             DateTime.Now,
             "Open",
-            location
+            location,
+            adminResponse
         );
 
         _complaintsAccess.Write(complaint);
@@ -36,8 +35,13 @@ public class ComplaintLogic
         string? location = null)
         => _complaintsAccess.Filter(category, username, status, location);
 
-    public void UpdateStatus(int id, string status)
-        => _complaintsAccess.UpdateStatus(id, status);
+    public void MarkComplaintHandled(int id, string adminResponse)
+    {
+        if (string.IsNullOrWhiteSpace(adminResponse))
+            adminResponse = "No further information provided.";
+
+        _complaintsAccess.SetHandled(id, adminResponse);
+    }
 
     public void DeleteComplaint(int id)
         => _complaintsAccess.Delete(id);
