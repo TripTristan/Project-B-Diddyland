@@ -48,7 +48,7 @@ public class AdminMenu
                 new List<string> {"Attractions"},
                 new List<string> {"Menu management"}, 
                 new List<string> {"Orders"}, 
-                new List<string> {"Reservations"}, 
+                new List<string> {"Book a reservation"}, 
                 new List<string> {"Logout"}, 
                 new List<string> {"Manage Complaints"}, 
                 new List<string> {"Quit"}
