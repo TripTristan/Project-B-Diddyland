@@ -71,10 +71,10 @@ public class CustomerHelpPage
         Console.WriteLine("\nPlease describe your complaint below:");
         string description = Console.ReadLine();
 
-        string username = LoginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
         string category = Options[selectedIndex[0]][0];
 
-        ComplaintLogic.SubmitComplaint(username, category, description, location);
+        _logic.SubmitComplaint(username, category, description, location);
 
         Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
         Console.WriteLine("We appreciate your feedback and will work to improve.\n");

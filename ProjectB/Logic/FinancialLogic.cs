@@ -1,6 +1,15 @@
-static class FinancialLogic
+public class FinancialLogic
 {
-    public static DateTime GetDateFromCoordinate(int[] coord, int year, int month)
+    private readonly ReservationAccess _reservationAccess;
+    private readonly UserAccess _userAccess;
+
+    public FinancialLogic(ReservationAccess reservationAccess, UserAccess userAccess)
+    {
+        _reservationAccess = reservationAccess;
+        _userAccess = userAccess;
+    }
+
+    public DateTime GetDateFromCoordinate(int[] coord, int year, int month)
     {
         int row = coord[0];
         int col = coord[1];
@@ -10,22 +19,28 @@ static class FinancialLogic
         return new DateTime(year, month, day);
     }
 
-    public static List<ReservationModel> GetRevenueByDateRange(long beginDate, long endDate)
+    public List<ReservationModel> GetRevenueByDateRange(long beginDate, long endDate)
     {
-        List<ReservationModel> Orders = ReservationAccess.GetAllOrdersBetweenDates(beginDate, endDate);
+        List<ReservationModel> Orders = _reservationAccess.GetAllOrdersBetweenDates(beginDate, endDate);
         return Orders;
     }
 
-    public static List<ReservationModel> GetAllUserOrders(UserModel selectedUser)
+    public List<ReservationModel> GetAllUserOrders(UserModel selectedUser)
     {
-        List<ReservationModel> orders = ReservationAccess.GetAllBookingsByUserID(selectedUser.Id);
+        List<ReservationModel> orders = _reservationAccess.GetAllBookingsByUserID(selectedUser.Id);
         return orders;
     }
 
-    public static void GraphByDateAndRevenue(List<long> date, List<double> revenue)
+    public void GraphByDateAndRevenue(List<long> date, List<double> revenue)
     {
         Console.WriteLine();
     }
+
+    public List<UserModel> GrabAllUsers()
+    {
+        return _userAccess.GetAllUsers().ToList();
+    }
+
 
     
 }

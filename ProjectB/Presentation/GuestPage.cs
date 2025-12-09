@@ -46,7 +46,7 @@ public class GuestMenu
         while (_loginStatus.CurrentUserInfo != null &&
                _loginStatus.CurrentUserInfo.Role == 0)
         {
-            string Prompt = $"Diddyland – Guest Page\nLogged in as: {LoginStatus.CurrentUserInfo.Username} (Guest)";
+            string Prompt = $"Diddyland – Guest Page\nLogged in as: {_loginStatus.CurrentUserInfo.Username} (Guest)";
             List<List<string>> Options = new List<List<string>> 
             {
                 new List<string> {"Make Reservation"}, 
@@ -65,40 +65,40 @@ public class GuestMenu
             switch (selectedIndex[0])
             {
                 case 0:
-                    ReservationUI.StartReservation();
+                    _reservationUI.StartReservation();
                     break;
 
                 case 1:
-                    FastPassUI.Run(LoginStatus.CurrentUserInfo);
+                    _fastPassUI.Run(_loginStatus.CurrentUserInfo);
                     break;
 
                 case 2:
-                    CustomerHelpPage.Show();
+                    _customerHelpPage.Show();
                     UiHelpers.Pause();
                     break;
 
                 case 3:
-                    ParkMap.ShowInteractive();
+                    _parkMap.ShowInteractive("rotterdam");
                     UiHelpers.Pause();
                     break;
 
                 case 4:
-                    OrderForm.Run();
+                    _orderForm.Run();
                     UiHelpers.Pause();
                     break;
 
                 case 5:
-                    ProfilePage.Show(LoginStatus.CurrentUserInfo.Id);
+                    _profilePage.Show(_loginStatus.CurrentUserInfo.Id);
                     break;
 
                 case 6:
-                    new UserLogoutUI().Start();
+                    _logoutUI.Start();
                     UiHelpers.Pause();
                     return;
 
                 default:
-                    _ui.Warn("Unknown option.");
-                    _ui.Pause();
+                    UiHelpers.Warn("Unknown option.");
+                    UiHelpers.Pause();
                     break;
             }
         }

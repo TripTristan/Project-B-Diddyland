@@ -13,52 +13,22 @@ public class ReservationLogic
         _reservationAccess = reservationAccess;
     }
 
-    public List<Session> GetAvailableSessions()
+
+    public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, double price)
     {
-        var all = _sessionAccess.GetAllSessions();
-        return all.Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s)).ToList();
-    }
-
-    public bool CanBookSession(int sessionId, int quantity)
-    {
-        var session = _sessionAccess.GetSessionById(sessionId);
-        if (session == null) return false;
-
-        return session.CurrentBookings + quantity <= _sessionAccess.GetCapacityBySession(session);
-    }
-
-    public double CreateSingleTicketBooking(int sessionId, int age, UserModel? customer, string orderNumber, int qty)
-    {
-        var session = _sessionAccess.GetSessionById(sessionId)
-                     ?? throw new ArgumentException("Invalid session ID.");
-
-        if (session.CurrentBookings + 1 > _sessionAccess.GetCapacityBySession(session))
+        SessionModel session = _sessionAccess.GetSessionById(sessionId);
+        if (session.Capacity - qty < 5)
             throw new InvalidOperationException("Not enough available seats.");
 
-        // price & discount
-        // decimal basePrice = session.PricePerPerson;
-        double  basePrice = 15.0;
-        var (discount, finalPrice) = CalculateDiscountedPrice(basePrice, age);
 
-        ReservationModel booking = new ReservationModel
-        {
-            OrderNumber   = orderNumber,
-            SessionId     = sessionId,
-            Quantity      = qty,
-            CustomerID    = customer.Id,
-            BookingDate   = DateTime.Now.Ticks,
-            OriginalPrice = basePrice,
-            Discount      = discount,
-            FinalPrice    = finalPrice
-        };
+        ReservationModel booking = new ReservationModel(GenerateOrderNumber(customer), sessionId, qty, customer, DateTime.Now.Ticks, price, 0);
 
         _reservationAccess.AddBooking(booking);
 
-        session.CurrentBookings += 1;
+        session.Capacity -= qty;
         _sessionAccess.UpdateSession(session);
 
-        Console.WriteLine($"Ticket booked for age {age}, price: {finalPrice:C} (discount: {discount * 100}%)");
-        return finalPrice;
+        Console.WriteLine($"Ticket booked for {customer.Name}, price: {price:C}");
     }
 
     public string GenerateOrderNumber(UserModel? customerInfo)
@@ -73,23 +43,66 @@ public class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-    public static (double discount, double finalPrice) CalculateDiscountedPrice(double basePrice, int age)
-    {
-        double discount = 0.0;
-        if (age <= 12) discount = 0.5;     // children
-        else if (age >= 65) discount = 0.3; // seniors
 
-        double finalPrice = basePrice * (1 - discount);
-        return (discount, finalPrice);
+    public bool CheckForTimeslotsOnDate(DateTime date)
+    {
+        if (_sessionAccess.GetAllSessionsForDate(date.Ticks).Count != 3)
+        {
+            return false;
+        }
+        return true;
     }
 
-    public static string GetAttractionNameByAttractionID(int id)
+    public void PopulateTimeslots(DateTime date)
     {
-        return AttractionAccess.GetById(id).Name;
+        for (int i = 0; i<3; i++)
+        {
+            SessionModel session = new(_sessionAccess.NextId(), date.Ticks, i+1, 35);
+            _sessionAccess.Insert(session);
+        }
     }
 
-    public static int GetAvailableSpotsForSession(Session sesh)
+    public string AvailabilityFormatter(SessionModel Session)
     {
-        return SessionAccess.GetCapacityBySession(sesh) - sesh.CurrentBookings;
+        string prefix;
+        string suffix;
+        List<string> timeslots = new() {"", "09:00-13:00", "13:00-17:00", "17:00-21:00"};
+        switch (Session.Capacity)
+        {
+            case > 10:
+                prefix = "✅ ";
+                suffix = $" | {Session.Capacity-5} | slots are still available";
+                break;
+            case 0:
+                prefix = " | ⭕ ";
+                suffix = $"FULL";
+                break;
+            case <= 5:
+                prefix = "💫 ";
+                suffix = $" | {Session.Capacity} | VIP slots left";
+                break;
+            case > 5:
+                prefix = "⚠️ ";
+                suffix = $" | {Session.Capacity-5} | LIMITED SLOTS AVAILABLE ";
+                break;
+            default:
+                prefix = "⭕ ";
+                suffix = $"ERROR";
+                break;
+        }
+
+        return $"{prefix} {timeslots[(int)Session.Time]} {suffix}";
     }
+
+    public List<SessionModel> GetSessionsByDate(DateTime date)
+    {
+        return _sessionAccess.GetAllSessionsForDate(date.Ticks);
+    }
+
+    public double CalculatePriceForGuests(List<int> guest)
+    {
+        Console.WriteLine(guest[1]);
+        return ((guest[0]*5) + (guest[1]*15) + (guest[2]*7.50));
+    }
+
 }

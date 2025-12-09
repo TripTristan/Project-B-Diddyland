@@ -6,7 +6,7 @@ enum UserRole
     Admin = 1,
     SuperAdmin = 2
 }
-dd
+
 partial class Program
 {
     static void Main()
@@ -25,6 +25,7 @@ partial class Program
         var menuAccess = new MenusAccess(db);
         var complaintsAccess = new ComplaintsAccess(db);
         var bookingAccess = new BookingAccess(db);
+        var financialAccess = new FinancialAccess(db);
 
         var userLogic = new UserLogic(userAccess);
         var loginLogic = new LoginLogic(userAccess, loginStatus);
@@ -37,6 +38,7 @@ partial class Program
         var menuLogic = new MenuLogic(menuAccess);
         var orderLogic = new OrderLogic(menuLogic);
         var complaintLogic = new ComplaintLogic(complaintsAccess);
+        var financialLogic = new FinancialLogic(reservationAccess, userAccess);
 
         var registerUI = new UserRegister(userLogic);
         var loginUI = new UserLoginUI(loginLogic);
@@ -48,6 +50,7 @@ partial class Program
         var orderForm = new OrderForm(orderLogic, menuForm);
         var profilePage = new ProfilePage(updateLogic);
         var parkMap = new ParkMap();
+        var financialMenu = new FinancialMenu(financialLogic);
         var adminComplaintsPage = new AdminComplaintsPage(complaintLogic, ui);
 
         var fastPassUI = new FastPassUI(
@@ -63,7 +66,8 @@ partial class Program
             loginUI,
             ui,
             sessionAccess,
-            loginStatus
+            loginStatus,
+            financialLogic
         );
 
         var manageAdmins = new ManageAdmins(userAccess);
@@ -106,7 +110,8 @@ partial class Program
             parkMap,
             manageAdmins,
             adminComplaintsPage,
-            logoutUI
+            logoutUI,
+            financialMenu
         );
 
         var app = new Application(
@@ -177,16 +182,16 @@ public class Application
                         _superAdminMenu.Run();
                     else
                     {
-                        _ui.Warn("Invalid role. Logging out...");
+                        UiHelpers.Warn("Invalid role. Logging out...");
                         _logoutUI.Start();
-                        _ui.Pause();
+                        UiHelpers.Pause();
                     }
                 }
             }
             catch (Exception ex)
             {
-                _ui.Error(ex.Message);
-                _ui.Pause();
+                UiHelpers.Error(ex.Message);
+                UiHelpers.Pause();
             }
         }
     }
@@ -194,7 +199,7 @@ public class Application
     {
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(@"
+        string Prompt = (@"
 ________  .___________  ________ _____.___.____       _____    _______  ________   
 \______ \ |   \______ \ \______ \\__  |   |    |     /  _  \   \      \ \______ \  
  |    |  \|   ||    |  \ |    |  \/   |   |    |    /  /_\  \  /   |   \ |    |  \ 
@@ -220,18 +225,18 @@ ________  .___________  ________ _____.___.____       _____    _______  ________
         switch (selectedIndex[0])
         {
             case 0: 
-                UserLoginUI.StartLogin();
+                _loginUI.StartLogin();
                 UiHelpers.Pause();
                 break;
 
             case 1: 
-                UserRegister.Register();
+                _registerUI.Register();
                 UiHelpers.Pause();
                 break;
 
             case 2: 
                 EnsureGuestSession();
-                GuestMenu.Run();
+                _guestMenu.Run();
                 break;
 
             case 3: 

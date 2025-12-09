@@ -14,66 +14,58 @@ public class SessionAccess
         _attractiesAccess = attractiesAccess;
     }
 
-    public List<Session> GetAllSessions()
-        => _db.Connection.Query<Session>(
+    public List<SessionModel> GetAllSessions()
+        => _db.Connection.Query<SessionModel>(
             @"SELECT 
                  ID AS Id,
                  Date,
                  Time,
-                 AttractionID,
-                 Currentbookings AS CurrentBookings
+                 Capacity
               FROM Sessions").ToList();
 
-    public Session? GetSessionById(int id)
-        => _db.Connection.QueryFirstOrDefault<Session>(
+    public SessionModel? GetSessionById(long id)
+        => _db.Connection.QueryFirstOrDefault<SessionModel>(
             @"SELECT 
                  ID AS Id,
                  Date,
                  Time,
-                 AttractionID,
-                 Currentbookings AS CurrentBookings
+                 Capacity
               FROM Sessions
               WHERE ID = @Id", new { Id = id });
 
-    public void UpdateSession(Session session)
+    public void UpdateSession(SessionModel session)
     {
         const string sql = @"UPDATE Sessions
-                             SET Currentbookings = @CurrentBookings
+                             SET Capacity = @Capacity
                              WHERE ID = @Id";
         _db.Connection.Execute(sql, session);
     }
 
-    public void Insert(Session session)
+    public void Insert(SessionModel session)
     {
-        const string sql = @"INSERT INTO Sessions
-                             (Date, Time, AttractionID, Currentbookings)
-                             VALUES (@Date, @Time, @AttractionID, @CurrentBookings)";
+        Console.WriteLine($"{session.Id} {session.Time} {session.Date} {session.Capacity}");
+        string sql = @"INSERT INTO Sessions
+                             (ID, Date, Time, Capacity)
+                             VALUES (@Id, @Date, @Time, @Capacity);";
         _db.Connection.Execute(sql, session);
     }
 
-    public int GetCapacityBySession(Session sesh)
-    {
-        var attr = _attractiesAccess.GetById(sesh.AttractionID);
-        return attr?.Capacity ?? 0;
-    }
-
-    public List<Session> GetSessionsForAttractionOnDate(int attractionId, DateTime date)
+    public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date)
     {
         string day = date.ToString("yyyy-MM-dd");
         const string sql = @"SELECT 
                                 ID AS Id,
                                 Date,
                                 Time,
-                                AttractionID,
-                                Currentbookings AS CurrentBookings
+                                Capacity
                              FROM Sessions
-                             WHERE AttractionID = @AttractionID AND Date = @Date
+                             Date = @Date
                              ORDER BY Time";
 
-        return _db.Connection.Query<Session>(sql, new { AttractionID = attractionId, Date = day }).ToList();
+        return _db.Connection.Query<SessionModel>(sql, new { AttractionID = attractionId, Date = day }).ToList();
     }
 
-    public List<Session> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
+    public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
     {
         var existing = GetSessionsForAttractionOnDate(attractionId, date);
         if (existing.Count > 0) return existing;
@@ -107,4 +99,25 @@ public class SessionAccess
             yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0).ToString("HH:mm");
         }
     }
+
+    public List<SessionModel> GetAllSessionsForDate(long date)
+    {
+        string sql = $@"SELECT * FROM Sessions WHERE Date = {date}";
+        return _db.Connection.Query<SessionModel>(sql).ToList();
+    }
+
+    public int NextId()
+    {
+        try
+        {
+            string sql = $"SELECT IFNULL(MAX(Id), 0) + 1 FROM Sessions";
+            return _db.Connection.ExecuteScalar<int>(sql);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error getting next ID: " + e.Message);
+            return 1;
+        }
+    }
+
 }

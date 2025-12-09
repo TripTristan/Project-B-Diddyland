@@ -25,6 +25,12 @@ public class ComplaintLogic
 
         _complaintsAccess.Write(complaint);
     }
+    public List<ComplaintModel> RetrieveComplaintsWithStatus(string status)
+    {
+        List<ComplaintModel> complaints = _complaintsAccess.Filter(status: status);
+        return complaints;
+    }
+
 
     public List<ComplaintModel> GetAllComplaints(string? location = null)
         => _complaintsAccess.GetAll(location);

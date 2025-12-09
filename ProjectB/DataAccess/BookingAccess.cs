@@ -22,9 +22,7 @@ public class BookingAccess : IBookingAccess
                 SessionId AS SessionId,
                 Quantity AS Quantity,
                 BookingDate AS BookingDate,
-                OriginalPrice AS OriginalPrice,
-                Discount AS Discount,
-                FinalPrice AS FinalPrice,
+                Price,
                 CAST(CustomerId AS INTEGER) AS CustomerId,
                 Type AS Type
             FROM Bookings

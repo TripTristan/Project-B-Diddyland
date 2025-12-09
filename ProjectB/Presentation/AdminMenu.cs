@@ -41,7 +41,7 @@ public class AdminMenu
         {
             Console.Clear();
             UiHelpers.WriteHeader("Diddyland – Admin Dashboard");
-            string Prompt = $"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Admin)";
+            string Prompt = $"Logged in as: {_loginStatus.CurrentUserInfo.Username} (Admin)";
             List<List<string>> Options = new List<List<string>> 
             {
                 new List<string> {"Map"}, 
@@ -68,36 +68,36 @@ public class AdminMenu
             {
                 case 0:
                     Console.Clear();
-                    MainMenu Menu = new MainMenu(MapOptions, Prompt);
-                    int[] selectedIndex = Menu.Run();
-                    string location = MapOptions[selectedIndex][0] == "2" ? "Amsterdam" : "Rotterdam";
+                    MainMenu MapMenu = new MainMenu(MapOptions, Prompt);
+                    selectedIndex = MapMenu.Run();
+                    string location = MapOptions[selectedIndex[0]][0];
 
                     _parkMap.ShowInteractive(location);
                     break;
                 case 1:
-                    AttractieMenu.Start();
+                    _attractieMenu.Start();
                     break;
 
                 case 2:
-                    MenuForm.Run();
+                    _menuForm.Run();
                     break;
 
                 case 3:
-                    OrderForm.Run();
+                    _orderForm.Run();
                     break;
 
                 case 4:
-                    ReservationUI.StartReservation();
+                    _reservationUI.StartReservation();
                     UiHelpers.Pause();
                     break;
 
                 case 5:
-                    new UserLogoutUI().Start();
+                    _logoutUi.Start();
                     UiHelpers.Pause();
                     return;
 
                 case 6:
-                    AdminComplaintsPage.Show();
+                    _adminComplaintsPage.Show();
                     UiHelpers.Pause();
                     break;
 

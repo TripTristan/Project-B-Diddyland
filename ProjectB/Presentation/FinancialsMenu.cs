@@ -1,6 +1,15 @@
-static class FinancialMenu
+public class FinancialMenu
 {
-    public static void Start()
+    public static List<string> Months = new() {"January", "February", "  March  ", " April ", "   May"  , "   June  ", " July  ", " August ", "September", "October", "November", "December "};
+    
+    private readonly FinancialLogic _financialLogic;
+
+    public FinancialMenu(FinancialLogic financialLogic)
+    {
+        _financialLogic = financialLogic;
+    }
+
+    public void Start()
     {
         string Prompt = "Select the category you want to view";
 
@@ -81,7 +90,7 @@ static class FinancialMenu
 
         return Options;
     }
-    public static void ShowRevenueByDate()
+    public void ShowRevenueByDate()
     {
         DateTime firstDate = new();
         DateTime secondDate = new();
@@ -94,11 +103,11 @@ static class FinancialMenu
             MainMenu DayChoice = new MainMenu(Options, "Select the date:");
             if (i == 0)
             {
-                firstDate = FinancialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+                firstDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
             }
             else
             {
-                secondDate = FinancialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+                secondDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
             }
         }
 
@@ -109,15 +118,15 @@ static class FinancialMenu
             secondDate = temp;
         }
 
-        List<ReservationModel> Orders = FinancialLogic.GetRevenueByDateRange(firstDate.Ticks, secondDate.Ticks);
+        List<ReservationModel> Orders = _financialLogic.GetRevenueByDateRange(firstDate.Ticks, secondDate.Ticks);
         InformationFormatUser(Orders, $"{firstDate.ToString("MM/dd/yyyy")} - {secondDate.ToString("MM/dd/yyyy")}");
         
 
     }
 
-    public static void ShowRevenueByPerson()
+    public void ShowRevenueByPerson()
     {
-        List<UserModel> users = UserAccess.GetAllUsers().ToList();
+        List<UserModel> users = _financialLogic.GrabAllUsers();
 
         if (users.Count == 0)
         {
@@ -140,7 +149,7 @@ static class FinancialMenu
 
         UserModel selectedUser = users[selected[0]];
 
-        List<ReservationModel> userOrders = FinancialLogic.GetAllUserOrders(selectedUser);
+        List<ReservationModel> userOrders = _financialLogic.GetAllUserOrders(selectedUser);
         
         Console.Clear();
         InformationFormatUser(userOrders, selectedUser.Name);
@@ -148,13 +157,13 @@ static class FinancialMenu
 
     // the database currently doesnt register whether a product is bought or not, and its quantity, so imma leasve this for later
 
-    // public static void ShowRevenueByProduct()
+    // public void ShowRevenueByProduct()
     // {
         
     //     InformationFormatProduct("Revenue for " + selectedProduct.Name, revenues);
     // }
 
-    public static void InformationFormatUser(List<ReservationModel> userOrders, string name)
+    public void InformationFormatUser(List<ReservationModel> userOrders, string name)
     {
         Console.WriteLine("---- Revenue for " + name + " ----");
         double total = 0;
@@ -162,8 +171,8 @@ static class FinancialMenu
         foreach (ReservationModel order in userOrders)
         {
             Console.Write(new DateTime(order.BookingDate).ToString("d") + ":");
-            UiHelpers.Good($" ${order.FinalPrice}");
-            total += order.FinalPrice;
+            UiHelpers.Good($" ${order.Price}");
+            total += order.Price;
         }
 
         Console.WriteLine("-------------------------");

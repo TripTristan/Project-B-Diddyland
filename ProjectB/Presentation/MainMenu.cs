@@ -1,10 +1,10 @@
 class MainMenu
 {
-    List<List<string>> Options;
-    string Prompt;
-    int SelectedIndexHeight;
-    int SelectedIndexWidth;
-    bool FirstDateSelected;
+    public List<List<string>> Options;
+    public string Prompt;
+    public int SelectedIndexHeight;
+    public int SelectedIndexWidth;
+    public bool FirstDateSelected;
     public MainMenu(List<List<string>> options, string prompt)
     {
         SelectedIndexHeight = 0;
@@ -103,4 +103,65 @@ class MainMenu
 
         return new int[]{SelectedIndexHeight, SelectedIndexWidth};
     }
+
+   public List<int> Run(int i)
+{
+    ConsoleKey keyPressed;
+
+    do
+    {
+        Console.Clear();
+        DisplayOptions();
+
+        ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+        keyPressed = keyInfo.Key;
+
+
+        if (keyPressed == ConsoleKey.UpArrow)
+        {
+            SelectedIndexHeight--;
+            if (SelectedIndexHeight == -1)
+                SelectedIndexHeight = Options.Count() - 1;
+        }
+        else if (keyPressed == ConsoleKey.DownArrow)
+        {
+            SelectedIndexHeight++;
+            if (SelectedIndexHeight == Options.Count())
+                SelectedIndexHeight = 0;
+        }
+
+        else if (keyPressed == ConsoleKey.RightArrow)
+        {
+            string row = Options[SelectedIndexHeight][0];
+            int colonIndex = row.LastIndexOf(':');
+            int value = int.Parse(row.Substring(colonIndex + 1).Trim());
+            value++;
+            Options[SelectedIndexHeight][0] = row.Substring(0, colonIndex + 1) + " " + value;
+        }
+
+        else if (keyPressed == ConsoleKey.LeftArrow)
+        {
+            string row = Options[SelectedIndexHeight][0];
+            int colonIndex = row.LastIndexOf(':');
+            int value = int.Parse(row.Substring(colonIndex + 1).Trim());
+            if (value > 0)
+                value--;
+            Options[SelectedIndexHeight][0] = row.Substring(0, colonIndex + 1) + " " + value;
+        }
+
+    } while (keyPressed != ConsoleKey.Enter);
+
+    FirstDateSelected = true;
+
+    List<int> counts = new List<int>();
+    foreach (var row in Options)
+    {
+        int colonIndex = row[0].LastIndexOf(':');
+        int value = int.Parse(row[0].Substring(colonIndex + 1).Trim());
+        counts.Add(value);
+    }
+
+    return counts;
+    }
+
 }

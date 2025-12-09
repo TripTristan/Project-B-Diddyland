@@ -51,7 +51,7 @@ public class ParkMap
 
 
         Console.Clear();
-        Show(filter);
+        Show(location, filter);
     }
 
     public void Show(string location, Zone? filter)
@@ -63,7 +63,7 @@ public class ParkMap
         Render();
 
         Console.WriteLine(RESET);
-        PrintLegend(filter);
+        PrintLegend(filter, location);
         UiHelpers.Pause();
     }
 

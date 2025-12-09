@@ -12,6 +12,7 @@ public class SuperAdminMenu
     private readonly ManageAdmins _manageAdmins;
     private readonly AdminComplaintsPage _adminComplaintsPage;
     private readonly UserLogoutUI _logoutUi;
+    private readonly FinancialMenu _financialMenu;
 
     public SuperAdminMenu(
         LoginStatus loginStatus,
@@ -23,7 +24,8 @@ public class SuperAdminMenu
         ParkMap parkMap,
         ManageAdmins manageAdmins,
         AdminComplaintsPage adminComplaintsPage,
-        UserLogoutUI logoutUi)
+        UserLogoutUI logoutUi,
+        FinancialMenu financialMenu)
     {
         _loginStatus = loginStatus;
         _ui = ui;
@@ -35,6 +37,7 @@ public class SuperAdminMenu
         _manageAdmins = manageAdmins;
         _adminComplaintsPage = adminComplaintsPage;
         _logoutUi = logoutUi;
+        _financialMenu = financialMenu;
     }
 
     public void Run()
@@ -44,7 +47,7 @@ public class SuperAdminMenu
         {
             Console.Clear();
             UiHelpers.WriteHeader("Diddyland – Super Admin Dashboard");
-            string Prompt = $"Logged in as: {LoginStatus.CurrentUserInfo.Username} (Super Admin)";
+            string Prompt = $"Logged in as: {_loginStatus.CurrentUserInfo.Username} (Super Admin)";
             List<List<string>> Options = new List<List<string>> 
             {
                 new List<string> {"Financial Dashboard (NEW)"},
@@ -66,39 +69,39 @@ public class SuperAdminMenu
             switch (selectedIndex[0])
             {
                 case 0:
-                    FinancialMenu.Start();
+                    _financialMenu.Start();
                     break;
                 case 1:
-                    AttractieMenu.Start();
+                    _attractieMenu.Start();
                     break;
 
                 case 2:
-                    MenuForm.Run();
+                    _menuForm.Run();
                     break;
 
                 case 3:
-                    OrderForm.Run();
+                    _orderForm.Run();
                     break;
 
                 case 4:
-                    ReservationUI.StartReservation();
+                    _reservationUI.StartReservation();
                     UiHelpers.Pause();
                     break;
 
                 case 5:
-                    ParkMap.ShowInteractive();
+                    _parkMap.ShowInteractive("rotterdam");
                     break;
 
                 case 6:
-                    ManageAdmins.Show();
+                    _manageAdmins.Show();
                     break;
 
                 case 7:
-                    AdminComplaintsPage.Show();
+                    _adminComplaintsPage.Show();
                     break;
 
                 case 8:
-                    new UserLogoutUI().Start();
+                    _logoutUi.Start();
                     UiHelpers.Pause();
                     return;
 

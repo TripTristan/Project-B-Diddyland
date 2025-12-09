@@ -67,7 +67,7 @@ public class BookingHistoryUI
         if (session != null)
         {
             if (DateTime.TryParseExact(
-                    session.Date,
+                    session.Date.ToString("yyyy-MM-dd"),
                     "yyyy-MM-dd",
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
@@ -89,13 +89,14 @@ public class BookingHistoryUI
 
         if (b.Type == "FastPass" && session != null)
         {
-            var attraction = _attractiesAccess.GetById(session.AttractionID);
-            string name = attraction?.Name ?? $"Attraction #{session.AttractionID}";
-            Console.WriteLine($"Attraction   : {name}");
+            // var attraction = _attractiesAccess.GetById(session);
+            // string name = attraction?.Name ?? $"Attraction #{session}";
+            // Console.WriteLine($"Attraction   : {name}");
+            Console.WriteLine();
         }
 
         Console.WriteLine($"Session Time : {sessionDateFormatted}");
-        Console.WriteLine($"Final Price  : {b.FinalPrice:C}");
+        Console.WriteLine($"Final Price  : {b.Price:C}");
         Console.WriteLine("------------------------------------------------\n");
     }
     

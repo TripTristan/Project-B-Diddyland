@@ -4,15 +4,11 @@ using System.Linq;
 
 public class AdminComplaintsPage
 {
-<<<<<<< HEAD
     static string status;
-    public static void Show()
-=======
     private readonly ComplaintLogic _complaintLogic;
     private readonly UiHelpers _ui;
 
     public AdminComplaintsPage(ComplaintLogic complaintLogic, UiHelpers ui)
->>>>>>> main
     {
         _complaintLogic = complaintLogic;
         _ui = ui;
@@ -29,7 +25,6 @@ public class AdminComplaintsPage
         while (true)
         {
             Console.Clear();
-<<<<<<< HEAD
             string Prompt = "Admin – Complaint Management";
 
             List<List<string>> Options = new List<List<string>> 
@@ -50,61 +45,28 @@ public class AdminComplaintsPage
             switch (selectedIndex[0])
             {
                 case 0:
-                    ViewAll();
-                    break;
-                case 1:
-                    FilterByCategory();
-                    break;
-                case 2:
-                    FilterByUser();
-                    break;
-                case 3:
-                    FilterByStatus();
-                    break;
-                case 4:
-                    MarkHandled();
-                    break;
-                case 5:
-                    DeleteComplaint();
-=======
-            _ui.WriteHeader($"Admin – Complaint Management ({location})");
-            Console.WriteLine("1) View all complaints");
-            Console.WriteLine("2) Filter by category");
-            Console.WriteLine("3) Filter by username");
-            Console.WriteLine("4) Filter by status");
-            Console.WriteLine("5) Mark complaint as handled");
-            Console.WriteLine("6) Delete complaint");
-            Console.WriteLine("0) Back");
-
-            Console.Write("\nChoose an option: ");
-            string? input = Console.ReadLine();
-
-            switch (input)
-            {
-                case "1":
                     ViewAll(location);
                     break;
-                case "2":
+                case 1:
                     FilterByCategory(location);
                     break;
-                case "3":
+                case 2:
                     FilterByUser(location);
                     break;
-                case "4":
+                case 3:
                     FilterByStatus(location);
                     break;
-                case "5":
+                case 4:
                     MarkHandled(location);
                     break;
-                case "6":
+                case 5:
                     DeleteComplaint(location);
->>>>>>> main
                     break;
                 case 6:
                     return;
                 default:
-                    _ui.Warn("Invalid choice.");
-                    _ui.Pause();
+                    UiHelpers.Warn("Invalid choice.");
+                    UiHelpers.Pause();
                     break;
             }
         }
@@ -114,7 +76,7 @@ public class AdminComplaintsPage
     {
         var complaints = _complaintLogic.FilterComplaints(location: location);
         Console.Clear();
-        _ui.WriteHeader($"All Complaints ({location})");
+        UiHelpers.WriteHeader($"All Complaints ({location})");
 
         foreach (var c in complaints)
         {
@@ -122,13 +84,13 @@ public class AdminComplaintsPage
             Console.WriteLine($"    {c.Description}");
             Console.WriteLine();
         }
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 
     private void FilterByCategory(string location)
     {
         Console.Clear();
-        _ui.WriteHeader("Filter Complaints by Category");
+        UiHelpers.WriteHeader("Filter Complaints by Category");
 
         string[] categories =
         {
@@ -148,8 +110,8 @@ public class AdminComplaintsPage
         string? input = Console.ReadLine();
         if (!int.TryParse(input, out int choice) || choice < 1 || choice > categories.Length)
         {
-            _ui.Warn("Invalid choice. Please enter a number between 1 and 4.");
-            _ui.Pause();
+            UiHelpers.Warn("Invalid choice. Please enter a number between 1 and 4.");
+            UiHelpers.Pause();
             return;
         }
 
@@ -157,7 +119,7 @@ public class AdminComplaintsPage
         var complaints = _complaintLogic.FilterComplaints(category: category, location: location);
 
         Console.Clear();
-        _ui.WriteHeader($"Complaints in category: {category} ({location})");
+        UiHelpers.WriteHeader($"Complaints in category: {category} ({location})");
         if (complaints.Count == 0)
         {
             Console.WriteLine("No complaints found for this category.");
@@ -171,7 +133,7 @@ public class AdminComplaintsPage
                 Console.WriteLine();
             }
         }
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 
     private void FilterByUser(string location)
@@ -186,12 +148,12 @@ public class AdminComplaintsPage
         if (usernames.Count == 0)
         {
             Console.WriteLine("No users found for this location.");
-            _ui.Pause();
+            UiHelpers.Pause();
             return;
         }
 
         Console.Clear();
-        _ui.WriteHeader("Select a Username");
+        UiHelpers.WriteHeader("Select a Username");
 
         for (int i = 0; i < usernames.Count; i++)
             Console.WriteLine($"{i + 1}. {usernames[i]}");
@@ -201,8 +163,8 @@ public class AdminComplaintsPage
 
         if (!int.TryParse(input, out int choice) || choice < 1 || choice > usernames.Count)
         {
-            _ui.Warn("Invalid choice.");
-            _ui.Pause();
+            UiHelpers.Warn("Invalid choice.");
+            UiHelpers.Pause();
             return;
         }
 
@@ -210,7 +172,7 @@ public class AdminComplaintsPage
         var complaints = _complaintLogic.FilterComplaints(username: selectedUser, location: location);
 
         Console.Clear();
-        _ui.WriteHeader($"Complaints by {selectedUser} ({location})");
+        UiHelpers.WriteHeader($"Complaints by {selectedUser} ({location})");
 
         foreach (var c in complaints)
         {
@@ -218,13 +180,12 @@ public class AdminComplaintsPage
             Console.WriteLine($"    {c.Description}");
             Console.WriteLine();
         }
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 
     private void FilterByStatus(string location)
     {
-<<<<<<< HEAD
-        
+
         List<List<string>> Options = new List<List<string>> 
         {
             new List<string> {"Open"},
@@ -243,8 +204,8 @@ public class AdminComplaintsPage
                 status = "Handled";
                 break;
         }
-        List<ComplaintModel> complaints = ComplaintsAccess.Filter(status: status);
-=======
+        List<ComplaintModel> complaints = _complaintLogic.RetrieveComplaintsWithStatus(status);
+
         var statuses = _complaintLogic
             .FilterComplaints(location: location)
             .Select(c => c.Status)
@@ -255,40 +216,30 @@ public class AdminComplaintsPage
         if (statuses.Count == 0)
         {
             Console.WriteLine("No statuses found for this location.");
-            _ui.Pause();
+            UiHelpers.Pause();
             return;
         }
 
->>>>>>> main
+
         Console.Clear();
-        _ui.WriteHeader("Select a Status");
+        UiHelpers.WriteHeader("Select a Status");
 
         for (int i = 0; i < statuses.Count; i++)
             Console.WriteLine($"{i + 1}. {statuses[i]}");
 
-        Console.Write("\nEnter number: ");
-        string? input = Console.ReadLine();
-
-        if (!int.TryParse(input, out int choice) || choice < 1 || choice > statuses.Count)
-        {
-            _ui.Warn("Invalid choice.");
-            _ui.Pause();
-            return;
-        }
-
-        string selectedStatus = statuses[choice - 1];
-        var complaints = _complaintLogic.FilterComplaints(status: selectedStatus, location: location);
+        string selectedStatus = statuses[selectedIndex[0]];
+        var complaint = _complaintLogic.FilterComplaints(status: selectedStatus, location: location);
 
         Console.Clear();
-        _ui.WriteHeader($"Complaints with status {selectedStatus} ({location})");
+        UiHelpers.WriteHeader($"Complaints with status {selectedStatus} ({location})");
 
-        foreach (var c in complaints)
+        foreach (var c in complaint)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category}");
             Console.WriteLine($"    {c.Description}");
             Console.WriteLine();
         }
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 
     private void MarkHandled(string location)
@@ -298,12 +249,12 @@ public class AdminComplaintsPage
         if (openComplaints.Count == 0)
         {
             Console.WriteLine("No open complaints to handle.");
-            _ui.Pause();
+            UiHelpers.Pause();
             return;
         }
 
         Console.Clear();
-        _ui.WriteHeader("Open Complaints");
+        UiHelpers.WriteHeader("Open Complaints");
         foreach (var c in openComplaints)
         {
             Console.WriteLine($"[{c.Id}] {c.Username} - {c.Category} - {c.Status}");
@@ -329,7 +280,7 @@ public class AdminComplaintsPage
             Console.WriteLine("Invalid ID.");
         }
 
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 
     private void DeleteComplaint(string location)
@@ -345,6 +296,6 @@ public class AdminComplaintsPage
         {
             Console.WriteLine("Invalid ID.");
         }
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 }

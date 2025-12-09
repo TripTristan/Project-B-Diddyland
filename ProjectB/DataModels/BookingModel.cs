@@ -4,9 +4,7 @@ public class BookingModel
     public int SessionId { get; set; }
     public int Quantity { get; set; }
     public string BookingDate { get; set; } = "";
-    public decimal OriginalPrice { get; set; } 
-    public decimal Discount { get; set; }     
-    public decimal FinalPrice { get; set; }    
+    public decimal Price { get; set; } 
     public long? CustomerId { get; set; }
     public string Type { get; set; } = "Reservation"; 
 }

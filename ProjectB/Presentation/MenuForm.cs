@@ -39,7 +39,7 @@ public class MenuForm
 
     public void Run()
     {
-        Console.WriteLine(FormatMenu(MenuLogic.GetAll())); // only run this for non amdin users
+        Console.WriteLine(FormatMenu(_menuLogic.GetAll())); // only run this for non amdin users
         List<List<string>> Options = new List<List<string>> 
         {
             new List<string> {"Add FOOD"},

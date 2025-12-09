@@ -14,27 +14,23 @@ public class ReservationAccess
     {
         _db = db;
         _userAccess = userAccess;
-        string sql = $"INSERT INTO {Table} (OrderNumber, SessionID, Quantity, BookingDate, OriginalPrice, Discount, FinalPrice, CustomerId) VALUES (@OrderNumber, @SessionId, @Quantity, @BookingDate, @OriginalPrice, @Discount, @FinalPrice, @CustomerID);";
-        _db.Connection.Execute(sql, booking);
-        Console.WriteLine($"[DB] Added ticket for {_userAccess.GetNameById(booking.CustomerID) ?? "Guest"} ({booking.OrderNumber})");
-        _db.CloseConnection();
+        _db.Dispose();
     }
 
-    public static List<ReservationModel> GetAllBookings() => _bookings;
 
-    public static List<ReservationModel> GetAllBookingsByUserID(int id)
+    public List<ReservationModel> GetAllBookingsByUserID(int id)
     {
         string sql = $@"
-SELECT OrderNumber, SessionId, Quantity, BookingDate, OriginalPrice * 1.0 AS OriginalPrice, Discount * 1.0 AS Discount, FinalPrice * 1.0 AS FinalPrice, CustomerId 
+SELECT OrderNumber, SessionId, Quantity, BookingDate, Price, CustomerId, Type
 FROM {Table}
 WHERE CustomerId = @Id; ";
 
         return _db.Connection.Query<ReservationModel>(sql, new { Id = id }).ToList();
     }
 
-    public static List<ReservationModel> GetAllOrdersBetweenDates(long date1, long date2)
+    public List<ReservationModel> GetAllOrdersBetweenDates(long date1, long date2)
     {
-        string sql = $@"SELECT OrderNumber, SessionId, Quantity, BookingDate, OriginalPrice * 1.0 AS OriginalPrice, Discount * 1.0 AS Discount, FinalPrice * 1.0 AS FinalPrice, CustomerId FROM {Table} WHERE BookingDate BETWEEN {date1} AND {date2};";
+        string sql = $@"SELECT OrderNumber, SessionId, Quantity, BookingDate, Price, CustomerId, Type FROM {Table} WHERE BookingDate BETWEEN {date1} AND {date2};";
 
         return _db.Connection.Query<ReservationModel>(sql).ToList();
     }
@@ -45,16 +41,17 @@ WHERE CustomerId = @Id; ";
     {
         string sql =
             $"INSERT INTO {Table} " +
-            "(OrderNumber, SessionID, Quantity, CustomerId, BookingDate, OriginalPrice, Discount, FinalPrice, Type) " +
-            "VALUES (@OrderNumber, @SessionId, @Quantity, @CustomerID, @BookingDate, @OriginalPrice, @Discount, @FinalPrice, @Type);";
+            "(OrderNumber, SessionID, Quantity, CustomerId, BookingDate, Price, Type) " +
+            "VALUES (@OrderNumber, @SessionId, @Quantity, @CustomerID, @BookingDate, @Price, @FastPass);";
 
         _db.Connection.Execute(sql, booking);
 
         var name = _userAccess.GetNameById(booking.CustomerID) ?? "Guest";
-        Console.WriteLine($"[DB] Added ticket for {name} ({booking.OrderNumber})");
 
         _bookings.Add(booking);
     }
 
-    public List<ReservationModel> GetAllBookings() => _bookings;
+
+    
+
 }

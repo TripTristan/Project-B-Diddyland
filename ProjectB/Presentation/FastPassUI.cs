@@ -73,9 +73,9 @@ public class FastPassUI
         for (int i = 0; i < available.Count; i++)
         {
             var s = available[i];
-            int cap = _sessionAccess.GetCapacityBySession(s);
+            long cap = s.Capacity;
 
-            Console.WriteLine($"  [{i + 1}] {s.Time} (Booked: {s.CurrentBookings}/{cap})");
+            Console.WriteLine($"  [{i + 1}] {s.Time} (Booked: {s.Capacity}/{cap})");
         }
 
         Console.WriteLine("\nChoose a timeslot (0 to cancel): ");

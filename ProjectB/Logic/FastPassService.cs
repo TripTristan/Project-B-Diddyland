@@ -33,27 +33,22 @@ public class FastPassLogic
         _attractiesAccess = attractiesAccess;
     }
 
-    public List<Session> GetAvailableFastPassSessions(int attractionId, DateTime day)
+    public List<SessionModel> GetAvailableFastPassSessions(int attractionId, DateTime day)
     {
         var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
         return sessionsForDay
-            .Where(s => s.CurrentBookings < _sessionAccess.GetCapacityBySession(s))
+            .Where(s => 35 - s.Capacity < s.Capacity)
             .OrderBy(s => s.Time)
             .ToList();
     }
 
-    public Confirmation BookFastPass(int sessionId, int quantity, UserModel? user)
+    public Confirmation BookFastPass(long sessionId, int quantity, UserModel? user)
     {
-        if (!_reservationLogic.CanBookSession(sessionId, quantity))
-            throw new InvalidOperationException("Not enough capacity for this timeslot.");
-
-        var session = _sessionAccess.GetSessionById(sessionId)
-                      ?? throw new ArgumentException("Session not found.");
+        // if (!_reservationLogic.CanBookSession(sessionId, quantity))
+        //     throw new InvalidOperationException("Not enough capacity for this timeslot.");
 
         const double basePrice = 10.0;
         double  original = basePrice * quantity;
-        double  discount = 0.0;
-        double  final = original;
 
         var orderNo = _reservationLogic.GenerateOrderNumber(user);
         var reservation = new ReservationModel(
@@ -63,27 +58,23 @@ public class FastPassLogic
             user ?? new UserModel { Id = 0, Name = "Guest" },
             DateTime.Now.Ticks,
             original,
-            discount,
-            final,
-            "FastPass");
+            1);
 
         _reservationAccess.AddBooking(reservation);
+        SessionModel session = _sessionAccess.GetSessionById(sessionId);
 
-        session.CurrentBookings += quantity;
+        session.Capacity -= quantity;
         _sessionAccess.UpdateSession(session);
-
-        var attraction = _attractiesAccess.GetById(session.AttractionID);
 
         return new Confirmation
         {
             OrderNumber = orderNo,
-            Attraction = attraction?.Name ?? $"Attraction #{session.AttractionID}",
             Type = "FastPass",
-            Date = session.Date,
-            Time = session.Time,
+            Date = session.Date.ToString(),
+            Time = session.Time.ToString(),
             Quantity = quantity,
             PricePerPerson = basePrice,
-            TotalPrice = final
+            TotalPrice = original
         };
     }
 }

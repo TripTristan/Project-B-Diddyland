@@ -28,7 +28,7 @@ public class OrderForm
             int[] selectedIndex = Menu.Run();
             UiHelpers.Pause();
 
-            Console.WriteLine(MenuForm.FormatMenu(OrderLogic.GetAllMenuItems()));
+            Console.WriteLine(_menuForm.FormatMenu(_orderLogic.GetAllMenuItems()));
 
             switch (selectedIndex[0])
             {
@@ -108,7 +108,7 @@ public class OrderForm
             case 0:
                 var id = PromptInt("Menu ID to update: ");
                 var qty = PromptInt("New quantity: ");
-                var msg = OrderLogic.UpdateQuantity(id, qty);
+                var msg = _orderLogic.UpdateQuantity(id, qty);
                 Pause(msg + " Press any key...");
                 break;
             case 1:
