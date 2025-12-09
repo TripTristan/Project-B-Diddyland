@@ -83,7 +83,7 @@ public class GuestMenu
                     break;
 
                 case 4:
-                    _orderForm.Run();
+                    _bookingHistoryUI.Display(_loginStatus.CurrentUserInfo.Username);
                     UiHelpers.Pause();
                     break;
 
