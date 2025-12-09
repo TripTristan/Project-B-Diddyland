@@ -56,10 +56,10 @@ public class ReservationUI
 
         Console.WriteLine($"\nFinal Price (after discount if any): {finalPrice:C}");
 
-        ShowBookingDetails(ChosenDate.Ticks, _reservationLogic.GenerateOrderNumber(_loginStatus.CurrentUserInfo), session, GuestsAges, Price);
+        ShowBookingDetails(ChosenDate.Ticks, _reservationLogic.GenerateOrderNumber(_loginStatus.CurrentUserInfo), session, GuestsAges, finalPrice);
         if (UiHelpers.ChoiceHelper("Confirm order"))
         {
-            _reservationLogic.CreateSingleTicketBooking(session.Id, (GuestsAges[0] + GuestsAges[1] + GuestsAges[2]), _loginStatus.CurrentUserInfo, Price);
+            _reservationLogic.CreateSingleTicketBooking(session.Id, (GuestsAges[0] + GuestsAges[1] + GuestsAges[2]), _loginStatus.CurrentUserInfo, finalPrice);
         }
         ShowSuccessMessage();
         UiHelpers.Pause();
