@@ -31,6 +31,12 @@ public class ReservationLogic
         Console.WriteLine($"Ticket booked for {customer.Name}, price: {price:C}");
     }
 
+    public bool CanBookSession(long sessionId, int qty)
+    {
+        SessionModel session = _sessionAccess.GetSessionById(sessionId);
+        return session.Capacity - qty < 5;
+    }
+
     public string GenerateOrderNumber(UserModel? customerInfo)
     {
         var random = new Random();

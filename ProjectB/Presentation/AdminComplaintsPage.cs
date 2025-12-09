@@ -116,12 +116,7 @@ public class AdminComplaintsPage
         var complaints = _complaintLogic.FilterComplaints(category: category, location: location);
 
         Console.Clear();
-<<<<<<< HEAD
         UiHelpers.WriteHeader($"Complaints in category: {category} ({location})");
-=======
-        _ui.WriteHeader($"Complaints in category: {category} ({location})");
-
->>>>>>> f9dc270555a268f44f2ce5154d1282485432fb25
         if (complaints.Count == 0)
         {
             Console.WriteLine("No complaints found for this category.");
@@ -264,7 +259,7 @@ public class AdminComplaintsPage
         if (!int.TryParse(Console.ReadLine(), out int id))
         {
             Console.WriteLine("Invalid ID.");
-            _ui.Pause();
+            UiHelpers.Pause();
             return;
         }
 
@@ -273,7 +268,7 @@ public class AdminComplaintsPage
         if (selected == null)
         {
             Console.WriteLine("Invalid ID or complaint already handled.");
-            _ui.Pause();
+            UiHelpers.Pause();
             return;
         }
 
@@ -283,7 +278,7 @@ public class AdminComplaintsPage
         _complaintLogic.MarkComplaintHandled(id, response);
 
         Console.WriteLine("✔ Complaint marked as handled with admin response.");
-        _ui.Pause();
+        UiHelpers.Pause();
     }
 
     private void DeleteComplaint(string location)

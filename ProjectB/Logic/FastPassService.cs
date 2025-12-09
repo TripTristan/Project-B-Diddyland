@@ -33,9 +33,9 @@ public class FastPassLogic
         _attractiesAccess = attractiesAccess;
     }
 
-    public List<SessionModel> GetAvailableFastPassSessions(int attractionId, DateTime day)
+    public List<SessionModel> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
     {
-        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day, location);
+        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
 
         return sessionsForDay
             .Where(s => 35 - s.Capacity < s.Capacity)
@@ -43,16 +43,13 @@ public class FastPassLogic
             .ToList();
     }
 
-    public Confirmation BookFastPass(long sessionId, int quantity, UserModel? user)
+    public Confirmation BookFastPass(long sessionId, int quantity, UserModel? user, string location)
     {
         var session = _sessionAccess.GetSessionById(sessionId)
                       ?? throw new ArgumentException("Session not found.");
 
-        var attraction = _attractiesAccess.GetById(session.AttractionID)
-                        ?? throw new Exception("Attraction not found.");
-
-        if (!string.Equals(session.Location, attraction.Location, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("FastPass session does not belong to the same park as the attraction.");
+        // if (!string.Equals(session.Location, attraction.Location, StringComparison.OrdinalIgnoreCase))
+        //     throw new InvalidOperationException("FastPass session does not belong to the same park as the attraction.");
 
         if (!_reservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
@@ -73,7 +70,6 @@ public class FastPassLogic
             1);
 
         _reservationAccess.AddBooking(reservation);
-        SessionModel session = _sessionAccess.GetSessionById(sessionId);
 
         session.Capacity -= quantity;
         _sessionAccess.UpdateSession(session);

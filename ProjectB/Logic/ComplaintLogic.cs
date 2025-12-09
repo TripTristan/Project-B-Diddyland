@@ -24,6 +24,24 @@ public class ComplaintLogic
 
         _complaintsAccess.Write(complaint);
     }
+
+    public void SubmitComplaint(string username, string category, string description, string location)
+    {
+        int nextId = _complaintsAccess.NextId();
+
+        ComplaintModel complaint = new ComplaintModel(
+            nextId,
+            username,
+            category,
+            description,
+            DateTime.Now,
+            "Open",
+            location,
+            "-"
+        );
+
+        _complaintsAccess.Write(complaint);
+    }
     public List<ComplaintModel> RetrieveComplaintsWithStatus(string status)
     {
         List<ComplaintModel> complaints = _complaintsAccess.Filter(status: status);

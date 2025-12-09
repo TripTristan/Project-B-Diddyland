@@ -20,13 +20,7 @@ public class SessionAccess
                  ID AS Id,
                  Date,
                  Time,
-<<<<<<< HEAD
                  Capacity
-=======
-                 AttractionID,
-                 Currentbookings AS CurrentBookings,
-                 Location
->>>>>>> f9dc270555a268f44f2ce5154d1282485432fb25
               FROM Sessions").ToList();
 
     public SessionModel? GetSessionById(long id)
@@ -35,13 +29,7 @@ public class SessionAccess
                  ID AS Id,
                  Date,
                  Time,
-<<<<<<< HEAD
                  Capacity
-=======
-                 AttractionID,
-                 Currentbookings AS CurrentBookings,
-                 Location
->>>>>>> f9dc270555a268f44f2ce5154d1282485432fb25
               FROM Sessions
               WHERE ID = @Id", new { Id = id });
 
@@ -78,25 +66,51 @@ public class SessionAccess
         return _db.Connection.Query<SessionModel>(sql, new { AttractionID = attractionId, Date = day }).ToList();
     }
 
+    public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
+    {
+        string day = date.ToString("yyyy-MM-dd");
+
+        const string sql = @"SELECT 
+                                ID AS Id,
+                                Date,
+                                Time,
+                                Capacity
+                             FROM Sessions
+                             Date = @Date
+                             ORDER BY Time";
+
+        return _db.Connection.Query<SessionModel>(sql, new { AttractionID = attractionId, Date = day }).ToList();
+    }
+
     public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
+    {
+        var existing = GetSessionsForAttractionOnDate(attractionId, date);
+        if (existing.Any())
+            return existing;
+
+        var newSessions = new List<SessionModel>();
+
+        foreach (var time in GenerateHalfHourSlots())
+        {
+            var session = new SessionModel(NextId(), date.Ticks, 3, 0);
+
+            Insert(session);
+            newSessions.Add(session);
+        }
+
+        return newSessions;
+    }
+    public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
     {
         var existing = GetSessionsForAttractionOnDate(attractionId, date, location);
         if (existing.Any())
             return existing;
 
-        var newSessions = new List<Session>();
-        string day = date.ToString("yyyy-MM-dd");
+        var newSessions = new List<SessionModel>();
 
         foreach (var time in GenerateHalfHourSlots())
         {
-            var session = new Session
-            {
-                Date = day,
-                Time = time,
-                AttractionID = attractionId,
-                CurrentBookings = 0,
-                Location = location
-            };
+            var session = new SessionModel(NextId(), date.Ticks, 3, 0);
 
             Insert(session);
             newSessions.Add(session);
