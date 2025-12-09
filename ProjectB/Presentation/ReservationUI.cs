@@ -60,7 +60,7 @@ public class ReservationUI
         Console.Clear();
         UiHelpers.WriteHeader("Booking Details:\n");
         Console.WriteLine($"Order Number: {orderNumber}");
-        Console.WriteLine($"Date: {chosenDate.ToString("dd-MM-yyyy")} {TimeslotOptions[(int)session.Time]}\n");
+        Console.WriteLine($"Date: {chosenDate:dd-MM-yyyy} {TimeslotOptions[(int)session.Time]}\n");
 
 
         for (int i = 0; i<3; i++)
@@ -111,7 +111,7 @@ public class ReservationUI
             new List<string> {_reservationLogic.AvailabilityFormatter(sessions[2])}
         };
 
-        MainMenu Menu = new MainMenu(Options, $"Select A Timeslot for\n {sessions[0].Date.ToString("dd-MM-yyyy")}");
+        MainMenu Menu = new MainMenu(Options, $"Select A Timeslot for\n {sessions[0].Date:dd-MM-yyyy}");
         int[] selectedIndex = Menu.Run();
         UiHelpers.Pause();
 
