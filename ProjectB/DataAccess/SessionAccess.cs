@@ -45,12 +45,15 @@ public class SessionAccess
         _db.Connection.Execute(sql, session);
     }
 
-    public void Insert(Session session)
+    public int Insert(Session session)
     {
         const string sql = @"INSERT INTO Sessions
                              (Date, Time, AttractionID, Currentbookings, Location)
-                             VALUES (@Date, @Time, @AttractionID, @CurrentBookings, @Location)";
-        _db.Connection.Execute(sql, session);
+                             VALUES (@Date, @Time, @AttractionID, @CurrentBookings, @Location);
+                             SELECT last_insert_rowid()";
+        int newId = _db.Connection.QuerySingle<int>(sql, session);
+        session.Id = newId;
+        return newId;
     }
 
     public int GetCapacityBySession(Session sesh)
