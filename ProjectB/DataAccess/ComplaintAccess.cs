@@ -77,10 +77,15 @@ public class ComplaintsAccess
         return result;
     }
 
-    public void UpdateStatus(int id, string status)
+    public void SetHandled(int id, string adminResponse)
     {
-        const string sql = "UPDATE Complaints SET Status = @Status WHERE Id = @Id;";
-        _db.Connection.Execute(sql, new { Id = id, Status = status });
+        const string sql = @"
+            UPDATE Complaints
+            SET Status = 'Handled',
+                AdminResponse = @AdminResponse
+            WHERE ID = @Id";
+
+        _db.Connection.Execute(sql, new { Id = id, AdminResponse = adminResponse });
     }
 
     public void Delete(int id)

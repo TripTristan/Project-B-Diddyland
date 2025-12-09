@@ -27,23 +27,25 @@ public class FastPassUI
         Console.Clear();
         Console.WriteLine("=== FastPass Reservation ===\n");
 
-       var attractions = _attractiesAccess.GetAll()?.ToList() ?? new List<AttractieModel>();
+        string location = ChooseParkLocation();
+
+        var attractions = _attractiesAccess.GetAll()
+            .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         if (attractions.Count == 0)
         {
-            Console.WriteLine("No attractions found. Please add attractions first.");
+            Console.WriteLine($"No attractions found in {location}. Please add attractions first.");
             return;
         }
 
-        Console.WriteLine("Select an attraction:");
-
+        Console.WriteLine($"\nSelect an attraction in {location}:");
         foreach (var a in attractions)
         {
             Console.WriteLine(
                 $"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})"
             );
         }
-
 
         Console.WriteLine("\nEnter attraction ID (0 to cancel): ");
 
@@ -60,11 +62,10 @@ public class FastPassUI
 
         DateTime day = DateTime.Today;
 
-        var available = _fastPassLogic.GetAvailableFastPassSessions(attractionId, day);
-
+        var available = _fastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
         if (available.Count == 0)
         {
-            Console.WriteLine("\nNo available timeslots for this attraction today.");
+            Console.WriteLine($"\nNo available timeslots for this attraction today in {location}.");
             return;
         }
 
@@ -99,7 +100,7 @@ public class FastPassUI
 
         try
         {
-            var confirmation = _fastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser);
+            var confirmation = _fastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser, location);
 
             Console.Clear();
             Console.WriteLine("====== FastPass Confirmation ======\n");
@@ -117,6 +118,26 @@ public class FastPassUI
         catch (Exception ex)
         {
             Console.WriteLine($"\nBooking failed: {ex.Message}");
+        }
+    }
+
+    private string ChooseParkLocation()
+    {
+        string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
+
+        while (true)
+        {
+            Console.WriteLine("Select park location:");
+            for (int i = 0; i < locations.Length; i++)
+                Console.WriteLine($"{i + 1}) {locations[i]}");
+
+            Console.Write("\nEnter choice number: ");
+            string? input = Console.ReadLine();
+
+            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= locations.Length)
+                return locations[choice - 1];
+
+            Console.WriteLine("Invalid input. Please choose a valid number.\n");
         }
     }
 

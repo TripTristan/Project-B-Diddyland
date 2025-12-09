@@ -20,7 +20,13 @@ public class SessionAccess
                  ID AS Id,
                  Date,
                  Time,
+<<<<<<< HEAD
                  Capacity
+=======
+                 AttractionID,
+                 Currentbookings AS CurrentBookings,
+                 Location
+>>>>>>> f9dc270555a268f44f2ce5154d1282485432fb25
               FROM Sessions").ToList();
 
     public SessionModel? GetSessionById(long id)
@@ -29,7 +35,13 @@ public class SessionAccess
                  ID AS Id,
                  Date,
                  Time,
+<<<<<<< HEAD
                  Capacity
+=======
+                 AttractionID,
+                 Currentbookings AS CurrentBookings,
+                 Location
+>>>>>>> f9dc270555a268f44f2ce5154d1282485432fb25
               FROM Sessions
               WHERE ID = @Id", new { Id = id });
 
@@ -53,6 +65,7 @@ public class SessionAccess
     public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date)
     {
         string day = date.ToString("yyyy-MM-dd");
+
         const string sql = @"SELECT 
                                 ID AS Id,
                                 Date,
@@ -67,33 +80,36 @@ public class SessionAccess
 
     public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
     {
-        var existing = GetSessionsForAttractionOnDate(attractionId, date);
-        if (existing.Count > 0) return existing;
+        var existing = GetSessionsForAttractionOnDate(attractionId, date, location);
+        if (existing.Any())
+            return existing;
 
-        _ = _attractiesAccess.GetById(attractionId)
-            ?? throw new InvalidOperationException($"Attraction {attractionId} not found.");
+        var newSessions = new List<Session>();
+        string day = date.ToString("yyyy-MM-dd");
 
-        const string insertSql = @"INSERT INTO Sessions
-                                   (Date, Time, AttractionID, Currentbookings)
-                                   VALUES (@Date, @Time, @AttractionID, 0)";
-
-        foreach (var t in GenerateHalfHourSlots())
+        foreach (var time in GenerateHalfHourSlots())
         {
-            _db.Connection.Execute(insertSql, new
+            var session = new Session
             {
-                Date = date.ToString("yyyy-MM-dd"),
-                Time = t,
-                AttractionID = attractionId
-            });
+                Date = day,
+                Time = time,
+                AttractionID = attractionId,
+                CurrentBookings = 0,
+                Location = location
+            };
+
+            Insert(session);
+            newSessions.Add(session);
         }
 
-        return GetSessionsForAttractionOnDate(attractionId, date);
+        return newSessions;
     }
 
     private IEnumerable<string> GenerateHalfHourSlots()
     {
         var start = new TimeSpan(9, 0, 0);
         var end = new TimeSpan(18, 0, 0);
+
         for (var t = start; t < end; t = t.Add(TimeSpan.FromMinutes(30)))
         {
             yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0).ToString("HH:mm");
