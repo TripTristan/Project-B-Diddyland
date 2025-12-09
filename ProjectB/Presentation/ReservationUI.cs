@@ -14,6 +14,7 @@ public class ReservationUI
     private readonly SessionAccess _sessionAccess;
     private readonly LoginStatus _loginStatus;
     private readonly FinancialLogic _financialLogic;
+    private readonly DiscountCodeLogic _discountLogic;
 
     private UserModel? _customerInfo;
     private int _week = 0;
@@ -25,7 +26,8 @@ public class ReservationUI
         UiHelpers ui,
         SessionAccess sessionAccess,
         LoginStatus loginStatus,
-        FinancialLogic financialLogic)
+        FinancialLogic financialLogic,
+        DiscountCodeLogic discountLogic)
     {
         _reservationLogic = reservationLogic;
         _paymentUI = paymentUI;
@@ -34,6 +36,7 @@ public class ReservationUI
         _sessionAccess = sessionAccess;
         _loginStatus = loginStatus;
         _financialLogic = financialLogic;
+        _discountLogic = discountLogic;
     }
 
     
@@ -45,6 +48,14 @@ public class ReservationUI
         SessionModel session = ShowTimeslotsByDate(_reservationLogic.GetSessionsByDate(ChosenDate));
         List<int> GuestsAges = GuestQuantitySelection();
         double Price = _reservationLogic.CalculatePriceForGuests(GuestsAges);
+
+        Console.Write("\nDo you have a discount code? (enter or leave blank): ");
+        string? code = Console.ReadLine()?.Trim();
+
+        double finalPrice = _discountLogic.Apply(code, Price);
+
+        Console.WriteLine($"\nFinal Price (after discount if any): {finalPrice:C}");
+
         ShowBookingDetails(ChosenDate.Ticks, _reservationLogic.GenerateOrderNumber(_loginStatus.CurrentUserInfo), session, GuestsAges, Price);
         if (UiHelpers.ChoiceHelper("Confirm order"))
         {

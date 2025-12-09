@@ -43,6 +43,10 @@ partial class Program
         var registerUI = new UserRegister(userLogic);
         var loginUI = new UserLoginUI(loginLogic);
         var logoutUI = new UserLogoutUI(logoutLogic);
+        var discountAccess = new DiscountCodeAccess(db);
+        var discountLogic = new DiscountCodeLogic(discountAccess);
+        var discountUI = new DiscountCodeUI(discountLogic);
+
 
         var bookingHistoryUI = new BookingHistoryUI(bookingHistoryLogic, sessionAccess, attractiesAccess);
         var attractieMenu = new AttractieMenu(attractieLogic);
@@ -57,7 +61,8 @@ partial class Program
             fastPassLogic,
             attractiesAccess,
             sessionAccess,
-            ui
+            ui,
+            discountLogic
         );
 
         var reservationUI = new ReservationUI(
@@ -67,7 +72,8 @@ partial class Program
             ui,
             sessionAccess,
             loginStatus,
-            financialLogic
+            financialLogic,
+            discountLogic
         );
 
         var manageAdmins = new ManageAdmins(userAccess);
@@ -111,7 +117,8 @@ partial class Program
             manageAdmins,
             adminComplaintsPage,
             logoutUI,
-            financialMenu
+            financialMenu,
+            discountUI
         );
 
         var app = new Application(
