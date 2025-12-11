@@ -171,8 +171,8 @@ public class FinancialMenu
         foreach (ReservationModel order in userOrders)
         {
             Console.Write(new DateTime(order.BookingDate).ToString("d") + ":");
-            UiHelpers.Good($" ${order.Price/100}");
-            total += order.Price/100;
+            UiHelpers.Good($" ${order.Price}");
+            total += order.Price;
         }
 
         Console.WriteLine("-------------------------");

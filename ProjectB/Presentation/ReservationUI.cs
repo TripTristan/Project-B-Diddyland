@@ -52,7 +52,7 @@ public class ReservationUI
         Console.Write("\nDo you have a discount code? (enter or leave blank): ");
         string? code = Console.ReadLine()?.Trim();
 
-        int finalPrice = _discountLogic.Apply(code, Price);
+        double finalPrice = _discountLogic.Apply(code, Price);
 
         Console.WriteLine($"\nFinal Price (after discount if any): {finalPrice:C}");
 
@@ -64,7 +64,7 @@ public class ReservationUI
         ShowSuccessMessage();
     }
 
-    private static void ShowBookingDetails(long chosenDate, string orderNumber, SessionModel session, List<int> GuestsAges, int totalPrice)
+    private static void ShowBookingDetails(long chosenDate, string orderNumber, SessionModel session, List<int> GuestsAges, double totalPrice)
     {
         Console.Clear();
         UiHelpers.WriteHeader("Booking Details:\n");
@@ -77,8 +77,7 @@ public class ReservationUI
             Console.WriteLine($"{  AgeOptions[i]  }{GuestsAges[i]}");
         }
 
-        double totalprice = Convert.ToDouble(totalPrice / 100.0);
-        Console.WriteLine($"\nTotal Price: {totalprice:C}");
+        Console.WriteLine($"\nTotal Price: {totalPrice:C}");
     }
 
 

@@ -14,7 +14,7 @@ public class ReservationLogic
     }
 
 
-    public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, int price)
+    public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, double price)
     {
         SessionModel session = _sessionAccess.GetSessionById(sessionId);
         if (session.Capacity - qty < 5)
@@ -27,7 +27,6 @@ public class ReservationLogic
 
         session.Capacity -= qty;
         _sessionAccess.UpdateSession(session);
-        double Price = Convert.ToDouble(price / 100.0);
         Console.WriteLine($"Ticket booked for {customer.Name}, price: {Price:C}");
     }
 
