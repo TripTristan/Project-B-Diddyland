@@ -13,6 +13,7 @@ public class SuperAdminMenu
     private readonly AdminComplaintsPage _adminComplaintsPage;
     private readonly UserLogoutUI _logoutUi;
     private readonly FinancialMenu _financialMenu;
+    private readonly DiscountCodeUI _discountCodeUI;
 
     public SuperAdminMenu(
         LoginStatus loginStatus,
@@ -25,7 +26,8 @@ public class SuperAdminMenu
         ManageAdmins manageAdmins,
         AdminComplaintsPage adminComplaintsPage,
         UserLogoutUI logoutUi,
-        FinancialMenu financialMenu)
+        FinancialMenu financialMenu,
+        DiscountCodeUI discountCodeUI)
     {
         _loginStatus = loginStatus;
         _ui = ui;
@@ -38,6 +40,7 @@ public class SuperAdminMenu
         _adminComplaintsPage = adminComplaintsPage;
         _logoutUi = logoutUi;
         _financialMenu = financialMenu;
+        _discountCodeUI = discountCodeUI;
     }
 
     public void Run()
@@ -58,6 +61,7 @@ public class SuperAdminMenu
                 new List<string> {"Map"},
                 new List<string> {"Manage Admins"},
                 new List<string> {"Manage Complaints"},
+                new List<string> {"Create Discount Code"},
                 new List<string> {"Logout"},
                 new List<string> {"Quit"},
             };
@@ -99,13 +103,17 @@ public class SuperAdminMenu
                 case 7:
                     _adminComplaintsPage.Show();
                     break;
-
+                
                 case 8:
+                    _discountCodeUI.ShowCreate();
+                    break;
+                
+                case 9:
                     _logoutUi.Start();
                     UiHelpers.Pause();
                     return;
 
-                case 9:
+                case 10:
                     Environment.Exit(0);
                     return;
 

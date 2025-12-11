@@ -9,17 +9,20 @@ public class FastPassUI
     private readonly AttractiesAccess _attractiesAccess;
     private readonly SessionAccess _sessionAccess;
     private readonly UiHelpers _ui;
+    private readonly DiscountCodeLogic _discountLogic;
 
     public FastPassUI(
         FastPassLogic fastPassLogic,
         AttractiesAccess attractiesAccess,
         SessionAccess sessionAccess,
-        UiHelpers ui)
+        UiHelpers ui,
+        DiscountCodeLogic discountLogic)
     {
         _fastPassLogic = fastPassLogic;
         _attractiesAccess = attractiesAccess;
         _sessionAccess = sessionAccess;
         _ui = ui;
+        _discountLogic = discountLogic;
     }
 
     public void Run(UserModel? currentUser = null)
@@ -97,6 +100,16 @@ public class FastPassUI
         int qty = ReadInt("How many tickets?: ",
             n => n > 0,
             "Quantity must be a positive number.");
+
+        const double basePrice = 10.0;
+        double originalTotal = qty * basePrice;
+
+        Console.Write("\nDo you have a discount code? (enter or leave blank): ");
+        string? code = Console.ReadLine()?.Trim();
+        
+        double finalTotal = _discountLogic.Apply(code, originalTotal);
+
+        Console.WriteLine($"\nFinal Price (after discount if any): {finalTotal:C}\n");
 
         try
         {
