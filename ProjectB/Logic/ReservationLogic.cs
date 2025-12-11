@@ -27,7 +27,7 @@ public class ReservationLogic
 
         session.Capacity -= qty;
         _sessionAccess.UpdateSession(session);
-        Console.WriteLine($"Ticket booked for {customer.Name}, price: {Price:C}");
+          Console.WriteLine($"Ticket booked for {customer.Name}, price: {price:C}");
     }
 
     public bool CanBookSession(long sessionId, int qty)
@@ -104,9 +104,9 @@ public class ReservationLogic
         return _sessionAccess.GetAllSessionsForDate(date.Ticks);
     }
 
-    public int CalculatePriceForGuests(List<int> guest)
+    public double CalculatePriceForGuests(List<int> guest)
     {
-        return (guest[0]*500) + (guest[1]*1500) + (guest[2]*750);
+        return ((guest[0]*5) + (guest[1]*15) + (guest[2]*7.50));
     }
 
 }

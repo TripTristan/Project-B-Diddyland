@@ -54,8 +54,8 @@ public class FastPassLogic
         if (!_reservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
 
-        const int basePrice = 10;
-        int  original = basePrice * quantity;
+        const double basePrice = 10.0;
+        double  original = basePrice * quantity;
 
 
         var orderNo = _reservationLogic.GenerateOrderNumber(user);

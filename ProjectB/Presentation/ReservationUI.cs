@@ -47,7 +47,7 @@ public class ReservationUI
         DateTime ChosenDate = DatePicker();
         SessionModel session = ShowTimeslotsByDate(_reservationLogic.GetSessionsByDate(ChosenDate));
         List<int> GuestsAges = GuestQuantitySelection();
-        int Price = _reservationLogic.CalculatePriceForGuests(GuestsAges);
+        double Price = _reservationLogic.CalculatePriceForGuests(GuestsAges);
 
         Console.Write("\nDo you have a discount code? (enter or leave blank): ");
         string? code = Console.ReadLine()?.Trim();

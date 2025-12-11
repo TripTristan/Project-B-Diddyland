@@ -11,7 +11,7 @@ public class DiscountCodeAccess
         _db = db;
     }
 
-    public void AddDiscountCode(string code, int percent)
+    public void AddDiscountCode(string code, double percent)
     {
         string sql = @"INSERT INTO DiscountCodes (Code, Percentage, Active)
                        VALUES (@Code, @Percentage, 1);";
