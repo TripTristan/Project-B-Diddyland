@@ -19,7 +19,7 @@ public class DiscountCodeUI
 
         Console.Write("Enter discount percentage (1–90): ");
         string? p = Console.ReadLine();
-        double percentage = double.TryParse(p, out var result) ? result : 0;
+        int percentage = int.TryParse(p, out var result) ? result : 0;
 
         try
         {

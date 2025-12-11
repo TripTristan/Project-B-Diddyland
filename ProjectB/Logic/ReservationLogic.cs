@@ -14,7 +14,7 @@ public class ReservationLogic
     }
 
 
-    public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, double price)
+    public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, int price)
     {
         SessionModel session = _sessionAccess.GetSessionById(sessionId);
         if (session.Capacity - qty < 5)
@@ -27,8 +27,8 @@ public class ReservationLogic
 
         session.Capacity -= qty;
         _sessionAccess.UpdateSession(session);
-
-        Console.WriteLine($"Ticket booked for {customer.Name}, price: {price:C}");
+        double Price = Convert.ToDouble(price / 100.0);
+        Console.WriteLine($"Ticket booked for {customer.Name}, price: {Price:C}");
     }
 
     public bool CanBookSession(long sessionId, int qty)
@@ -105,10 +105,9 @@ public class ReservationLogic
         return _sessionAccess.GetAllSessionsForDate(date.Ticks);
     }
 
-    public double CalculatePriceForGuests(List<int> guest)
+    public int CalculatePriceForGuests(List<int> guest)
     {
-        Console.WriteLine(guest[1]);
-        return ((guest[0]*5) + (guest[1]*15) + (guest[2]*7.50));
+        return (guest[0]*500) + (guest[1]*1500) + (guest[2]*750);
     }
 
 }

@@ -5,7 +5,7 @@
 
 public class ReservationUI
 {
-    public static List<string> AgeOptions = new() {"0-15 : ", "16-60 : ","61+   : ",};
+    public static List<string> AgeOptions = new() {"0-15   : ", "16-60 : ","61+   : ",};
     public static List<string> TimeslotOptions = new() {"09:00-13:00", "13:00-17:00", "17:00-21:00"};
     private readonly ReservationLogic _reservationLogic;
     private readonly PaymentUI _paymentUI;
@@ -47,12 +47,12 @@ public class ReservationUI
         DateTime ChosenDate = DatePicker();
         SessionModel session = ShowTimeslotsByDate(_reservationLogic.GetSessionsByDate(ChosenDate));
         List<int> GuestsAges = GuestQuantitySelection();
-        double Price = _reservationLogic.CalculatePriceForGuests(GuestsAges);
+        int Price = _reservationLogic.CalculatePriceForGuests(GuestsAges);
 
         Console.Write("\nDo you have a discount code? (enter or leave blank): ");
         string? code = Console.ReadLine()?.Trim();
 
-        double finalPrice = _discountLogic.Apply(code, Price);
+        int finalPrice = _discountLogic.Apply(code, Price);
 
         Console.WriteLine($"\nFinal Price (after discount if any): {finalPrice:C}");
 
@@ -62,11 +62,9 @@ public class ReservationUI
             _reservationLogic.CreateSingleTicketBooking(session.Id, (GuestsAges[0] + GuestsAges[1] + GuestsAges[2]), _loginStatus.CurrentUserInfo, finalPrice);
         }
         ShowSuccessMessage();
-        UiHelpers.Pause();
-
     }
 
-    private static void ShowBookingDetails(long chosenDate, string orderNumber, SessionModel session, List<int> GuestsAges, double totalPrice)
+    private static void ShowBookingDetails(long chosenDate, string orderNumber, SessionModel session, List<int> GuestsAges, int totalPrice)
     {
         Console.Clear();
         UiHelpers.WriteHeader("Booking Details:\n");
@@ -79,8 +77,8 @@ public class ReservationUI
             Console.WriteLine($"{  AgeOptions[i]  }{GuestsAges[i]}");
         }
 
-
-        Console.WriteLine($"\nTotal Price: {totalPrice:C}");
+        double totalprice = Convert.ToDouble(totalPrice / 100.0);
+        Console.WriteLine($"\nTotal Price: {totalprice:C}");
     }
 
 
@@ -140,7 +138,6 @@ public class ReservationUI
 
         MainMenu Menu = new MainMenu(Options, "Years  | Qty");
         List<int> SelectedIndice = Menu.Run(1);
-        UiHelpers.Pause();
 
         return SelectedIndice;
     }
@@ -150,6 +147,7 @@ public class ReservationUI
     private static void ShowSuccessMessage()
     {
         Console.WriteLine("Reservation successful! Thank you for booking with us.");
+        UiHelpers.Pause();
     }
 
     private void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)

@@ -7,7 +7,7 @@ public class DiscountCodeLogic
         _access = access;
     }
 
-    public void Create(string code, double percentage)
+    public void Create(string code, int percentage)
     {
         if (string.IsNullOrWhiteSpace(code))
             throw new Exception("Code cannot be empty.");
@@ -18,12 +18,12 @@ public class DiscountCodeLogic
         _access.AddDiscountCode(code, percentage);
     }
 
-    public double Apply(string? code, double originalPrice)
+    public int Apply(string? code, int originalPrice)
     {
         if (string.IsNullOrWhiteSpace(code))
             return originalPrice;
 
-        var found = _access.GetCode(code);
+        DiscountCodeModel found = _access.GetCode(code);
 
         if (found == null)
         {
@@ -31,6 +31,6 @@ public class DiscountCodeLogic
             return originalPrice;
         }
 
-        return originalPrice - (originalPrice * (found.Percentage / 100.0));
+        return originalPrice - (originalPrice/100 * found.Percentage);
     }
 }

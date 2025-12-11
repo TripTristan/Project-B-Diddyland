@@ -101,13 +101,13 @@ public class FastPassUI
             n => n > 0,
             "Quantity must be a positive number.");
 
-        const double basePrice = 10.0;
-        double originalTotal = qty * basePrice;
+        const int basePrice = 10;
+        int originalTotal = qty * basePrice;
 
         Console.Write("\nDo you have a discount code? (enter or leave blank): ");
         string? code = Console.ReadLine()?.Trim();
         
-        double finalTotal = _discountLogic.Apply(code, originalTotal);
+        int finalTotal = _discountLogic.Apply(code, originalTotal);
 
         Console.WriteLine($"\nFinal Price (after discount if any): {finalTotal:C}\n");
 

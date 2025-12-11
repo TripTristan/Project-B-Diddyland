@@ -5,10 +5,10 @@ public class ReservationModel
     public int Quantity { get; set; }
     public int CustomerID { get; set; }
     public long BookingDate { get; set; }
-    public double Price { get; set; } 
+    public int Price { get; set; } 
     public int FastPass { get; set; } 
 
-    public ReservationModel(string orderNo, long sessionId, int quantity, UserModel user, long date, double original, int fast)
+    public ReservationModel(string orderNo, long sessionId, int quantity, UserModel user, long date, int original, int fast)
     {
         OrderNumber = orderNo;
         SessionId = sessionId;

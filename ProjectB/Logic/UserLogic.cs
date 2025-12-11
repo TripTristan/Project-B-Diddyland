@@ -107,7 +107,7 @@ public class UserLogic
     {
         UserModel registeredAccount = new UserModel(
             _userAccess.NextId(),
-            name,
+            name.ToLower(),
             email,
             dateOfBirth,
             height,

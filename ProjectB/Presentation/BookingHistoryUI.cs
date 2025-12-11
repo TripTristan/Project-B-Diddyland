@@ -96,7 +96,7 @@ public class BookingHistoryUI
         }
 
         Console.WriteLine($"Session Time : {sessionDateFormatted}");
-        Console.WriteLine($"Final Price  : {b.Price:C}");
+        Console.WriteLine($"Final Price  : {b.Price/100:C}");
         Console.WriteLine("------------------------------------------------\n");
     }
     

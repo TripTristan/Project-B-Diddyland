@@ -93,7 +93,6 @@ public class GuestMenu
 
                 case 6:
                     _logoutUI.Start();
-                    UiHelpers.Pause();
                     return;
 
                 default:
