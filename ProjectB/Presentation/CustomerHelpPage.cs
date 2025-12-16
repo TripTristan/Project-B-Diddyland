@@ -28,7 +28,7 @@ public class CustomerHelpPage
         };
         MainMenu Menu = new MainMenu(Options, "Which complaint do you have?");
         int[] selectedIndex = Menu.Run();
-        Console.WriteLine($"{selectedIndex[0]} {selectedIndex[1]}");
+        // Console.WriteLine($"{selectedIndex[0]} {selectedIndex[1]}");
         UiHelpers.Pause();
 
         Console.Clear();

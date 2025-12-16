@@ -23,7 +23,7 @@ public class DiscountCodeLogic
         if (string.IsNullOrWhiteSpace(code))
             return originalPrice;
 
-        var found = _access.GetCode(code);
+        DiscountCodeModel found = _access.GetCode(code);
 
         if (found == null)
         {
@@ -31,6 +31,6 @@ public class DiscountCodeLogic
             return originalPrice;
         }
 
-        return originalPrice - (originalPrice * (found.Percentage / 100.0));
+        return originalPrice - (originalPrice/100 * found.Percentage);
     }
 }

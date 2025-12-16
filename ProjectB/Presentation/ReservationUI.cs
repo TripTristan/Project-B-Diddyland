@@ -5,7 +5,7 @@
 
 public class ReservationUI
 {
-    public static List<string> AgeOptions = new() {"0-15 : ", "16-60 : ","61+   : ",};
+    public static List<string> AgeOptions = new() {"0-15   : ", "16-60 : ","61+   : ",};
     public static List<string> TimeslotOptions = new() {"09:00-13:00", "13:00-17:00", "17:00-21:00"};
     private readonly ReservationLogic _reservationLogic;
     private readonly PaymentUI _paymentUI;
@@ -62,8 +62,6 @@ public class ReservationUI
             _reservationLogic.CreateSingleTicketBooking(session.Id, (GuestsAges[0] + GuestsAges[1] + GuestsAges[2]), _loginStatus.CurrentUserInfo, finalPrice);
         }
         ShowSuccessMessage();
-        UiHelpers.Pause();
-
     }
 
     private static void ShowBookingDetails(long chosenDate, string orderNumber, SessionModel session, List<int> GuestsAges, double totalPrice)
@@ -71,14 +69,13 @@ public class ReservationUI
         Console.Clear();
         UiHelpers.WriteHeader("Booking Details:\n");
         Console.WriteLine($"Order Number: {orderNumber}");
-        Console.WriteLine($"Date: {chosenDate.ToString("dd-MM-yyyy")} {TimeslotOptions[(int)session.Time]}\n");
+        Console.WriteLine($"Date: {chosenDate:dd-MM-yyyy} {TimeslotOptions[(int)session.Time]}\n");
 
 
         for (int i = 0; i<3; i++)
         {
             Console.WriteLine($"{  AgeOptions[i]  }{GuestsAges[i]}");
         }
-
 
         Console.WriteLine($"\nTotal Price: {totalPrice:C}");
     }
@@ -122,7 +119,7 @@ public class ReservationUI
             new List<string> {_reservationLogic.AvailabilityFormatter(sessions[2])}
         };
 
-        MainMenu Menu = new MainMenu(Options, $"Select A Timeslot for\n {sessions[0].Date.ToString("dd-MM-yyyy")}");
+        MainMenu Menu = new MainMenu(Options, $"Select A Timeslot for\n {sessions[0].Date:dd-MM-yyyy}");
         int[] selectedIndex = Menu.Run();
         UiHelpers.Pause();
 
@@ -140,7 +137,6 @@ public class ReservationUI
 
         MainMenu Menu = new MainMenu(Options, "Years  | Qty");
         List<int> SelectedIndice = Menu.Run(1);
-        UiHelpers.Pause();
 
         return SelectedIndice;
     }
@@ -150,6 +146,7 @@ public class ReservationUI
     private static void ShowSuccessMessage()
     {
         Console.WriteLine("Reservation successful! Thank you for booking with us.");
+        UiHelpers.Pause();
     }
 
     private void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
