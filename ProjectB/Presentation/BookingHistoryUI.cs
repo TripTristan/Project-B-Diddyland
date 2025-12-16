@@ -32,8 +32,8 @@ public class BookingHistoryUI
 
         Func<BookingModel, bool> filter = choice switch
         {
-            "2" => b => b.Type == "Reservation",
-            "3" => b => b.Type == "FastPass",
+            "2" => b => b.Type == "0", // Reservation
+            "3" => b => b.Type == "1", // FastPass
             _   => b => true
         };
 
@@ -55,59 +55,70 @@ public class BookingHistoryUI
 
     private void PrintBooking(BookingModel b)
     {
-        string bookingDateFormatted =
-            DateTime.TryParse(b.BookingDate, out var bookingDt)
-            ? bookingDt.ToString("dd-MM-yyyy HH:mm")
-            : b.BookingDate;
+        string bookingDateFormatted = FormatTicksOrDate(b.BookingDate);
+        string typeText = ConvertType(b.Type);
 
         var session = _sessionAccess.GetSessionById(b.SessionId);
-
         string sessionDateFormatted = "Unknown session";
 
         if (session != null)
         {
-            if (DateTime.TryParseExact(
-                    session.Date.ToString("yyyy-MM-dd"),
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out var sessionDate))
-            {
-                sessionDateFormatted = $"{sessionDate:dd-MM-yyyy} {session.Time}";
-            }
-            else
-            {
-                sessionDateFormatted = $"{session.Date} {session.Time}";
-            }
+            string sessionDate = FormatTicksOrDate(session.Date.ToString());
+
+            int timeIndex =
+                session.Time >= int.MinValue && session.Time <= int.MaxValue
+                    ? (int)session.Time
+                    : -1;
+
+            string timeSlot =
+                timeIndex >= 0 && timeIndex < ReservationUI.TimeslotOptions.Count
+                    ? ReservationUI.TimeslotOptions[timeIndex]
+                    : "Unknown time";
+
+            sessionDateFormatted = $"{sessionDate.Split(' ')[0]} {timeSlot}";
         }
 
         Console.WriteLine("\n------------------------------------------------");
         Console.WriteLine($"Order Number : {b.OrderNumber}");
-        Console.WriteLine($"Type         : {b.Type}");
+        Console.WriteLine($"Type         : {typeText}");
         Console.WriteLine($"Quantity     : {b.Quantity}");
         Console.WriteLine($"Booked On    : {bookingDateFormatted}");
-
-        if (b.Type == "FastPass" && session != null)
-        {
-            // var attraction = _attractiesAccess.GetById(session);
-            // string name = attraction?.Name ?? $"Attraction #{session}";
-            // Console.WriteLine($"Attraction   : {name}");
-            Console.WriteLine();
-        }
-
         Console.WriteLine($"Session Time : {sessionDateFormatted}");
         Console.WriteLine($"Final Price  : {b.Price:C}");
         Console.WriteLine("------------------------------------------------\n");
     }
-    
-    private string FormatCurrencyOrRaw(string value)
+
+    // =========================
+    // Helpers
+    // =========================
+
+    private static string ConvertType(string rawType)
     {
-        if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var dec))
-            return dec.ToString("C", CultureInfo.CurrentCulture);
+        return rawType switch
+        {
+            "0" => "Reservation",
+            "1" => "FastPass",
+            _   => rawType
+        };
+    }
 
-        if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out dec))
-            return dec.ToString("C", CultureInfo.CurrentCulture);
+    private static string FormatTicksOrDate(string raw)
+    {
+        if (long.TryParse(raw, out var ticks))
+        {
+            try
+            {
+                return new DateTime(ticks).ToString("dd-MM-yyyy HH:mm");
+            }
+            catch
+            {
+                return raw;
+            }
+        }
 
-        return value ?? "";
+        if (DateTime.TryParse(raw, out var dt))
+            return dt.ToString("dd-MM-yyyy HH:mm");
+
+        return raw;
     }
 }

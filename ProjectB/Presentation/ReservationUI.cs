@@ -166,7 +166,15 @@ public class ReservationUI
         Console.Clear();
         Console.WriteLine("Booking Details\n");
         Console.WriteLine($"Order: {orderNumber}");
-        Console.WriteLine($"Date: {session.Date:dd-MM-yyyy} {TimeslotOptions[(int)session.Time]}");
+        
+        DateTime sessionDate;
+
+        if (long.TryParse(session.Date.ToString(), out var ticks))
+            sessionDate = new DateTime(ticks);
+        else
+            sessionDate = DateTime.MinValue;
+
+        Console.WriteLine($"Date: {sessionDate:dd-MM-yyyy} {TimeslotOptions[(int)session.Time]}");
 
         for (int i = 0; i < guests.Count; i++)
             Console.WriteLine($"{AgeOptions[i]}{guests[i]}");
