@@ -1,48 +1,8 @@
 using System;
 
-public class SuperAdminMenu
+public class SuperAdminMenu : AdminElements
+
 {
-    private readonly LoginStatus _loginStatus;
-    private readonly UiHelpers _ui;
-    private readonly AttractieMenu _attractieMenu;
-    private readonly MenuForm _menuForm;
-    private readonly OrderForm _orderForm;
-    private readonly ReservationUI _reservationUI;
-    private readonly ParkMap _parkMap;
-    private readonly ManageAdmins _manageAdmins;
-    private readonly AdminComplaintsPage _adminComplaintsPage;
-    private readonly UserLogoutUI _logoutUi;
-    private readonly FinancialMenu _financialMenu;
-    private readonly DiscountCodeUI _discountCodeUI;
-
-    public SuperAdminMenu(
-        LoginStatus loginStatus,
-        UiHelpers ui,
-        AttractieMenu attractieMenu,
-        MenuForm menuForm,
-        OrderForm orderForm,
-        ReservationUI reservationUI,
-        ParkMap parkMap,
-        ManageAdmins manageAdmins,
-        AdminComplaintsPage adminComplaintsPage,
-        UserLogoutUI logoutUi,
-        FinancialMenu financialMenu,
-        DiscountCodeUI discountCodeUI)
-    {
-        _loginStatus = loginStatus;
-        _ui = ui;
-        _attractieMenu = attractieMenu;
-        _menuForm = menuForm;
-        _orderForm = orderForm;
-        _reservationUI = reservationUI;
-        _parkMap = parkMap;
-        _manageAdmins = manageAdmins;
-        _adminComplaintsPage = adminComplaintsPage;
-        _logoutUi = logoutUi;
-        _financialMenu = financialMenu;
-        _discountCodeUI = discountCodeUI;
-    }
-
     public void Run()
     {
         while (_loginStatus.CurrentUserInfo != null &&
@@ -88,7 +48,7 @@ public class SuperAdminMenu
                     break;
 
                 case 4:
-                    _reservationUI.StartReservation();
+                    _reservationManagementUI.Start();
                     UiHelpers.Pause();
                     break;
 

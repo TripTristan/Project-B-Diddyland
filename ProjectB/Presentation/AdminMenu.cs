@@ -1,39 +1,7 @@
 using System;
 
-public class AdminMenu
+public class AdminMenu : AdminElements
 {
-    private readonly LoginStatus _loginStatus;
-    private readonly UiHelpers _ui;
-    private readonly AttractieMenu _attractieMenu;
-    private readonly MenuForm _menuForm;
-    private readonly OrderForm _orderForm;
-    private readonly ReservationUI _reservationUI;
-    private readonly ParkMap _parkMap;
-    private readonly AdminComplaintsPage _adminComplaintsPage;
-    private readonly UserLogoutUI _logoutUi;
-
-    public AdminMenu(
-        LoginStatus loginStatus,
-        UiHelpers ui,
-        AttractieMenu attractieMenu,
-        MenuForm menuForm,
-        OrderForm orderForm,
-        ReservationUI reservationUI,
-        ParkMap parkMap,
-        AdminComplaintsPage adminComplaintsPage,
-        UserLogoutUI logoutUi)
-    {
-        _loginStatus = loginStatus;
-        _ui = ui;
-        _attractieMenu = attractieMenu;
-        _menuForm = menuForm;
-        _orderForm = orderForm;
-        _reservationUI = reservationUI;
-        _parkMap = parkMap;
-        _adminComplaintsPage = adminComplaintsPage;
-        _logoutUi = logoutUi;
-    }
-
     public void Run()
     {
         while (_loginStatus.CurrentUserInfo != null &&

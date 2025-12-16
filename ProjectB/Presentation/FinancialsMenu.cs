@@ -1,6 +1,5 @@
 public class FinancialMenu
 {
-    public static List<string> Months = new() {"January", "February", "  March  ", " April ", "   May"  , "   June  ", " July  ", " August ", "September", "October", "November", "December "};
     
     private readonly FinancialLogic _financialLogic;
 

@@ -2,17 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class AdminComplaintsPage
+public class AdminComplaintsPage : AdminElements
 {
-    static string status;
-    private readonly ComplaintLogic _complaintLogic;
-    private readonly UiHelpers _ui;
-
-    public AdminComplaintsPage(ComplaintLogic complaintLogic, UiHelpers ui)
-    {
-        _complaintLogic = complaintLogic;
-        _ui = ui;
-    }
 
     public void Show()
     {

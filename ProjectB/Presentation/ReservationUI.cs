@@ -81,7 +81,7 @@ public class ReservationUI
     }
 
 
-    private DateTime DatePicker()
+    public static DateTime DatePicker()
     {
         DateTime DateSelected = DateTime.Now;
         
@@ -110,7 +110,7 @@ public class ReservationUI
         return TimeSpan.TryParse(time.Trim().ToLower(), out _);
     }
 
-    private SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
+    public static SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
     {
         List<List<string>> Options = new List<List<string>> 
         {

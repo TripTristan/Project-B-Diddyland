@@ -1,5 +1,6 @@
 class MainMenu
 {
+    public static List<string> Months = new() {"January", "February", "  March  ", " April ", "   May"  , "   June  ", " July  ", " August ", "September", "October", "November", "December "};
     public List<List<string>> Options;
     public string Prompt;
     public int SelectedIndexHeight;
