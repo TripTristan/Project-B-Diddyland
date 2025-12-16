@@ -7,33 +7,58 @@ public class ReservationLogic
     private readonly SessionAccess _sessionAccess;
     private readonly ReservationAccess _reservationAccess;
 
+    public const int MaxNormalReservation = 10;
+    public const int MinGroupReservation = 10;
+    public const int MaxGroupReservation = 30;
+    public const double GroupDiscountRate = 0.20;
+
     public ReservationLogic(SessionAccess sessionAccess, ReservationAccess reservationAccess)
     {
         _sessionAccess = sessionAccess;
         _reservationAccess = reservationAccess;
     }
 
-
     public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, double price)
     {
         SessionModel session = _sessionAccess.GetSessionById(sessionId);
+
         if (session.Capacity - qty < 5)
             throw new InvalidOperationException("Not enough available seats.");
 
-
-        ReservationModel booking = new ReservationModel(GenerateOrderNumber(customer), sessionId, qty, customer, DateTime.Now.Ticks, price, 0);
+        ReservationModel booking = new ReservationModel(
+            GenerateOrderNumber(customer),
+            sessionId,
+            qty,
+            customer,
+            DateTime.Now.Ticks,
+            price,
+            0
+        );
 
         _reservationAccess.AddBooking(booking);
 
         session.Capacity -= qty;
         _sessionAccess.UpdateSession(session);
-          Console.WriteLine($"Ticket booked for {customer.Name}, price: {price:C}");
     }
 
-    public bool CanBookSession(long sessionId, int qty)
+    public void ValidateReservationType(int totalGuests, ReservationType type)
     {
-        SessionModel session = _sessionAccess.GetSessionById(sessionId);
-        return session.Capacity - qty < 5;
+        if (type == ReservationType.Normal && totalGuests > MaxNormalReservation)
+            throw new InvalidOperationException("Normal reservations allow up to 10 people.");
+
+        if (type == ReservationType.Group &&
+            (totalGuests < MinGroupReservation || totalGuests > MaxGroupReservation))
+            throw new InvalidOperationException("Group reservations require 10–30 people.");
+    }
+
+    public double ApplyGroupDiscount(double basePrice)
+    {
+        return basePrice * (1 - GroupDiscountRate);
+    }
+
+    public double CalculatePriceForGuests(List<int> guests)
+    {
+        return (guests[0] * 5) + (guests[1] * 15) + (guests[2] * 7.50);
     }
 
     public string GenerateOrderNumber(UserModel? customerInfo)
@@ -48,55 +73,23 @@ public class ReservationLogic
         return $"ORD-GUEST-{suffix}";
     }
 
-
     public bool CheckForTimeslotsOnDate(DateTime date)
     {
-        if (_sessionAccess.GetAllSessionsForDate(date.Ticks).Count != 3)
-        {
-            return false;
-        }
-        return true;
+        return _sessionAccess.GetAllSessionsForDate(date.Ticks).Count == 3;
     }
 
     public void PopulateTimeslots(DateTime date)
     {
-        for (int i = 0; i<3; i++)
+        for (int i = 0; i < 3; i++)
         {
-            SessionModel session = new(_sessionAccess.NextId(), date.Ticks, i+1, 35);
+            SessionModel session = new(
+                _sessionAccess.NextId(),
+                date.Ticks,
+                i + 1,
+                35
+            );
             _sessionAccess.Insert(session);
         }
-    }
-
-    public string AvailabilityFormatter(SessionModel Session)
-    {
-        string prefix;
-        string suffix;
-        List<string> timeslots = new() {"", "09:00-13:00", "13:00-17:00", "17:00-21:00"};
-        switch (Session.Capacity)
-        {
-            case > 10:
-                prefix = "✅ ";
-                suffix = $" | {Session.Capacity-5} | slots are still available";
-                break;
-            case 0:
-                prefix = " | ⭕ ";
-                suffix = $"FULL";
-                break;
-            case <= 5:
-                prefix = "💫 ";
-                suffix = $" | {Session.Capacity} | VIP slots left";
-                break;
-            case > 5:
-                prefix = "⚠️ ";
-                suffix = $" | {Session.Capacity-5} | LIMITED SLOTS AVAILABLE ";
-                break;
-            default:
-                prefix = "⭕ ";
-                suffix = $"ERROR";
-                break;
-        }
-
-        return $"{prefix} {timeslots[(int)Session.Time]} {suffix}";
     }
 
     public List<SessionModel> GetSessionsByDate(DateTime date)
@@ -104,9 +97,28 @@ public class ReservationLogic
         return _sessionAccess.GetAllSessionsForDate(date.Ticks);
     }
 
-    public double CalculatePriceForGuests(List<int> guest)
+    public string AvailabilityFormatter(SessionModel session)
     {
-        return ((guest[0]*5) + (guest[1]*15) + (guest[2]*7.50));
+        List<string> timeslots = new() { "", "09:00-13:00", "13:00-17:00", "17:00-21:00" };
+
+        if (session.Capacity > 10)
+            return $"✅ {timeslots[(int)session.Time]} | {session.Capacity - 5} slots available";
+
+        if (session.Capacity <= 5 && session.Capacity > 0)
+            return $"💫 {timeslots[(int)session.Time]} | {session.Capacity} VIP slots left";
+
+        if (session.Capacity == 0)
+            return $"⭕ {timeslots[(int)session.Time]} | FULL";
+
+        return $"⚠️ {timeslots[(int)session.Time]} | LIMITED";
+    }
+
+    public bool CanBookSession(long sessionId, int qty)
+    {
+        SessionModel session = _sessionAccess.GetSessionById(sessionId)
+            ?? throw new ArgumentException("Session not found.");
+
+        return session.Capacity - qty >= 5;
     }
 
 }

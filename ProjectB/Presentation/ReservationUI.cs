@@ -1,12 +1,19 @@
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Globalization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public enum ReservationType
+{
+    Normal,
+    Group
+}
+
 
 public class ReservationUI
 {
-    public static List<string> AgeOptions = new() {"0-15   : ", "16-60 : ","61+   : ",};
-    public static List<string> TimeslotOptions = new() {"09:00-13:00", "13:00-17:00", "17:00-21:00"};
+    public static List<string> AgeOptions = new() { "0-15   : ", "16-60 : ", "61+   : " };
+    public static List<string> TimeslotOptions = new() { "09:00-13:00", "13:00-17:00", "17:00-21:00" };
+
     private readonly ReservationLogic _reservationLogic;
     private readonly PaymentUI _paymentUI;
     private readonly UserLoginUI _loginUI;
@@ -15,9 +22,6 @@ public class ReservationUI
     private readonly LoginStatus _loginStatus;
     private readonly FinancialLogic _financialLogic;
     private readonly DiscountCodeLogic _discountLogic;
-
-    private UserModel? _customerInfo;
-    private int _week = 0;
 
     public ReservationUI(
         ReservationLogic reservationLogic,
@@ -39,119 +43,140 @@ public class ReservationUI
         _discountLogic = discountLogic;
     }
 
-    
-    // public static int week = Calendar.GetWeekOfYear(currentDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-    public static int week = 0;
     public void StartReservation()
     {
-        DateTime ChosenDate = DatePicker();
-        SessionModel session = ShowTimeslotsByDate(_reservationLogic.GetSessionsByDate(ChosenDate));
-        List<int> GuestsAges = GuestQuantitySelection();
-        double Price = _reservationLogic.CalculatePriceForGuests(GuestsAges);
+        ReservationType reservationType = SelectReservationType();
 
-        Console.Write("\nDo you have a discount code? (enter or leave blank): ");
-        string? code = Console.ReadLine()?.Trim();
+        DateTime chosenDate = DatePicker();
+        SessionModel session = ShowTimeslotsByDate(
+            _reservationLogic.GetSessionsByDate(chosenDate));
 
-        double finalPrice = _discountLogic.Apply(code, Price);
+        List<int> guests = GuestQuantitySelection();
+        int totalGuests = guests.Sum();
 
-        Console.WriteLine($"\nFinal Price (after discount if any): {finalPrice:C}");
+        _reservationLogic.ValidateReservationType(totalGuests, reservationType);
 
-        ShowBookingDetails(ChosenDate.Ticks, _reservationLogic.GenerateOrderNumber(_loginStatus.CurrentUserInfo), session, GuestsAges, finalPrice);
-        if (UiHelpers.ChoiceHelper("Confirm order"))
+        double basePrice = _reservationLogic.CalculatePriceForGuests(guests);
+        double finalPrice;
+
+        if (reservationType == ReservationType.Group)
         {
-            _reservationLogic.CreateSingleTicketBooking(session.Id, (GuestsAges[0] + GuestsAges[1] + GuestsAges[2]), _loginStatus.CurrentUserInfo, finalPrice);
+            finalPrice = _reservationLogic.ApplyGroupDiscount(basePrice);
+            Console.WriteLine("\nGroup Reservation:");
+            Console.WriteLine("• 20% discount applied");
+            Console.WriteLine("• Discount codes disabled");
         }
+        else
+        {
+            Console.Write("\nDiscount code (optional): ");
+            string? code = Console.ReadLine()?.Trim();
+            finalPrice = _discountLogic.Apply(code, basePrice);
+        }
+
+        Console.WriteLine($"\nFinal Price: {finalPrice:C}");
+
+        ShowBookingDetails(
+            chosenDate.Ticks,
+            _reservationLogic.GenerateOrderNumber(_loginStatus.CurrentUserInfo),
+            session,
+            guests,
+            finalPrice
+        );
+
+        if (UiHelpers.ChoiceHelper("Confirm reservation"))
+        {
+            _reservationLogic.CreateSingleTicketBooking(
+                session.Id,
+                totalGuests,
+                _loginStatus.CurrentUserInfo,
+                finalPrice);
+        }
+
         ShowSuccessMessage();
     }
 
-    private static void ShowBookingDetails(long chosenDate, string orderNumber, SessionModel session, List<int> GuestsAges, double totalPrice)
+    private ReservationType SelectReservationType()
     {
-        Console.Clear();
-        UiHelpers.WriteHeader("Booking Details:\n");
-        Console.WriteLine($"Order Number: {orderNumber}");
-        Console.WriteLine($"Date: {chosenDate:dd-MM-yyyy} {TimeslotOptions[(int)session.Time]}\n");
-
-
-        for (int i = 0; i<3; i++)
+        List<List<string>> options = new()
         {
-            Console.WriteLine($"{  AgeOptions[i]  }{GuestsAges[i]}");
-        }
+            new() { "Normal Reservation (1–10 people)" },
+            new() { "Group Reservation (10–30 people)" }
+        };
 
-        Console.WriteLine($"\nTotal Price: {totalPrice:C}");
+        MainMenu menu = new(options, "Select Reservation Type");
+        int[] result = menu.Run();
+
+        return result[0] == 0
+            ? ReservationType.Normal
+            : ReservationType.Group;
     }
-
 
     private DateTime DatePicker()
     {
-        DateTime DateSelected = DateTime.Now;
-        
-
         int month = FinancialMenu.monthMenu();
-        MainMenu DayChoice = new MainMenu(FinancialMenu.DaysInSelectedMonth(month), $"           {FinancialMenu.Months[month-1]}         ");
-        DateSelected = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+        MainMenu dayMenu = new(
+            FinancialMenu.DaysInSelectedMonth(month),
+            FinancialMenu.Months[month - 1]);
 
-        if (DateSelected.Ticks < DateTime.Now.Ticks)
-        {
-            Console.WriteLine("You can't book into the past");
-            UiHelpers.Pause();
-            DateSelected = DatePicker();
-        }
+        DateTime date = _financialLogic.GetDateFromCoordinate(
+            dayMenu.Run(), 2025, month);
 
-        if (!_reservationLogic.CheckForTimeslotsOnDate(DateSelected))
-            { _reservationLogic.PopulateTimeslots(DateSelected); }
-            
-        return DateSelected;
-    }
+        if (date < DateTime.Now)
+            throw new InvalidOperationException("Cannot book in the past.");
 
+        if (!_reservationLogic.CheckForTimeslotsOnDate(date))
+            _reservationLogic.PopulateTimeslots(date);
 
-    private bool IsFastPassSlot(string time)
-    {
-        if (string.IsNullOrWhiteSpace(time)) return false;
-        return TimeSpan.TryParse(time.Trim().ToLower(), out _);
+        return date;
     }
 
     private SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
     {
-        List<List<string>> Options = new List<List<string>> 
-        {
-            new List<string> {_reservationLogic.AvailabilityFormatter(sessions[0])},
-            new List<string> {_reservationLogic.AvailabilityFormatter(sessions[1])}, 
-            new List<string> {_reservationLogic.AvailabilityFormatter(sessions[2])}
-        };
+        List<List<string>> options = sessions
+            .Select(s => new List<string> { _reservationLogic.AvailabilityFormatter(s) })
+            .ToList();
 
-        MainMenu Menu = new MainMenu(Options, $"Select A Timeslot for\n {sessions[0].Date:dd-MM-yyyy}");
-        int[] selectedIndex = Menu.Run();
-        UiHelpers.Pause();
+        MainMenu menu = new(options, "Select Timeslot");
+        int[] result = menu.Run();
 
-        return sessions[selectedIndex[0]];
+        return sessions[result[0]];
     }
 
     private List<int> GuestQuantitySelection()
     {
-        List<List<string>> Options = new List<List<string>> 
-        {
-            new List<string> {$"0-15  : 0"},
-            new List<string> {$"16-60 : 0"}, 
-            new List<string> {$"61+   : 0"}, 
-        };
+        MainMenu menu = new(
+            new()
+            {
+                new() { "0-15  : 0" },
+                new() { "16-60 : 0" },
+                new() { "61+   : 0" }
+            },
+            "Years | Quantity");
 
-        MainMenu Menu = new MainMenu(Options, "Years  | Qty");
-        List<int> SelectedIndice = Menu.Run(1);
-
-        return SelectedIndice;
+        return menu.Run(1);
     }
 
+    private static void ShowBookingDetails(
+        long date,
+        string orderNumber,
+        SessionModel session,
+        List<int> guests,
+        double price)
+    {
+        Console.Clear();
+        Console.WriteLine("Booking Details\n");
+        Console.WriteLine($"Order: {orderNumber}");
+        Console.WriteLine($"Date: {session.Date:dd-MM-yyyy} {TimeslotOptions[(int)session.Time]}");
 
+        for (int i = 0; i < guests.Count; i++)
+            Console.WriteLine($"{AgeOptions[i]}{guests[i]}");
+
+        Console.WriteLine($"\nTotal: {price:C}");
+    }
 
     private static void ShowSuccessMessage()
     {
-        Console.WriteLine("Reservation successful! Thank you for booking with us.");
+        Console.WriteLine("\nReservation successful!");
         UiHelpers.Pause();
-    }
-
-    private void ShowBookingDetails(string orderNumber, Dictionary<int, List<int>> bookingDetails, decimal totalPrice)
-    {
-        DateTime currentDate = DateTime.Now;
-        week = System.Globalization.ISOWeek.GetWeekOfYear(currentDate);; 
     }
 }
