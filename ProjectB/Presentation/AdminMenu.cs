@@ -72,7 +72,7 @@ public class AdminMenu
                     selectedIndex = MapMenu.Run();
                     string location = MapOptions[selectedIndex[0]][0];
 
-                    _parkMap.ShowInteractive(location);
+                    _parkMap.ShowMap();
                     break;
                 case 1:
                     _attractieMenu.Start();

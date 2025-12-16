@@ -93,7 +93,7 @@ public class SuperAdminMenu
                     break;
 
                 case 5:
-                    _parkMap.ShowInteractive("rotterdam");
+                    _parkMap.ShowMap();
                     break;
 
                 case 6:

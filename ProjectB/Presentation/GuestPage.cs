@@ -78,7 +78,7 @@ public class GuestMenu
                     break;
 
                 case 3:
-                    _parkMap.ShowInteractive("rotterdam");
+                    _parkMap.ShowMap();
                     UiHelpers.Pause();
                     break;
 
