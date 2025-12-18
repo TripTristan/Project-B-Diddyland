@@ -16,8 +16,9 @@ class MainMenu
 
     public void DisplayOptions()
     {
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = Prompt != null && Prompt.ToLower().Contains("guest page") ? ConsoleColor.DarkGreen : ConsoleColor.White;
         Console.WriteLine(Prompt);
+        Console.ForegroundColor = ConsoleColor.White;
         for (int i = 0; i< Options.Count(); i++)
         {
             for (int j = 0; j<Options[i].Count(); j++)
@@ -81,23 +82,23 @@ class MainMenu
                 {
                     SelectedIndexHeight = 0;
                 }
-            } 
-            if (keyPressed == ConsoleKey.LeftArrow)
+            }
+            else if (keyPressed == ConsoleKey.LeftArrow)
             {
                 SelectedIndexWidth--;
                 if (SelectedIndexWidth == -1)
                 {
-                    SelectedIndexWidth = Options.Count()+1;
+                    SelectedIndexWidth = Options[SelectedIndexHeight].Count() - 1;
                 }
             }
             else if (keyPressed == ConsoleKey.RightArrow)
             {
                 SelectedIndexWidth++;
-                if (SelectedIndexWidth == Options.Count()+2)
+                if (SelectedIndexWidth == Options[SelectedIndexHeight].Count())
                 {
                     SelectedIndexWidth = 0;
                 }
-            } 
+            }
         } while (keyPressed != ConsoleKey.Enter);
         FirstDateSelected = true;
 

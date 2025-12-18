@@ -110,6 +110,7 @@ partial class Program
 
         var manageAdmins = new ManageAdmins(userAccess);
         var customerHelpPage = new CustomerHelpPage(complaintLogic, loginStatus, ui);
+        var inboxUI = new InboxUI(complaintLogic, loginStatus);
 
         var guestMenu = new GuestMenu(
             loginStatus,
@@ -123,7 +124,8 @@ partial class Program
             bookingHistoryUI,
             customerHelpPage,
             logoutUI,
-            parkMap
+            parkMap,
+            inboxUI
         );
 
         var adminMenu = new AdminMenu(

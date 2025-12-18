@@ -42,10 +42,10 @@ public class UserLogic
         int at = email.IndexOf("@");
         int dot = email.LastIndexOf(".");
 
-        // must contain both and in correct order
-        if (at <= 0) return false;                 // no text before @
-        if (dot <= at + 1) return false;           // no domain name
-        if (dot == email.Length - 1) return false; // no TLD
+
+        if (at <= 0) return false;
+        if (dot <= at + 1) return false;
+        if (dot == email.Length - 1) return false;
 
         return true;
     }

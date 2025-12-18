@@ -30,7 +30,9 @@ public class FastPassUI
         Console.Clear();
         Console.WriteLine("=== FastPass Reservation ===\n");
 
-        string location = ChooseParkLocation();
+        string? location = ChooseParkLocation();
+        if (location == null)
+            return;
 
         var attractions = _attractiesAccess.GetAll()
             .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
@@ -42,60 +44,52 @@ public class FastPassUI
             return;
         }
 
-        Console.WriteLine($"\nSelect an attraction in {location}:");
-        foreach (var a in attractions)
-        {
-            Console.WriteLine(
-                $"  {a.ID}. {a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm, MaxCapacity: {a.Capacity})"
-            );
-        }
+        List<List<string>> attractionOptions = attractions
+            .Select(a => new List<string> { $"{a.Name} (Type: {a.Type}, MinHeight: {a.MinHeightInCM}cm)" })
+            .ToList();
+        attractionOptions.Add(new List<string> { "Cancel" });
 
-        Console.WriteLine("\nEnter attraction ID (0 to cancel): ");
+        MainMenu attractionMenu = new MainMenu(attractionOptions, $"Select an attraction in {location}:");
+        int[] attractionResult = attractionMenu.Run();
 
-        int attractionId = ReadInt("> ",
-            id => attractions.Any(a => a.ID == id),
-            "Invalid attraction ID.",
-            allowCancel: true);
-
-        if (attractionId == 0)
+        if (attractionResult[0] == attractions.Count)
         {
             Console.WriteLine("FastPass cancelled.");
             return;
         }
 
+        int attractionId = attractions[attractionResult[0]].ID;
         DateTime day = DateTime.Today;
 
         var available = _fastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
         if (available.Count == 0)
         {
             Console.WriteLine($"\nNo available timeslots for this attraction today in {location}.");
+            UiHelpers.Pause();
             return;
         }
 
-        Console.WriteLine($"\nAvailable timeslots for {day:yyyy-MM-dd}:");
+        List<List<string>> timeslotOptions = available
+            .Select(s => 
+            {
+                string timeDisplay = (int)s.Time > 0 && (int)s.Time <= ReservationUI.TimeslotOptions.Count
+                    ? ReservationUI.TimeslotOptions[(int)s.Time - 1]
+                    : $"Slot {s.Time}";
+                return new List<string> { $"{timeDisplay} (Available: {s.Capacity}/35)" };
+            })
+            .ToList();
+        timeslotOptions.Add(new List<string> { "Cancel" });
 
-        for (int i = 0; i < available.Count; i++)
-        {
-            var s = available[i];
-            long cap = s.Capacity;
+        MainMenu timeslotMenu = new MainMenu(timeslotOptions, $"Available timeslots for {day:yyyy-MM-dd}:");
+        int[] timeslotResult = timeslotMenu.Run();
 
-            Console.WriteLine($"  [{i + 1}] {s.Time} (Booked: {s.Capacity}/{cap})");
-        }
-
-        Console.WriteLine("\nChoose a timeslot (0 to cancel): ");
-
-        int index = ReadInt("> ",
-            n => n >= 1 && n <= available.Count,
-            "Please choose a valid timeslot number.",
-            allowCancel: true);
-
-        if (index == 0)
+        if (timeslotResult[0] == available.Count)
         {
             Console.WriteLine("FastPass cancelled.");
             return;
         }
 
-        var selectedSession = available[index - 1];
+        var selectedSession = available[timeslotResult[0]];
 
         int qty = ReadInt("How many tickets?: ",
             n => n > 0,
@@ -127,31 +121,32 @@ public class FastPassUI
             Console.WriteLine($"Total Price  : {confirmation.TotalPrice:C}");
             Console.WriteLine("\nThank you and enjoy your ride!");
             Console.WriteLine("===================================");
+            UiHelpers.Pause();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"\nBooking failed: {ex.Message}");
+            UiHelpers.Pause();
         }
     }
 
-    private string ChooseParkLocation()
+    private string? ChooseParkLocation()
     {
-        string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
-
-        while (true)
+        List<List<string>> locationOptions = new List<List<string>>
         {
-            Console.WriteLine("Select park location:");
-            for (int i = 0; i < locations.Length; i++)
-                Console.WriteLine($"{i + 1}) {locations[i]}");
+            new List<string> { "DiddyLand - Amsterdam" },
+            new List<string> { "DiddyLand - Rotterdam" },
+            new List<string> { "Go Back" }
+        };
 
-            Console.Write("\nEnter choice number: ");
-            string? input = Console.ReadLine();
+        MainMenu locationMenu = new MainMenu(locationOptions, "Select park location:");
+        int[] result = locationMenu.Run();
 
-            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= locations.Length)
-                return locations[choice - 1];
+        if (result[0] == 2)
+            UiHelpers.Pause();
+            return null;
 
-            Console.WriteLine("Invalid input. Please choose a valid number.\n");
-        }
+        return locationOptions[result[0]][0];
     }
 
     private int ReadInt(string prompt, Func<int, bool> isValid, string errorMsg, bool allowCancel = false)

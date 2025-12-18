@@ -22,7 +22,7 @@ public class BookingAccess : IBookingAccess
                 SessionId AS SessionId,
                 Quantity AS Quantity,
                 BookingDate AS BookingDate,
-                Price,
+                CAST(REPLACE(Price, ',', '.') AS REAL) AS Price,
                 CAST(CustomerId AS INTEGER) AS CustomerId,
                 Type AS Type
             FROM Bookings

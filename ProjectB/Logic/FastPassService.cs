@@ -38,7 +38,7 @@ public class FastPassLogic
         var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
 
         return sessionsForDay
-            .Where(s => 35 - s.Capacity < s.Capacity)
+            .Where(s => s.Capacity > 0)
             .OrderBy(s => s.Time)
             .ToList();
     }
@@ -47,9 +47,6 @@ public class FastPassLogic
     {
         var session = _sessionAccess.GetSessionById(sessionId)
                       ?? throw new ArgumentException("Session not found.");
-
-        // if (!string.Equals(session.Location, attraction.Location, StringComparison.OrdinalIgnoreCase))
-        //     throw new InvalidOperationException("FastPass session does not belong to the same park as the attraction.");
 
         if (!_reservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
@@ -79,7 +76,9 @@ public class FastPassLogic
             OrderNumber = orderNo,
             Type = "FastPass",
             Date = session.Date.ToString(),
-            Time = session.Time.ToString(),
+            Time = (int)session.Time > 0 && (int)session.Time <= ReservationUI.TimeslotOptions.Count
+                ? ReservationUI.TimeslotOptions[(int)session.Time - 1]
+                : session.Time.ToString(),
             Quantity = quantity,
             PricePerPerson = basePrice,
             TotalPrice = original

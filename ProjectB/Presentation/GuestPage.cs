@@ -12,6 +12,7 @@ public class GuestMenu
     private readonly CustomerHelpPage _customerHelpPage;
     private readonly UserLogoutUI _logoutUI;
     private readonly ParkMap _parkMap;
+    private readonly InboxUI _inboxUI;
 
     public GuestMenu(
         LoginStatus loginStatus,
@@ -25,7 +26,8 @@ public class GuestMenu
         BookingHistoryUI bookingHistoryUI,
         CustomerHelpPage customerHelpPage,
         UserLogoutUI logoutUI,
-        ParkMap parkMap)
+        ParkMap parkMap,
+        InboxUI inboxUI)
     {
         _loginStatus = loginStatus;
         _ui = ui;
@@ -39,6 +41,7 @@ public class GuestMenu
         _customerHelpPage = customerHelpPage;
         _logoutUI = logoutUI;
         _parkMap = parkMap;
+        _inboxUI = inboxUI;
     }
 
     public void Run()
@@ -49,18 +52,18 @@ public class GuestMenu
             string Prompt = $"Diddyland – Guest Page\nLogged in as: {_loginStatus.CurrentUserInfo.Username} (Guest)";
             List<List<string>> Options = new List<List<string>> 
             {
-                new List<string> {"Make Reservation"}, 
-                new List<string> {"Buy Fastpass"}, 
-                new List<string> {"Submit A Complaint"}, 
-                new List<string> {"View Map"}, 
-                new List<string> {"View Orders"}, 
-                new List<string> {"View Profile"}, 
+                new List<string> {"Make a Reservation"}, 
+                new List<string> {"Buy a Fastpass for our attractions"}, 
+                new List<string> {"File A Complaint"}, 
+                new List<string> {"View our park map"}, 
+                new List<string> {"Order History"}, 
+                new List<string> {"Inbox"},
+                new List<string> {"View your Profile"}, 
                 new List<string> {"Logout"}
             };
 
         MainMenu Menu = new MainMenu(Options, Prompt);
         int[] selectedIndex = Menu.Run();
-        UiHelpers.Pause();
 
             switch (selectedIndex[0])
             {
@@ -88,10 +91,14 @@ public class GuestMenu
                     break;
 
                 case 5:
-                    _profilePage.Show(_loginStatus.CurrentUserInfo.Id);
+                    _inboxUI.Show();
                     break;
 
                 case 6:
+                    _profilePage.Show(_loginStatus.CurrentUserInfo.Id);
+                    break;
+
+                case 7:
                     _logoutUI.Start();
                     return;
 
