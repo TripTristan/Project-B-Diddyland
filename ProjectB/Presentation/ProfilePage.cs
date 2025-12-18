@@ -25,7 +25,7 @@ public class ProfilePage
                 List<List<string>> Options = new List<List<string>> 
                 {
                     new List<string> {"Edit"},
-                    new List<string> {"Back"}
+                    new List<string> {"Go Back"}
                 };
 
                 MainMenu Menu = new MainMenu(Options, "Options:");
@@ -35,8 +35,6 @@ public class ProfilePage
                 switch (selectedIndex[0])
                 {
                     case 0:
-                        return;
-                    case 1:
                         var edited = EditFlow(user);
                         if (edited != null)
                         {
@@ -55,6 +53,8 @@ public class ProfilePage
                             }
                         }
                         break;
+                    case 1:
+                        return;
                 }
         }
     }

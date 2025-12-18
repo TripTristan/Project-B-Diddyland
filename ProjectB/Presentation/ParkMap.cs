@@ -13,16 +13,22 @@ public class ParkMap
 
     public void ShowMap()
     {
-        Console.Clear();
-        Console.WriteLine("Select park location:");
-        Console.WriteLine("1) Diddyland Rotterdam");
-        Console.WriteLine("2) Diddyland Amsterdam");
-        Console.Write("\nEnter choice: ");
-
-        string? input = Console.ReadLine();
-        string location = input switch
+        List<List<string>> locationOptions = new List<List<string>>
         {
-            "2" => "amsterdam",
+            new List<string> { "Diddyland Rotterdam" },
+            new List<string> { "Diddyland Amsterdam" },
+            new List<string> { "Go Back" }
+        };
+
+        MainMenu locationMenu = new MainMenu(locationOptions, "Select park location:");
+        int[] result = locationMenu.Run();
+
+        if (result[0] == 2)
+            return;
+
+        string location = result[0] switch
+        {
+            1 => "amsterdam",
             _ => "rotterdam"
         };
 
@@ -31,25 +37,35 @@ public class ParkMap
 
     public void ShowInteractive(string location)
     {
-        Console.Clear();
-        Console.WriteLine("=== Diddyland Park Map ===\n");
-        Console.WriteLine("Which zone would you like to view?");
-        Console.WriteLine("  1) Adventure Zone");
-        Console.WriteLine("  2) Coastal Zone");
-        Console.WriteLine("  3) Jungle Zone");
-        Console.WriteLine("  4) Retro Zone");
-        Console.WriteLine("  0) All zones\n");
+        List<List<string>> options = new List<List<string>>
+        {
+            new List<string> { "Adventure Zone" },
+            new List<string> { "Coastal Zone" },
+            new List<string> { "Jungle Zone" },
+            new List<string> { "Retro Zone" },
+            new List<string> { "All zones" },
+            new List<string> { "Back" }
+        };
 
-        Console.Write("Enter a number or name: ");
-        var input = Console.ReadLine()?.Trim()?.ToLowerInvariant() ?? "0";
-        Zone? filter = ParseFilter(input);
+        MainMenu menu = new MainMenu(options, "Which zone would you like to view?");
+        int[] sel = menu.Run();
+
+        if (sel[0] == 5)
+            return;
+
+        Zone? filter = sel[0] switch
+        {
+            0 => Zone.Adventure,
+            1 => Zone.Coastal,
+            2 => Zone.Jungle,
+            3 => Zone.Retro,
+            4 => null,
+            _ => null
+        };
 
         Console.Clear();
         Show(location, filter);
-
-        Console.WriteLine();
-        Console.Write("Press Enter to return...");
-        Console.ReadLine();
+        UiHelpers.Pause();
     }
 
     private void Show(string location, Zone? filter)

@@ -46,6 +46,8 @@ public class ReservationUI
     public void StartReservation()
     {
         ReservationType reservationType = SelectReservationType();
+        if (reservationType == (ReservationType)(-1)) // -1 signals cancellation
+            return;
 
         DateTime chosenDate = DatePicker();
         SessionModel session = ShowTimeslotsByDate(
@@ -100,11 +102,15 @@ public class ReservationUI
         List<List<string>> options = new()
         {
             new() { "Normal Reservation (1–10 people)" },
-            new() { "Group Reservation (10–30 people)" }
+            new() { "Group Reservation (10–30 people)" },
+            new() { "Go Back" }
         };
 
         MainMenu menu = new(options, "Select Reservation Type");
         int[] result = menu.Run();
+
+        if (result[0] == 2)
+            return (ReservationType)(-1);
 
         return result[0] == 0
             ? ReservationType.Normal

@@ -52,34 +52,32 @@ public class SessionAccess
 
     public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date)
     {
-        string day = date.ToString("yyyy-MM-dd");
-
+        long dateTicks = date.Date.Ticks;
         const string sql = @"SELECT 
                                 ID AS Id,
                                 Date,
                                 Time,
                                 Capacity
                              FROM Sessions
-                             Date = @Date
+                             WHERE Date = @Date
                              ORDER BY Time";
 
-        return _db.Connection.Query<SessionModel>(sql, new { AttractionID = attractionId, Date = day }).ToList();
+        return _db.Connection.Query<SessionModel>(sql, new { Date = dateTicks }).ToList();
     }
 
     public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
-        string day = date.ToString("yyyy-MM-dd");
-
+        long dateTicks = date.Date.Ticks;
         const string sql = @"SELECT 
                                 ID AS Id,
                                 Date,
                                 Time,
                                 Capacity
                              FROM Sessions
-                             Date = @Date
+                             WHERE Date = @Date
                              ORDER BY Time";
 
-        return _db.Connection.Query<SessionModel>(sql, new { AttractionID = attractionId, Date = day }).ToList();
+        return _db.Connection.Query<SessionModel>(sql, new { Date = dateTicks }).ToList();
     }
 
     public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
@@ -90,10 +88,9 @@ public class SessionAccess
 
         var newSessions = new List<SessionModel>();
 
-        foreach (var time in GenerateHalfHourSlots())
+        for (int i = 1; i <= 3; i++)
         {
-            var session = new SessionModel(NextId(), date.Ticks, 3, 0);
-
+            var session = new SessionModel(NextId(), date.Ticks, i, 35);
             Insert(session);
             newSessions.Add(session);
         }
@@ -108,10 +105,9 @@ public class SessionAccess
 
         var newSessions = new List<SessionModel>();
 
-        foreach (var time in GenerateHalfHourSlots())
+        for (int i = 1; i <= 3; i++)
         {
-            var session = new SessionModel(NextId(), date.Ticks, 3, 0);
-
+            var session = new SessionModel(NextId(), date.Ticks, i, 35);
             Insert(session);
             newSessions.Add(session);
         }
@@ -119,15 +115,18 @@ public class SessionAccess
         return newSessions;
     }
 
-    private IEnumerable<string> GenerateHalfHourSlots()
+    private List<long> GenerateHalfHourSlots()
     {
+        var slots = new List<long>();
         var start = new TimeSpan(9, 0, 0);
-        var end = new TimeSpan(18, 0, 0);
+        var end = new TimeSpan(21, 0, 0);
 
         for (var t = start; t < end; t = t.Add(TimeSpan.FromMinutes(30)))
         {
-            yield return new DateTime(1, 1, 1, t.Hours, t.Minutes, 0).ToString("HH:mm");
+            slots.Add(t.Ticks);
         }
+
+        return slots;
     }
 
     public List<SessionModel> GetAllSessionsForDate(long date)

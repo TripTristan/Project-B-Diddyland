@@ -20,20 +20,24 @@ public class BookingHistoryUI
 
     public void Display(string username)
     {
-        Console.WriteLine("=== My Bookings ===");
-
-        Console.WriteLine("\nFilter your bookings:");
-        Console.WriteLine("  1) Show ALL bookings");
-        Console.WriteLine("  2) Only Reservations");
-        Console.WriteLine("  3) Only FastPass");
-        Console.Write("\nChoose an option: ");
-
-        string? choice = Console.ReadLine()?.Trim();
-
-        Func<BookingModel, bool> filter = choice switch
+        List<List<string>> filterOptions = new List<List<string>>
         {
-            "2" => b => b.Type == "0", // Reservation
-            "3" => b => b.Type == "1", // FastPass
+            new List<string> { "Show ALL bookings" },
+            new List<string> { "Only Reservations" },
+            new List<string> { "Only FastPass" },
+            new List<string> { "Go Back" }
+        };
+
+        MainMenu filterMenu = new MainMenu(filterOptions, "Filter your bookings:");
+        int[] result = filterMenu.Run();
+
+        if (result[0] == 3) // Back
+            return;
+
+        Func<BookingModel, bool> filter = result[0] switch
+        {
+            1 => b => b.Type == "0",
+            2 => b => b.Type == "1",
             _   => b => true
         };
 
@@ -46,11 +50,14 @@ public class BookingHistoryUI
         if (bookings.Count == 0)
         {
             Console.WriteLine("No bookings found for this filter.");
+            UiHelpers.Pause();
             return;
         }
 
         foreach (var b in bookings)
             PrintBooking(b);
+
+        UiHelpers.Pause();
     }
 
     private void PrintBooking(BookingModel b)

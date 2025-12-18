@@ -21,14 +21,18 @@ public class CustomerHelpPage
 
         List<List<string>> Options = new List<List<string>> 
         {
-            new List<string> {"Complaint about food"},
-            new List<string> {"Complaint about staff or service"}, 
-            new List<string> {"Complaint about safety"}, 
-            new List<string> {"Complaint about organization"}
+            new List<string> {"Food"},
+            new List<string> {"Staff or service"}, 
+            new List<string> {"Safety"}, 
+            new List<string> {"Organization"},
+            new List<string> {"Go Back"}
         };
-        MainMenu Menu = new MainMenu(Options, "Which complaint do you have?");
+        MainMenu Menu = new MainMenu(Options, "Pick one of the following topics to file a complaint about:");
         int[] selectedIndex = Menu.Run();
-        // Console.WriteLine($"{selectedIndex[0]} {selectedIndex[1]}");
+        
+        if (selectedIndex[0] == 4)
+            return;
+
         UiHelpers.Pause();
 
         Console.Clear();

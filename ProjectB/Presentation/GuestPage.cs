@@ -49,12 +49,12 @@ public class GuestMenu
             string Prompt = $"Diddyland – Guest Page\nLogged in as: {_loginStatus.CurrentUserInfo.Username} (Guest)";
             List<List<string>> Options = new List<List<string>> 
             {
-                new List<string> {"Make Reservation"}, 
-                new List<string> {"Buy Fastpass"}, 
-                new List<string> {"Submit A Complaint"}, 
-                new List<string> {"View Map"}, 
-                new List<string> {"View Orders"}, 
-                new List<string> {"View Profile"}, 
+                new List<string> {"Make a Reservation"}, 
+                new List<string> {"Buy a Fastpass for our attractions"}, 
+                new List<string> {"File A Complaint"}, 
+                new List<string> {"View our park map"}, 
+                new List<string> {"View your Orders"}, 
+                new List<string> {"View your Profile"}, 
                 new List<string> {"Logout"}
             };
 

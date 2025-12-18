@@ -81,23 +81,23 @@ class MainMenu
                 {
                     SelectedIndexHeight = 0;
                 }
-            } 
-            if (keyPressed == ConsoleKey.LeftArrow)
+            }
+            else if (keyPressed == ConsoleKey.LeftArrow)
             {
                 SelectedIndexWidth--;
                 if (SelectedIndexWidth == -1)
                 {
-                    SelectedIndexWidth = Options.Count()+1;
+                    SelectedIndexWidth = Options[SelectedIndexHeight].Count() - 1;
                 }
             }
             else if (keyPressed == ConsoleKey.RightArrow)
             {
                 SelectedIndexWidth++;
-                if (SelectedIndexWidth == Options.Count()+2)
+                if (SelectedIndexWidth == Options[SelectedIndexHeight].Count())
                 {
                     SelectedIndexWidth = 0;
                 }
-            } 
+            }
         } while (keyPressed != ConsoleKey.Enter);
         FirstDateSelected = true;
 
