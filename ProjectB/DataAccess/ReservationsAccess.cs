@@ -21,7 +21,7 @@ public class ReservationAccess
     public List<ReservationModel> GetAllBookingsByUserID(int id)
     {
         string sql = $@"
-SELECT OrderNumber, SessionId, Quantity, BookingDate, Price, CustomerId, Type
+SELECT OrderNumber, SessionId, Quantity, BookingDate, REPLACE(Price, ',', '.') AS Price, CustomerId, Type
 FROM {Table}
 WHERE CustomerId = @Id; ";
 
@@ -30,7 +30,7 @@ WHERE CustomerId = @Id; ";
 
     public List<ReservationModel> GetAllOrdersBetweenDates(long date1, long date2)
     {
-        string sql = $@"SELECT OrderNumber, SessionId, Quantity, BookingDate, Price, CustomerId, Type FROM {Table} WHERE BookingDate BETWEEN {date1} AND {date2};";
+        string sql = $@"SELECT OrderNumber, SessionId, Quantity, BookingDate, REPLACE(Price, ',', '.') AS Price, CustomerId, Type FROM {Table} WHERE BookingDate BETWEEN {date1} AND {date2};";
 
         return _db.Connection.Query<ReservationModel>(sql).ToList();
     }
@@ -61,9 +61,5 @@ WHERE CustomerId = @Id; ";
             new { UserId = userId }
         );
     }
-
-
-
-    
 
 }

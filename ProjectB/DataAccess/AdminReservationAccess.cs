@@ -18,7 +18,7 @@ public class AdminReservationAccess
                 SessionId,
                 Quantity,
                 BookingDate,
-                Price,
+                REPLACE(Price, ',', '.') AS Price,
                 CustomerId,
                 CASE Type
                     WHEN 0 THEN 'Reservation'
@@ -35,7 +35,7 @@ public class AdminReservationAccess
             SessionId,
             Quantity,
             BookingDate,
-            Price,
+            REPLACE(Price, ',', '.') AS Price,
             CustomerId,
             CASE Type
                 WHEN 0 THEN 'Reservation'
@@ -54,7 +54,7 @@ public class AdminReservationAccess
                 b.SessionId,
                 b.Quantity,
                 b.BookingDate,
-                b.Price,
+                REPLACE(b.Price, ',', '.') AS Price,
                 b.CustomerId,
                 CASE b.Type
                     WHEN 0 THEN 'Reservation'
@@ -74,7 +74,7 @@ public class AdminReservationAccess
                 SessionId,
                 Quantity,
                 BookingDate,
-                Price,
+                REPLACE(Price, ',', '.') AS Price,
                 CustomerId,
                 Type
               FROM Bookings
