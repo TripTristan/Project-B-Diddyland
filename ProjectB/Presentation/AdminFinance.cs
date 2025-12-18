@@ -1,23 +1,18 @@
-public class FinancialMenu
+public class AdminFinance
 {
-    public static List<string> Months = new() {"January", "February", "  March  ", " April ", "   May"  , "   June  ", " July  ", " August ", "September", "October", "November", "December "};
-    
-    private readonly FinancialLogic _financialLogic;
+    private AdminContext _ctx;
+    public AdminFinance(AdminContext a) { _ctx = a; }
 
-    public FinancialMenu(FinancialLogic financialLogic)
-    {
-        _financialLogic = financialLogic;
-    }
 
-    public void Start()
+    public void Run()
     {
         string Prompt = "Select the category you want to view";
 
-        List<List<string>> Options = new List<List<string>> 
+        List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Users"},
-            // new List<string> {"Product"}, 
-            new List<string> {"Date"}, 
+            // new List<string> {"Product"},
+            new List<string> {"Date"},
             new List<string> {"All"}
         };
 
@@ -41,73 +36,23 @@ public class FinancialMenu
                 break;
         }
     }
-
-    public static int monthMenu()
-    {
-        List<List<string>> Months = new List<List<string>>
-        {
-            new List<string> { "January", "February", "  March  " },
-            new List<string> { " April ", "   May"  , "   June  " },
-            new List<string> { " July  ", " August ", "September" },
-            new List<string> { "October", "November", "December " }
-        };
-
-        List<List<int>> MonthsNRS = new List<List<int>>
-        {
-            new List<int> { 1, 2, 3 },
-            new List<int> { 4, 5, 6 },
-            new List<int> { 7, 8 , 9 },
-            new List<int> { 10, 11, 12 }
-        };
-
-        MainMenu monthMenu = new MainMenu(Months, "Select the month you want to view");
-        int[] selectedMonth = monthMenu.Run();
-        int month = MonthsNRS[selectedMonth[0]][selectedMonth[1]];
-        return month;
-        
-    }
-
-    public static List<List<string>> DaysInSelectedMonth(int month)
-    {
-        List<List<string>> Options = new();
-
-        int year = 2025;
-        int daysInMonth = DateTime.DaysInMonth(year, month);
-        List<string> currentWeek = new List<string>();
-
-        for (int day = 1; day <= daysInMonth; day++)
-        {
-            if (day < 10) currentWeek.Add(" " + day.ToString());
-            else currentWeek.Add(day.ToString());
-
-            if (currentWeek.Count == 7)
-            {
-                Options.Add(currentWeek);
-                currentWeek = new List<string>();
-            }
-        }
-        if (currentWeek.Count > 0) Options.Add(currentWeek);
-
-        return Options;
-    }
     public void ShowRevenueByDate()
     {
         DateTime firstDate = new();
         DateTime secondDate = new();
-        
 
         for (int i = 0; i != 2; i++)
         {
-            int month = monthMenu();
-            List<List<string>> Options = DaysInSelectedMonth(month);
+            int month = DateSelection.monthMenu();
+            List<List<string>> Options = DateSelection.DaysInSelectedMonth(month);
             MainMenu DayChoice = new MainMenu(Options, "Select the date:");
             if (i == 0)
             {
-                firstDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+                firstDate = DateSelection.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
             }
             else
             {
-                secondDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+                secondDate = DateSelection.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
             }
         }
 
@@ -118,15 +63,14 @@ public class FinancialMenu
             secondDate = temp;
         }
 
-        List<ReservationModel> Orders = _financialLogic.GetRevenueByDateRange(firstDate.Ticks, secondDate.Ticks);
+        List<ReservationModel> Orders = _ctx.financialLogic.GetRevenueByDateRange(firstDate.Ticks, secondDate.Ticks);
         InformationFormatUser(Orders, $"{firstDate.ToString("MM/dd/yyyy")} - {secondDate.ToString("MM/dd/yyyy")}");
-        
 
     }
 
     public void ShowRevenueByPerson()
     {
-        List<UserModel> users = _financialLogic.GrabAllUsers();
+        List<UserModel> users = _ctx.financialLogic.GrabAllUsers();
 
         if (users.Count == 0)
         {
@@ -149,8 +93,7 @@ public class FinancialMenu
 
         UserModel selectedUser = users[selected[0]];
 
-        List<ReservationModel> userOrders = _financialLogic.GetAllUserOrders(selectedUser);
-        
+        List<ReservationModel> userOrders = _ctx.financialLogic.GetAllUserOrders(selectedUser);
         Console.Clear();
         InformationFormatUser(userOrders, selectedUser.Name);
     }
@@ -159,7 +102,6 @@ public class FinancialMenu
 
     // public void ShowRevenueByProduct()
     // {
-        
     //     InformationFormatProduct("Revenue for " + selectedProduct.Name, revenues);
     // }
 
@@ -180,5 +122,3 @@ public class FinancialMenu
         UiHelpers.Pause();
     }
 }
-
-        

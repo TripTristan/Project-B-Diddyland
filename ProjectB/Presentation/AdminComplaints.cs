@@ -2,79 +2,65 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class AdminComplaintsPage
+public class AdminComplaints
 {
-    static string status;
-    private readonly ComplaintLogic _complaintLogic;
-    private readonly UiHelpers _ui;
+    protected AdminContext _ctx;
+    public AdminComplaints(AdminContext a) { _ctx = a; }
 
-    public AdminComplaintsPage(ComplaintLogic complaintLogic, UiHelpers ui)
+    public string Location;
+
+    public void Run()
     {
-        _complaintLogic = complaintLogic;
-        _ui = ui;
-    }
+        Console.Clear();
+        string Prompt = "Admin – Complaint Management";
 
-    public void Show()
-    {
-        Console.WriteLine("Select park location:");
-        Console.WriteLine("1) Diddyland Rotterdam");
-        Console.WriteLine("2) Diddyland Amsterdam");
-        string choice = Console.ReadLine() ?? "1";
-        string location = choice == "2" ? "DiddyLand - Amsterdam" : "DiddyLand - Rotterdam";
-
-        while (true)
+        List<List<string>> Options = new List<List<string>>
         {
-            Console.Clear();
-            string Prompt = "Admin – Complaint Management";
+            new List<string> {"View all complaints"},
+            new List<string> {"Filter by category"},
+            new List<string> {"Filter by username"},
+            new List<string> {"Filter by status"},
+            new List<string> {"Mark complaint as handled"},
+            new List<string> {"Delete complaint"},
+            new List<string> {"Back"}
+        };
 
-            List<List<string>> Options = new List<List<string>> 
-            {
-                new List<string> {"View all complaints"},
-                new List<string> {"Filter by category"},       
-                new List<string> {"Filter by username"},
-                new List<string> {"Filter by status"},
-                new List<string> {"Mark complaint as handled"},
-                new List<string> {"Delete complaint"},
-                new List<string> {"Back"}
-            };
+        MainMenu Menu = new MainMenu(Options, Prompt);
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
 
-            MainMenu Menu = new MainMenu(Options, Prompt);
-            int[] selectedIndex = Menu.Run();
-            UiHelpers.Pause();
-
-            switch (selectedIndex[0])
-            {
-                case 0:
-                    ViewAll(location);
-                    break;
-                case 1:
-                    FilterByCategory(location);
-                    break;
-                case 2:
-                    FilterByUser(location);
-                    break;
-                case 3:
-                    FilterByStatus(location);
-                    break;
-                case 4:
-                    MarkHandled(location);
-                    break;
-                case 5:
-                    DeleteComplaint(location);
-                    break;
-                case 6:
-                    return;
-                default:
-                    UiHelpers.Warn("Invalid choice.");
-                    UiHelpers.Pause();
-                    break;
-            }
+        switch (selectedIndex[0])
+        {
+            case 0:
+                ViewAll(ParkMap.ChooseLocation());
+                break;
+            case 1:
+                FilterByCategory(ParkMap.ChooseLocation());
+                break;
+            case 2:
+                FilterByUser(ParkMap.ChooseLocation());
+                break;
+            case 3:
+                FilterByStatus(ParkMap.ChooseLocation());
+                break;
+            case 4:
+                MarkHandled(ParkMap.ChooseLocation());
+                break;
+            case 5:
+                DeleteComplaint(ParkMap.ChooseLocation());
+                break;
+            case 6:
+                return;
+            default:
+                UiHelpers.Warn("Invalid choice.");
+                UiHelpers.Pause();
+                break;
         }
     }
 
     private void ViewAll(string location)
     {
-        var complaints = _complaintLogic.FilterComplaints(location: location);
+        var complaints = _ctx.complaintLogic.FilterComplaints(location: location);
         Console.Clear();
         UiHelpers.WriteHeader($"All Complaints ({location})");
 
@@ -113,7 +99,7 @@ public class AdminComplaintsPage
         }
 
         string category = categories[choice - 1];
-        var complaints = _complaintLogic.FilterComplaints(category: category, location: location);
+        var complaints = _ctx.complaintLogic.FilterComplaints(category: category, location: location);
 
         Console.Clear();
         UiHelpers.WriteHeader($"Complaints in category: {category} ({location})");
@@ -134,7 +120,7 @@ public class AdminComplaintsPage
 
     private void FilterByUser(string location)
     {
-        var usernames = _complaintLogic
+        var usernames = _ctx.complaintLogic
             .FilterComplaints(location: location)
             .Select(c => c.Username)
             .Distinct()
@@ -165,7 +151,7 @@ public class AdminComplaintsPage
         }
 
         string selectedUser = usernames[choice - 1];
-        var complaints = _complaintLogic.FilterComplaints(username: selectedUser, location: location);
+        var complaints = _ctx.complaintLogic.FilterComplaints(username: selectedUser, location: location);
 
         Console.Clear();
         UiHelpers.WriteHeader($"Complaints by {selectedUser} ({location})");
@@ -180,8 +166,9 @@ public class AdminComplaintsPage
 
     private void FilterByStatus(string location)
     {
+        string status = "";
 
-        List<List<string>> Options = new List<List<string>> 
+        List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Open"},
             new List<string> {"Handled"}
@@ -199,9 +186,9 @@ public class AdminComplaintsPage
                 status = "Handled";
                 break;
         }
-        List<ComplaintModel> complaints = _complaintLogic.RetrieveComplaintsWithStatus(status);
+        List<ComplaintModel> complaints = _ctx.complaintLogic.RetrieveComplaintsWithStatus(status);
 
-        var statuses = _complaintLogic
+        var statuses = _ctx.complaintLogic
             .FilterComplaints(location: location)
             .Select(c => c.Status)
             .Distinct()
@@ -223,7 +210,7 @@ public class AdminComplaintsPage
             Console.WriteLine($"{i + 1}. {statuses[i]}");
 
         string selectedStatus = statuses[selectedIndex[0]];
-        var complaint = _complaintLogic.FilterComplaints(status: selectedStatus, location: location);
+        var complaint = _ctx.complaintLogic.FilterComplaints(status: selectedStatus, location: location);
 
         Console.Clear();
         UiHelpers.WriteHeader($"Complaints with status {selectedStatus} ({location})");
@@ -238,7 +225,7 @@ public class AdminComplaintsPage
 
     private void MarkHandled(string location)
     {
-        List<ComplaintModel> openComplaints = _complaintLogic.FilterComplaints(location: location, status: "Open");
+        List<ComplaintModel> openComplaints = _ctx.complaintLogic.FilterComplaints(location: location, status: "Open");
 
         if (openComplaints.Count == 0)
         {
@@ -275,7 +262,7 @@ public class AdminComplaintsPage
         Console.Write("\nEnter admin response message: ");
         string response = Console.ReadLine() ?? "";
 
-        _complaintLogic.MarkComplaintHandled(id, response);
+        _ctx.complaintLogic.MarkComplaintHandled(id, response);
 
         Console.WriteLine("✔ Complaint marked as handled with admin response.");
         UiHelpers.Pause();
@@ -287,7 +274,7 @@ public class AdminComplaintsPage
         Console.Write("Enter complaint ID to delete: ");
         if (int.TryParse(Console.ReadLine(), out int id))
         {
-            _complaintLogic.DeleteComplaint(id);
+            _ctx.complaintLogic.DeleteComplaint(id);
             Console.WriteLine("🗑 Complaint deleted.");
         }
         else

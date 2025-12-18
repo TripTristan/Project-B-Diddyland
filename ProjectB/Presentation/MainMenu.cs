@@ -8,7 +8,7 @@ class MainMenu
     public MainMenu(List<List<string>> options, string prompt)
     {
         SelectedIndexHeight = 0;
-        SelectedIndexWidth = 0; 
+        SelectedIndexWidth = 0;
         Options = options;
         Prompt = prompt;
         FirstDateSelected = false;
@@ -26,7 +26,6 @@ class MainMenu
                 int y = j;
                 string prefix = "";
                 string suffix = "";
-                
                 if (x == SelectedIndexHeight && y == SelectedIndexWidth)
                 {
                     prefix = "{";
@@ -34,12 +33,11 @@ class MainMenu
                     if (FirstDateSelected)
                     {
                         Console.ForegroundColor = ConsoleColor. Green;
-                        
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
-                    }                
+                    }
                 }
 
                 else
@@ -81,7 +79,7 @@ class MainMenu
                 {
                     SelectedIndexHeight = 0;
                 }
-            } 
+            }
             if (keyPressed == ConsoleKey.LeftArrow)
             {
                 SelectedIndexWidth--;
@@ -97,7 +95,7 @@ class MainMenu
                 {
                     SelectedIndexWidth = 0;
                 }
-            } 
+            }
         } while (keyPressed != ConsoleKey.Enter);
         FirstDateSelected = true;
 

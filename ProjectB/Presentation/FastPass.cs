@@ -3,28 +3,14 @@ using System.Linq;
 using System.Globalization;
 using System.Collections.Generic;
 
-public class FastPassUI
+public class FastPass
 {
-    private readonly FastPassLogic _fastPassLogic;
-    private readonly AttractiesAccess _attractiesAccess;
-    private readonly SessionAccess _sessionAccess;
-    private readonly UiHelpers _ui;
-    private readonly DiscountCodeLogic _discountLogic;
+    private readonly UserContext _context;
 
-    public FastPassUI(
-        FastPassLogic fastPassLogic,
-        AttractiesAccess attractiesAccess,
-        SessionAccess sessionAccess,
-        UiHelpers ui,
-        DiscountCodeLogic discountLogic)
+    public FastPass(UserContext context)
     {
-        _fastPassLogic = fastPassLogic;
-        _attractiesAccess = attractiesAccess;
-        _sessionAccess = sessionAccess;
-        _ui = ui;
-        _discountLogic = discountLogic;
+        _context = context;
     }
-
     public void Run(UserModel? currentUser = null)
     {
         Console.Clear();
@@ -106,8 +92,8 @@ public class FastPassUI
 
         Console.Write("\nDo you have a discount code? (enter or leave blank): ");
         string? code = Console.ReadLine()?.Trim();
-        
-        double finalTotal = _discountLogic.Apply(code, originalTotal);
+
+        double finalTotal = _ctx.discountLogic.Apply(code, originalTotal);
 
         Console.WriteLine($"\nFinal Price (after discount if any): {finalTotal:C}\n");
 

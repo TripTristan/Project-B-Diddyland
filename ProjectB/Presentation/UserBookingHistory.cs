@@ -2,13 +2,13 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-public class BookingHistoryUI
+public class BookingHistory
 {
     private readonly BookingHistoryLogic _logic;
     private readonly SessionAccess _sessionAccess;
     private readonly AttractiesAccess _attractiesAccess;
 
-    public BookingHistoryUI(
+    public BookingHistory(
         BookingHistoryLogic logic,
         SessionAccess sessionAccess,
         AttractiesAccess attractiesAccess)
@@ -71,8 +71,8 @@ public class BookingHistoryUI
                     : -1;
 
             string timeSlot =
-                timeIndex >= 0 && timeIndex < ReservationUI.TimeslotOptions.Count
-                    ? ReservationUI.TimeslotOptions[timeIndex]
+                timeIndex >= 0 && timeIndex < UserReservation.TimeslotOptions.Count
+                    ? UserReservation.TimeslotOptions[timeIndex]
                     : "Unknown time";
 
             sessionDateFormatted = $"{sessionDate.Split(' ')[0]} {timeSlot}";

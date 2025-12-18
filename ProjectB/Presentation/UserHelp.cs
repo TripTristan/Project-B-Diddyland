@@ -2,28 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class CustomerHelpPage
+public class UserHelp
 {
-    private readonly ComplaintLogic _logic;
-    private readonly LoginStatus _loginStatus;
-    private readonly UiHelpers _ui;
+    private UserContext _ctx;
+    public UserHelp(UserContext a) { _ctx = a; }
 
-    public CustomerHelpPage(ComplaintLogic logic, LoginStatus loginStatus, UiHelpers ui)
-    {
-        _logic = logic;
-        _loginStatus = loginStatus;
-        _ui = ui;
-    }
-
-    public void Show()
+    public void Run()
     {
         Console.Clear();
 
-        List<List<string>> Options = new List<List<string>> 
+        List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Complaint about food"},
-            new List<string> {"Complaint about staff or service"}, 
-            new List<string> {"Complaint about safety"}, 
+            new List<string> {"Complaint about staff or service"},
+            new List<string> {"Complaint about safety"},
             new List<string> {"Complaint about organization"}
         };
         MainMenu Menu = new MainMenu(Options, "Which complaint do you have?");
@@ -70,14 +62,13 @@ public class CustomerHelpPage
         if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
 
         string location = locations[locChoice - 1];
-  
         Console.WriteLine("\nPlease describe your complaint below:");
         string description = Console.ReadLine();
 
-        string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        string username = _ctx.loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
         string category = Options[selectedIndex[0]][0];
 
-        _logic.SubmitComplaint(username, category, description, location);
+        _ctx.complaintLogic.SubmitComplaint(username, category, description, location);
 
         Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
         Console.WriteLine("We appreciate your feedback and will work to improve.\n");
@@ -95,7 +86,7 @@ public class CustomerHelpPage
 
     public void ShowHandledMessages()
     {
-        string? username = _loginStatus.CurrentUserInfo?.Username;
+        string? username = _ctx.loginStatus.CurrentUserInfo?.Username;
 
         if (username == null || username == "Guest")
         {
@@ -105,7 +96,7 @@ public class CustomerHelpPage
 
         ShowPendingMessages();
 
-        var handledComplaints = _logic.GetByUserAndStatus(username, "Handled");
+        var handledComplaints = _ctx.complaintLogic.GetByUserAndStatus(username, "Handled");
 
         if (!handledComplaints.Any())
             return;
@@ -120,8 +111,8 @@ public class CustomerHelpPage
 
     public void ShowPendingMessages()
     {
-        string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
-        var pendingComplaints = _logic.GetPendingByUser(username);
+        string username = _ctx.loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        var pendingComplaints = _ctx.complaintLogic.GetPendingByUser(username);
 
         if (!pendingComplaints.Any())
             return;

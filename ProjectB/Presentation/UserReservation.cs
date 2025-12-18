@@ -8,60 +8,33 @@ public enum ReservationType
     Group
 }
 
-
-public class ReservationUI
+public class UserReservation
 {
+    private UserContext _ctx;
+    public UserReservation(UserContext a) { _ctx = a; }
+
     public static List<string> AgeOptions = new() { "0-15   : ", "16-60 : ", "61+   : " };
     public static List<string> TimeslotOptions = new() { "09:00-13:00", "13:00-17:00", "17:00-21:00" };
 
-    private readonly ReservationLogic _reservationLogic;
-    private readonly PaymentUI _paymentUI;
-    private readonly UserLoginUI _loginUI;
-    private readonly UiHelpers _ui;
-    private readonly SessionAccess _sessionAccess;
-    private readonly LoginStatus _loginStatus;
-    private readonly FinancialLogic _financialLogic;
-    private readonly DiscountCodeLogic _discountLogic;
-
-    public ReservationUI(
-        ReservationLogic reservationLogic,
-        PaymentUI paymentUI,
-        UserLoginUI loginUI,
-        UiHelpers ui,
-        SessionAccess sessionAccess,
-        LoginStatus loginStatus,
-        FinancialLogic financialLogic,
-        DiscountCodeLogic discountLogic)
-    {
-        _reservationLogic = reservationLogic;
-        _paymentUI = paymentUI;
-        _loginUI = loginUI;
-        _ui = ui;
-        _sessionAccess = sessionAccess;
-        _loginStatus = loginStatus;
-        _financialLogic = financialLogic;
-        _discountLogic = discountLogic;
-    }
-
-    public void StartReservation()
+    public void Book()
     {
         ReservationType reservationType = SelectReservationType();
 
         DateTime chosenDate = DatePicker();
         SessionModel session = ShowTimeslotsByDate(
-            _reservationLogic.GetSessionsByDate(chosenDate));
+            _ctx.reservationLogic.GetSessionsByDate(chosenDate));
 
         List<int> guests = GuestQuantitySelection();
         int totalGuests = guests.Sum();
 
-        _reservationLogic.ValidateReservationType(totalGuests, reservationType);
+        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
 
-        double basePrice = _reservationLogic.CalculatePriceForGuests(guests);
+        double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
         double finalPrice;
 
         if (reservationType == ReservationType.Group)
         {
-            finalPrice = _reservationLogic.ApplyGroupDiscount(basePrice);
+            finalPrice = _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
             Console.WriteLine("\nGroup Reservation:");
             Console.WriteLine("• 20% discount applied");
             Console.WriteLine("• Discount codes disabled");
@@ -70,14 +43,14 @@ public class ReservationUI
         {
             Console.Write("\nDiscount code (optional): ");
             string? code = Console.ReadLine()?.Trim();
-            finalPrice = _discountLogic.Apply(code, basePrice);
+            finalPrice = _ctx.discountLogic.Apply(code, basePrice);
         }
 
         Console.WriteLine($"\nFinal Price: {finalPrice:C}");
 
         ShowBookingDetails(
             chosenDate.Ticks,
-            _reservationLogic.GenerateOrderNumber(_loginStatus.CurrentUserInfo),
+            _ctx.reservationLogic.GenerateOrderNumber(_ctx.loginStatus.CurrentUserInfo),
             session,
             guests,
             finalPrice
@@ -85,10 +58,10 @@ public class ReservationUI
 
         if (UiHelpers.ChoiceHelper("Confirm reservation"))
         {
-            _reservationLogic.CreateSingleTicketBooking(
+            _ctx.reservationLogic.CreateSingleTicketBooking(
                 session.Id,
                 totalGuests,
-                _loginStatus.CurrentUserInfo,
+                _ctx.loginStatus.CurrentUserInfo,
                 finalPrice);
         }
 
@@ -113,19 +86,19 @@ public class ReservationUI
 
     private DateTime DatePicker()
     {
-        int month = FinancialMenu.monthMenu();
+        int month = DateSelection.monthMenu();
         MainMenu dayMenu = new(
-            FinancialMenu.DaysInSelectedMonth(month),
-            FinancialMenu.Months[month - 1]);
+            DateSelection.DaysInSelectedMonth(month),
+            DateSelection.Months[month - 1]);
 
-        DateTime date = _financialLogic.GetDateFromCoordinate(
+        DateTime date = DateSelection.GetDateFromCoordinate(
             dayMenu.Run(), 2025, month);
 
         if (date < DateTime.Now)
             throw new InvalidOperationException("Cannot book in the past.");
 
-        if (!_reservationLogic.CheckForTimeslotsOnDate(date))
-            _reservationLogic.PopulateTimeslots(date);
+        if (!_ctx.reservationLogic.CheckForTimeslotsOnDate(date))
+            _ctx.reservationLogic.PopulateTimeslots(date);
 
         return date;
     }
@@ -133,7 +106,7 @@ public class ReservationUI
     private SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
     {
         List<List<string>> options = sessions
-            .Select(s => new List<string> { _reservationLogic.AvailabilityFormatter(s) })
+            .Select(s => new List<string> { _ctx.reservationLogic.AvailabilityFormatter(s) })
             .ToList();
 
         MainMenu menu = new(options, "Select Timeslot");
@@ -166,7 +139,7 @@ public class ReservationUI
         Console.Clear();
         Console.WriteLine("Booking Details\n");
         Console.WriteLine($"Order: {orderNumber}");
-        
+
         DateTime sessionDate;
 
         if (long.TryParse(session.Date.ToString(), out var ticks))

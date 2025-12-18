@@ -1,95 +1,56 @@
 using System;
 using System.Linq;
 
-public class AttractieMenu
+public class AdminAttraction
 {
-    private readonly AttractieLogic _logic;
+    private AdminContext _ctx;
+    public AdminAttraction(AdminContext a) { _ctx = a; }
 
-    public AttractieMenu(AttractieLogic logic)
+    public void Run()
     {
-        _logic = logic;
-    }
-
-    public void Start()
-    {
-        RunMenu();
-    }
-
-    private void RunMenu()
-    {
-        while (true)
+        Console.Clear();
+        Header("Diddyland – Attractions");
+        List<List<string>> Options = new List<List<string>>
         {
-            Console.Clear();
-            Header("Diddyland – Attractions");
-            List<List<string>> Options = new List<List<string>> 
-            {
-                new List<string> {"List all"},
-                new List<string> {"View by ID"}, 
-                new List<string> {"Add"}, 
-                new List<string> {"Edit"},
-                new List<string> {"Delete"}, 
-                new List<string> {"Quit"} 
-            };
-
-            MainMenu Menu = new MainMenu(Options, "");
-            int[] selectedIndex = Menu.Run();
-            UiHelpers.Pause();
-
-            try
-            {
-                switch (selectedIndex[0])
-                {
-                    case 0: ListAll(); break;
-                    case 1: ViewById(); break;
-                    case 2: Add(); break;
-                    case 3: Edit(); break;
-                    case 4: Delete(); break;
-                    case 5: return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Error(ex.Message);
-            }
-
-            Pause();
-        }
-    }
-
-    private string ChooseLocation()
-    {
-        string[] locations =
-        {
-            "DiddyLand - Amsterdam",
-            "DiddyLand - Rotterdam"
+            new List<string> {"List all"},
+            new List<string> {"View by ID"},
+            new List<string> {"Add"},
+            new List<string> {"Edit"},
+            new List<string> {"Delete"},
+            new List<string> {"Quit"}
         };
 
-        while (true)
+        MainMenu Menu = new MainMenu(Options, "");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
+
+        try
         {
-            Console.WriteLine("Select park location:");
-            for (int i = 0; i < locations.Length; i++)
-                Console.WriteLine($"{i + 1}) {locations[i]}");
-
-            Console.Write("\nEnter choice number: ");
-            string? input = Console.ReadLine()?.Trim();
-
-            if (int.TryParse(input, out int choice) &&
-                choice >= 1 &&
-                choice <= locations.Length)
+            switch (selectedIndex[0])
             {
-                return locations[choice - 1];
+                case 0: ListAll(); break;
+                case 1: ViewById(); break;
+                case 2: Add(); break;
+                case 3: Edit(); break;
+                case 4: Delete(); break;
+                case 5: return;
             }
-
-            Console.WriteLine("Invalid input. Please enter a correct number.\n");
         }
+        catch (Exception ex)
+        {
+            Error(ex.Message);
+        }
+
+        Pause();
     }
+
 
     private void ListAll()
     {
         Header("All attractions");
-        string location = ChooseLocation();
+        string location = ParkMap.ChooseLocation();
 
-        var items = _logic.GetAll()
+        var items = _ctx.attractionLogic.GetAll()
                           .Where(a => a.Location == location)
                           .ToList();
 
@@ -119,7 +80,7 @@ public class AttractieMenu
         Header("View attraction");
         int id = ReadInt("Enter ID", min: 1);
 
-        var m = _logic.Get(id);
+        var m = _ctx.attractionLogic.Get(id);
         if (m == null)
         {
             Warn($"Attraction with ID {id} not found.");
@@ -133,7 +94,7 @@ public class AttractieMenu
     {
         Header("Add attraction");
 
-        string location = ChooseLocation();
+        string location = ParkMap.ChooseLocation();
 
         var model = new AttractieModel
         {
@@ -144,7 +105,7 @@ public class AttractieMenu
             Location = location
         };
 
-        _logic.Add(model);
+        _ctx.attractionLogic.Add(model);
         Success("Added.");
     }
 
@@ -153,7 +114,7 @@ public class AttractieMenu
         Header("Edit attraction");
         int id = ReadInt("Enter ID to edit", min: 1);
 
-        var existing = _logic.Get(id);
+        var existing = _ctx.attractionLogic.Get(id);
         if (existing == null)
         {
             Warn($"Attraction with ID {id} not found.");
@@ -174,7 +135,7 @@ public class AttractieMenu
         existing.Capacity = cap ?? existing.Capacity;
         existing.Location = string.IsNullOrWhiteSpace(locInput) ? existing.Location : locInput.Trim();
 
-        _logic.Update(existing);
+        _ctx.attractionLogic.Update(existing);
         Success("Updated.");
     }
 
@@ -183,7 +144,7 @@ public class AttractieMenu
         Header("Delete attraction");
         int id = ReadInt("Enter ID to delete", min: 1);
 
-        var existing = _logic.Get(id);
+        var existing = _ctx.attractionLogic.Get(id);
         if (existing == null)
         {
             Warn($"Attraction with ID {id} not found.");
@@ -194,7 +155,7 @@ public class AttractieMenu
 
         if (UiHelpers.ChoiceHelper("Are you sure you want to delete this? (y/N): "))
         {
-            _logic.Delete(id);
+            _ctx.attractionLogic.Delete(id);
             Success("Deleted.");
         }
         else

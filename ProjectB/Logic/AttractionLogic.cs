@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-public class AttractieLogic
+public class AttractionLogic
 {
     private readonly IAttractiesAccess _attractiesAccess;
 
-    public AttractieLogic(IAttractiesAccess attractiesAccess)
+    public AttractionLogic(IAttractiesAccess attractiesAccess)
     {
         _attractiesAccess = attractiesAccess;
     }

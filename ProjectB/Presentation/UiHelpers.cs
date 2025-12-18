@@ -11,6 +11,19 @@ public class UiHelpers
         Console.WriteLine();
     }
 
+    public static string InputRead(string text)
+    {
+        string input;
+        do
+        {
+            Console.Write(text);
+            input = Console.ReadLine()?.Trim();
+        }
+        while (string.IsNullOrEmpty(input));
+
+        return input;
+    }
+
     public static void Warn(string msg)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -36,19 +49,24 @@ public class UiHelpers
         Console.Write("\nPress Enter to continue...");
         Console.ReadLine();
     }
+    public static void Pause(string text)
+    {
+        Console.Write($"\n{text}");
+        Console.ReadLine();
+    }
 
     public static bool ChoiceHelper(string message)
     {
-        List<List<string>> Options = new List<List<string>> 
+        List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Yes"},
-            new List<string> {"No"}, 
+            new List<string> {"No"},
         };
 
         MainMenu Menu = new MainMenu(Options, message);
         Pause();
         int[] selectedIndex = Menu.Run();
-        
+
         Console.ResetColor();
 
         switch (selectedIndex[0])

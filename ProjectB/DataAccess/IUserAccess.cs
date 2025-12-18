@@ -8,7 +8,7 @@ public interface IUserAccess
     UserModel? GetByUsername(string username);
     string? GetNameById(int id);
     IEnumerable<UserModel> GetAllUsers();
-    void SetRole(int id, int roleLevel);
+    void SetRole(UserModel user);
     void DeleteUser(int id);
     void Update(UserModel account);
     void Delete(UserModel account);

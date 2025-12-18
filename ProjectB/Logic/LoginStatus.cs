@@ -16,7 +16,7 @@ public class LoginStatus
             DateOfBirth = ""
         };
 
-        CurrentUserInfo = null; 
+        CurrentUserInfo = null;
     }
 
     public void Login(UserModel accountInfo)

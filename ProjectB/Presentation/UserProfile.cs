@@ -1,63 +1,52 @@
-public class ProfilePage
+public class Profile
 {
-    private readonly UserUpdateLogic _service;
+    private readonly UserContext _ctx;
 
-    public ProfilePage(UserUpdateLogic service)
+    public Profile(UserContext ctx)
     {
-        _service = service;
+        _ctx = ctx;
     }
-
-    public void Show(int currentUserId)
+    private UserModel user;
+    public void Run()
     {
-        while (true)
+        user = _ctx.loginStatus.CurrentUserInfo;
+        RenderProfile(user);
+
+        List<List<string>> Options = new List<List<string>>
         {
-            Console.Clear();
-            var user = _service.GetById(currentUserId);
-            if (user == null)
-            {
-                Console.WriteLine("Profile not found.");
-                Pause();
-                return;
-            }
+            new List<string> {"Edit"},
+            new List<string> {"Back"}
+        };
 
-                RenderProfile(user);
+        MainMenu Menu = new MainMenu(Options, "Options:");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
 
-                List<List<string>> Options = new List<List<string>> 
+        switch (selectedIndex[0])
+        {
+            case 0:
+                var edited = EditFlow(user);
+                if (edited == null)
                 {
-                    new List<string> {"Edit"},
-                    new List<string> {"Back"}
-                };
-
-                MainMenu Menu = new MainMenu(Options, "Options:");
-                int[] selectedIndex = Menu.Run();
-                UiHelpers.Pause();
-
-                switch (selectedIndex[0])
-                {
-                    case 0:
-                        return;
-                    case 1:
-                        var edited = EditFlow(user);
-                        if (edited != null)
-                        {
-                            var (ok, error) = _service.UpdateProfile(edited);
-                            if (ok)
-                            {
-                                Console.WriteLine();
-                                Console.WriteLine("Profile updated successfully.");
-                                Pause();
-                            }
-                            else
-                            {
-                                Console.WriteLine();
-                                Console.WriteLine($"{error}");
-                                Pause();
-                            }
-                        }
-                        break;
+                    return;
                 }
+                var (ok, error) = _ctx.userLogic.UpdateProfile(edited);
+                if (!ok)
+                {
+                    Console.WriteLine($"{error}");
+                    Pause();
+                    return;
+                }
+                Console.WriteLine("Profile updated successfully.");
+                Pause();
+                break;
+            case 1:
+                break;
+            default:
+                break;
         }
     }
+
 
     private void RenderProfile(UserModel user)
     {
@@ -105,7 +94,6 @@ public class ProfilePage
         return null;
     }
 
-            
     private string Prompt(string label, string current)
     {
         Console.Write($"{label} [{current}]: ");

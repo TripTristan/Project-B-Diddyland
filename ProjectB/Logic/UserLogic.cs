@@ -116,4 +116,64 @@ public class UserLogic
 
         _userAccess.Write(registeredAccount);
     }
+
+    public UserModel? GetById(int id) => _userAccess.GetById(id);
+
+    public (bool ok, string? error) UpdateProfile(UserModel updated)
+    {
+        if (!IsNameValid(updated.Name))
+            return (false, "Invalid name. It must be 3–19 characters and contain no digits.");
+
+        if (!IsEmailValid(updated.Email))
+            return (false, "Invalid email format.");
+
+        if (!IsDateOfBirthValid(updated.DateOfBirth))
+            return (false, "Invalid date of birth. Use dd-mm-yyyy and a real calendar date.");
+
+        if (!IsHeightValid(updated.Height))
+            return (false, "Invalid height. Enter a value between 30 and 250 cm.");
+
+        if (!IsPhoneValid(updated.Phone))
+            return (false, "Invalid phone. Use +########### (12 chars) or Dutch 06######## (10 chars).");
+
+        if (!IsPasswordValid(updated.Password))
+            return (false, "Invalid password. 8–16 chars with upper, lower, digit, and special.");
+
+        try
+        {
+            _userAccess.Update(updated);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Could not save changes: {ex.Message}");
+        }
+    }
+
+    public void DeleteUser(int id)
+    {
+        _userAccess.DeleteUser(id);
+    }
+
+    public string SetRole(UserModel user, bool rolechange, int adminid)
+    {
+        _userAccess.SetRole(user);
+        return intToRole(rolechange, adminid);
+    }
+
+    private string intToRole(bool rolechange, int adminid)
+    {
+        string role = adminid switch
+        {
+            0 => "User",
+            1 => "Admin",
+            2 => "Superadmin",
+            _ => "Unknown"
+        };
+        if(!rolechange)
+        {
+            return $"has been promoted to {role}.";
+        }
+        return $"has been demoted to {role}.";
+    }
 }
