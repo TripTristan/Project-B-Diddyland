@@ -51,6 +51,18 @@ WHERE CustomerId = @Id; ";
         _bookings.Add(booking);
     }
 
+    public int CountDistinctVisitDates(int userId)
+    {
+        return _db.Connection.ExecuteScalar<int>(
+            @"SELECT COUNT(DISTINCT s.Date)
+            FROM Bookings b
+            JOIN Sessions s ON s.Id = b.SessionId
+            WHERE b.CustomerId = @UserId",
+            new { UserId = userId }
+        );
+    }
+
+
 
     
 

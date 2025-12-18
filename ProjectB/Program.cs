@@ -68,6 +68,7 @@ partial class Program
         var parkMap = new ParkMap();
         var financialMenu = new FinancialMenu(financialLogic);
         var adminComplaintsPage = new AdminComplaintsPage(complaintLogic, ui);
+        var loyaltyDiscountLogic = new LoyaltyDiscountLogic(reservationAccess, userAccess);
 
         var fastPassLogic = new FastPassLogic(
             sessionAccess,
@@ -93,7 +94,8 @@ partial class Program
             loginStatus,
             financialLogic,
             discountLogic,
-            datePicker
+            datePicker,
+            loyaltyDiscountLogic
         );
 
         var adminReservationUI = new AdminReservationUI(
