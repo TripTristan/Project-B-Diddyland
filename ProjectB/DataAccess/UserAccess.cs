@@ -28,6 +28,22 @@ public class UserAccess : IUserAccess
         return _db.Connection.QueryFirstOrDefault<UserModel>(sql, new { Id = id });
     }
 
+    public bool HasUsedLoyaltyDiscount(int userId)
+    {
+        return _db.Connection.ExecuteScalar<int>(
+            "SELECT LoyaltyDiscountUsed FROM Account WHERE Id = @Id",
+            new { Id = userId }
+        ) == 1;
+    }
+
+    public void MarkLoyaltyDiscountUsed(int userId)
+    {
+        _db.Connection.Execute(
+            "UPDATE Account SET LoyaltyDiscountUsed = 1 WHERE Id = @Id",
+            new { Id = userId }
+        );
+    }
+
     public UserModel? GetByEmail(string email)
     {
         string sql = $"SELECT * FROM {Table} WHERE Email = @Email";
