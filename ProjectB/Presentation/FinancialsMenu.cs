@@ -71,7 +71,7 @@ public class FinancialMenu
     {
         List<List<string>> Options = new();
 
-        int year = 2025;
+        int year = 2026;
         int daysInMonth = DateTime.DaysInMonth(year, month);
         List<string> currentWeek = new List<string>();
 
@@ -103,11 +103,11 @@ public class FinancialMenu
             MainMenu DayChoice = new MainMenu(Options, "Select the date:");
             if (i == 0)
             {
-                firstDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+                firstDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2026, month);
             }
             else
             {
-                secondDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2025, month);
+                secondDate = _financialLogic.GetDateFromCoordinate(DayChoice.Run(), 2026, month);
             }
         }
 
