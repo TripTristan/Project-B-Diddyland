@@ -101,7 +101,6 @@ public class AdminMenu
                     UiHelpers.Pause();
                     break;
 
-
                 case 7:
                     Environment.Exit(0);
                     return;

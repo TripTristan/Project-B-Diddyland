@@ -12,6 +12,7 @@ public class GuestMenu
     private readonly CustomerHelpPage _customerHelpPage;
     private readonly UserLogoutUI _logoutUI;
     private readonly ParkMap _parkMap;
+    private readonly InboxUI _inboxUI;
 
     public GuestMenu(
         LoginStatus loginStatus,
@@ -25,7 +26,8 @@ public class GuestMenu
         BookingHistoryUI bookingHistoryUI,
         CustomerHelpPage customerHelpPage,
         UserLogoutUI logoutUI,
-        ParkMap parkMap)
+        ParkMap parkMap,
+        InboxUI inboxUI)
     {
         _loginStatus = loginStatus;
         _ui = ui;
@@ -39,6 +41,7 @@ public class GuestMenu
         _customerHelpPage = customerHelpPage;
         _logoutUI = logoutUI;
         _parkMap = parkMap;
+        _inboxUI = inboxUI;
     }
 
     public void Run()
@@ -54,6 +57,7 @@ public class GuestMenu
                 new List<string> {"File A Complaint"}, 
                 new List<string> {"View our park map"}, 
                 new List<string> {"View your Orders"}, 
+                new List<string> {"Inbox"},
                 new List<string> {"View your Profile"}, 
                 new List<string> {"Logout"}
             };
@@ -87,10 +91,14 @@ public class GuestMenu
                     break;
 
                 case 5:
-                    _profilePage.Show(_loginStatus.CurrentUserInfo.Id);
+                    _inboxUI.Show();
                     break;
 
                 case 6:
+                    _profilePage.Show(_loginStatus.CurrentUserInfo.Id);
+                    break;
+
+                case 7:
                     _logoutUI.Start();
                     return;
 

@@ -20,6 +20,13 @@ public class BookingHistoryUI
 
     public void Display(string username)
     {
+        if (username == "Guest")
+        {
+            Console.Clear();
+            Console.WriteLine("Guest accounts do not have the option to view order history.");
+            return;
+        }
+
         List<List<string>> filterOptions = new List<List<string>>
         {
             new List<string> { "Show ALL bookings" },
