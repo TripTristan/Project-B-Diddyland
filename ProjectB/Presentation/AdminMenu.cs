@@ -11,6 +11,9 @@ public class AdminMenu
     private readonly ParkMap _parkMap;
     private readonly AdminComplaintsPage _adminComplaintsPage;
     private readonly UserLogoutUI _logoutUi;
+    private readonly AdminReservationUI _adminReservationUI;
+    private readonly AdminTimeslotUI _adminTimeslotUI;
+
 
     public AdminMenu(
         LoginStatus loginStatus,
@@ -21,7 +24,9 @@ public class AdminMenu
         ReservationUI reservationUI,
         ParkMap parkMap,
         AdminComplaintsPage adminComplaintsPage,
-        UserLogoutUI logoutUi)
+        UserLogoutUI logoutUi,
+        AdminReservationUI adminReservationUI,
+        AdminTimeslotUI adminTimeslotUI)
     {
         _loginStatus = loginStatus;
         _ui = ui;
@@ -32,6 +37,8 @@ public class AdminMenu
         _parkMap = parkMap;
         _adminComplaintsPage = adminComplaintsPage;
         _logoutUi = logoutUi;
+        _adminReservationUI = adminReservationUI;
+        _adminTimeslotUI = adminTimeslotUI;
     }
 
     public void Run()
@@ -48,6 +55,8 @@ public class AdminMenu
                 new List<string> {"Attractions"},
                 new List<string> {"Menu management"}, 
                 new List<string> {"Orders"}, 
+                new List<string> {"Manage Reservations"},
+                new List<string> {"Manage Timeslots"},
                 new List<string> {"Book a reservation"}, 
                 new List<string> {"Logout"}, 
                 new List<string> {"Manage Complaints"}, 
@@ -87,22 +96,32 @@ public class AdminMenu
                     break;
 
                 case 4:
+                    _adminReservationUI.Run();
+                    UiHelpers.Pause();
+                    break;
+                
+                case 5:
+                    _adminTimeslotUI.Run();
+                    UiHelpers.Pause();
+                    break;
+
+                case 6:
                     _reservationUI.StartReservation();
                     UiHelpers.Pause();
                     break;
 
-                case 5:
+                case 7:
                     _logoutUi.Start();
                     UiHelpers.Pause();
                     return;
 
-                case 6:
+                case 8:
                     _adminComplaintsPage.Show();
                     UiHelpers.Pause();
                     break;
 
 
-                case 7:
+                case 9:
                     Environment.Exit(0);
                     return;
 

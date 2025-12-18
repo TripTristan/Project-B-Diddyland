@@ -8,7 +8,6 @@ public enum ReservationType
     Group
 }
 
-
 public class ReservationUI
 {
     public static List<string> AgeOptions = new() { "0-15   : ", "16-60 : ", "61+   : " };
@@ -22,6 +21,7 @@ public class ReservationUI
     private readonly LoginStatus _loginStatus;
     private readonly FinancialLogic _financialLogic;
     private readonly DiscountCodeLogic _discountLogic;
+    private readonly DatePickerUI _datePicker;
 
     public ReservationUI(
         ReservationLogic reservationLogic,
@@ -31,7 +31,8 @@ public class ReservationUI
         SessionAccess sessionAccess,
         LoginStatus loginStatus,
         FinancialLogic financialLogic,
-        DiscountCodeLogic discountLogic)
+        DiscountCodeLogic discountLogic,
+        DatePickerUI datePicker)
     {
         _reservationLogic = reservationLogic;
         _paymentUI = paymentUI;
@@ -41,13 +42,14 @@ public class ReservationUI
         _loginStatus = loginStatus;
         _financialLogic = financialLogic;
         _discountLogic = discountLogic;
+        _datePicker = datePicker;
     }
 
     public void StartReservation()
     {
         ReservationType reservationType = SelectReservationType();
 
-        DateTime chosenDate = DatePicker();
+        DateTime chosenDate = _datePicker.PickDate();
         SessionModel session = ShowTimeslotsByDate(
             _reservationLogic.GetSessionsByDate(chosenDate));
 
@@ -111,25 +113,6 @@ public class ReservationUI
             : ReservationType.Group;
     }
 
-    private DateTime DatePicker()
-    {
-        int month = FinancialMenu.monthMenu();
-        MainMenu dayMenu = new(
-            FinancialMenu.DaysInSelectedMonth(month),
-            FinancialMenu.Months[month - 1]);
-
-        DateTime date = _financialLogic.GetDateFromCoordinate(
-            dayMenu.Run(), 2025, month);
-
-        if (date < DateTime.Now)
-            throw new InvalidOperationException("Cannot book in the past.");
-
-        if (!_reservationLogic.CheckForTimeslotsOnDate(date))
-            _reservationLogic.PopulateTimeslots(date);
-
-        return date;
-    }
-
     private SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
     {
         List<List<string>> options = sessions
@@ -166,7 +149,7 @@ public class ReservationUI
         Console.Clear();
         Console.WriteLine("Booking Details\n");
         Console.WriteLine($"Order: {orderNumber}");
-        
+
         DateTime sessionDate;
 
         if (long.TryParse(session.Date.ToString(), out var ticks))
@@ -186,5 +169,36 @@ public class ReservationUI
     {
         Console.WriteLine("\nReservation successful!");
         UiHelpers.Pause();
+    }
+
+    // ================= ADMIN REUSE (NEW) =================
+
+    public void StartReservationForUser(UserModel user)
+    {
+        var originalUser = _loginStatus.CurrentUserInfo;
+        _loginStatus.Login(user);
+        StartReservation();
+        _loginStatus.Login(originalUser);
+    }
+
+    public SessionModel PickSessionForDate(DateTime date)
+    {
+        return ShowTimeslotsByDate(_reservationLogic.GetSessionsByDate(date));
+    }
+
+    public List<int> PickGuestQuantities()
+    {
+        return GuestQuantitySelection();
+    }
+
+    // This signature matches the compile error you posted
+    public double CalculatePriceFromGuests(List<int> guests, ReservationType type, string? discountCode = null)
+    {
+        double basePrice = _reservationLogic.CalculatePriceForGuests(guests);
+
+        if (type == ReservationType.Group)
+            return _reservationLogic.ApplyGroupDiscount(basePrice);
+
+        return _discountLogic.Apply(discountCode, basePrice);
     }
 }

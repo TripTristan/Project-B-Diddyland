@@ -22,29 +22,40 @@ partial class Program
         var attractiesAccess = new AttractiesAccess(db);
         var sessionAccess = new SessionAccess(db, attractiesAccess);
         var reservationAccess = new ReservationAccess(db, userAccess);
+        var bookingAccess = new BookingAccess(db);
         var menuAccess = new MenusAccess(db);
         var complaintsAccess = new ComplaintsAccess(db);
-        var bookingAccess = new BookingAccess(db);
         var financialAccess = new FinancialAccess(db);
+        var discountAccess = new DiscountCodeAccess(db);
 
         var userLogic = new UserLogic(userAccess);
         var loginLogic = new LoginLogic(userAccess, loginStatus);
         var logoutLogic = new LogoutLogic(loginStatus);
-        var updateLogic = new UserUpdateLogic(userAccess, userLogic);
+
+        var reservationLogic = new ReservationLogic(sessionAccess, reservationAccess);
         var bookingHistoryLogic = new BookingHistoryLogic(bookingAccess);
         var attractieLogic = new AttractieLogic(attractiesAccess);
-        var reservationLogic = new ReservationLogic(sessionAccess, reservationAccess);
-        var fastPassLogic = new FastPassLogic(sessionAccess, reservationLogic, reservationAccess, attractiesAccess);
         var menuLogic = new MenuLogic(menuAccess);
         var orderLogic = new OrderLogic(menuLogic);
         var complaintLogic = new ComplaintLogic(complaintsAccess);
+
+        var discountLogic = new DiscountCodeLogic(discountAccess);
         var financialLogic = new FinancialLogic(reservationAccess, userAccess);
+        var datePicker = new DatePickerUI(financialLogic, reservationLogic);
+
+        var adminReservationAccess = new AdminReservationAccess(db);
+
+        var adminReservationLogic = new AdminReservationLogic(
+            adminReservationAccess,
+            sessionAccess,
+            reservationLogic
+        );
+
+        var adminSessionLogic = new AdminSessionLogic(sessionAccess);
 
         var registerUI = new UserRegister(userLogic);
         var loginUI = new UserLoginUI(loginLogic);
         var logoutUI = new UserLogoutUI(logoutLogic);
-        var discountAccess = new DiscountCodeAccess(db);
-        var discountLogic = new DiscountCodeLogic(discountAccess);
         var discountUI = new DiscountCodeUI(discountLogic);
 
 
@@ -52,10 +63,18 @@ partial class Program
         var attractieMenu = new AttractieMenu(attractieLogic);
         var menuForm = new MenuForm(menuLogic);
         var orderForm = new OrderForm(orderLogic, menuForm);
+        var updateLogic = new UserUpdateLogic(userAccess, userLogic);
         var profilePage = new ProfilePage(updateLogic);
         var parkMap = new ParkMap();
         var financialMenu = new FinancialMenu(financialLogic);
         var adminComplaintsPage = new AdminComplaintsPage(complaintLogic, ui);
+
+        var fastPassLogic = new FastPassLogic(
+            sessionAccess,
+            reservationLogic,
+            reservationAccess,
+            attractiesAccess
+        );
 
         var fastPassUI = new FastPassUI(
             fastPassLogic,
@@ -73,8 +92,21 @@ partial class Program
             sessionAccess,
             loginStatus,
             financialLogic,
-            discountLogic
+            discountLogic,
+            datePicker
         );
+
+        var adminReservationUI = new AdminReservationUI(
+            adminReservationLogic,
+            datePicker,
+            reservationUI
+        );
+
+        var adminTimeslotUI = new AdminTimeslotUI(
+            adminSessionLogic,
+            datePicker
+        );
+
 
         var manageAdmins = new ManageAdmins(userAccess);
         var customerHelpPage = new CustomerHelpPage(complaintLogic, loginStatus, ui);
@@ -103,7 +135,9 @@ partial class Program
             reservationUI,
             parkMap,
             adminComplaintsPage,
-            logoutUI
+            logoutUI,
+            adminReservationUI, 
+            adminTimeslotUI  
         );
 
         var superAdminMenu = new SuperAdminMenu(
