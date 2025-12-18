@@ -60,7 +60,6 @@ public class GuestMenu
 
         MainMenu Menu = new MainMenu(Options, Prompt);
         int[] selectedIndex = Menu.Run();
-        UiHelpers.Pause();
 
             switch (selectedIndex[0])
             {

@@ -31,7 +31,7 @@ public class BookingHistoryUI
         MainMenu filterMenu = new MainMenu(filterOptions, "Filter your bookings:");
         int[] result = filterMenu.Run();
 
-        if (result[0] == 3) // Back
+        if (result[0] == 3)
             return;
 
         Func<BookingModel, bool> filter = result[0] switch

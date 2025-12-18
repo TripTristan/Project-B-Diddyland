@@ -143,6 +143,7 @@ public class FastPassUI
         int[] result = locationMenu.Run();
 
         if (result[0] == 2)
+            UiHelpers.Pause();
             return null;
 
         return locationOptions[result[0]][0];

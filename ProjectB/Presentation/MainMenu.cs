@@ -16,8 +16,9 @@ class MainMenu
 
     public void DisplayOptions()
     {
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = Prompt != null && Prompt.ToLower().Contains("guest page") ? ConsoleColor.DarkGreen : ConsoleColor.White;
         Console.WriteLine(Prompt);
+        Console.ForegroundColor = ConsoleColor.White;
         for (int i = 0; i< Options.Count(); i++)
         {
             for (int j = 0; j<Options[i].Count(); j++)

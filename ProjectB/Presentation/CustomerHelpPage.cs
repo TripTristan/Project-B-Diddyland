@@ -62,18 +62,15 @@ public class CustomerHelpPage
             "DiddyLand - Rotterdam"
         };
 
-        Console.WriteLine("\nSelect park location:");
-        for (int i = 0; i < locations.Length; i++)
+        List<List<string>> locationOptions = new List<List<string>>
         {
-            Console.WriteLine($"{i + 1}. {locations[i]}");
-        }
+            new List<string> { "DiddyLand - Amsterdam" },
+            new List<string> { "DiddyLand - Rotterdam" }
+        };
 
-        Console.Write("\nEnter location number: ");
-        string locInput = Console.ReadLine();
-        int locChoice = int.TryParse(locInput, out int locNum) ? locNum : 1;
-        if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
-
-        string location = locations[locChoice - 1];
+        MainMenu locationMenu = new MainMenu(locationOptions, "\nSelect park location:");
+        int[] locResult = locationMenu.Run();
+        string location = locations[locResult[0]];
   
         Console.WriteLine("\nPlease describe your complaint below:");
         string description = Console.ReadLine();

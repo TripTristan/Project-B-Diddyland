@@ -110,7 +110,10 @@ public class ReservationUI
         int[] result = menu.Run();
 
         if (result[0] == 2)
+        {
+            UiHelpers.Pause();
             return (ReservationType)(-1);
+        }
 
         return result[0] == 0
             ? ReservationType.Normal
