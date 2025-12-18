@@ -81,9 +81,9 @@ public class GuestMenu
                     break;
 
                 case 3:
+                    Console.Clear();
                     _parkMap.ShowMap();
-                    UiHelpers.Pause();
-                    break;
+                    return;
 
                 case 4:
                     _bookingHistoryUI.Display(_loginStatus.CurrentUserInfo.Username);
