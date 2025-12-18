@@ -56,7 +56,7 @@ public class GuestMenu
                 new List<string> {"Buy a Fastpass for our attractions"}, 
                 new List<string> {"File A Complaint"}, 
                 new List<string> {"View our park map"}, 
-                new List<string> {"View your Orders"}, 
+                new List<string> {"Order History"}, 
                 new List<string> {"Inbox"},
                 new List<string> {"View your Profile"}, 
                 new List<string> {"Logout"}
