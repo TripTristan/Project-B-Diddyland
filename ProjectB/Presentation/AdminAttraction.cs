@@ -3,8 +3,8 @@ using System.Linq;
 
 public class AdminAttraction
 {
-    private AdminContext _ctx;
-    public AdminAttraction(AdminContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public AdminAttraction(Dependencies a) { _ctx = a; }
 
     public void Run()
     {

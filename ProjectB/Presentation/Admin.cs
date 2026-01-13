@@ -2,18 +2,11 @@ using System;
 
 public class Admin
 {
-    private readonly AdminContext _ctx;
+    private readonly Dependencies _ctx;
 
-    private readonly AdminAttraction _adminAttraction;
-    private readonly AdminFoodmenu _adminFoodmenu;
-    private readonly AdminComplaints _adminComplaints;
-
-    public Admin(AdminContext ctx)
+    public Admin(Dependencies ctx)
     {
         _ctx = ctx;
-        _adminAttraction = new AdminAttraction(ctx);
-        _adminFoodmenu = new AdminFoodmenu(ctx);
-        _adminComplaints = new AdminComplaints(ctx);
     }
 
 
@@ -57,11 +50,11 @@ public class Admin
                     ParkMap.ShowMap();
                     break;
                 case 1:
-                    _adminAttraction.Run();
+                    _ctx.adminAttraction.Run();
                     break;
 
                 case 2:
-                    _adminFoodmenu.Run();
+                    _ctx.adminFoodmenu.Run();
                     break;
 
                 // case 4:
@@ -73,7 +66,7 @@ public class Admin
                     UiHelpers.Pause();
                     return;
                 case 4:
-                    _adminComplaints.Run();
+                    _ctx.adminComplaints.Run();
                     UiHelpers.Pause();
                     break;
                 case 5:

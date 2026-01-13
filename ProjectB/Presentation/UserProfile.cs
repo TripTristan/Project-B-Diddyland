@@ -1,9 +1,9 @@
 public class Profile
 {
-    private readonly UserContext _ctx;
+    private readonly Dependencies _ctx;
     private UserModel user;
 
-    public Profile(UserContext ctx)
+    public Profile(Dependencies ctx)
     {
         _ctx = ctx;
         user = _ctx.loginStatus.CurrentUserInfo;
@@ -59,7 +59,7 @@ public class Profile
             Name = Prompt("Username", current.Name),
             Email = Prompt("Email", current.Email),
             DateOfBirth = Prompt("Date of Birth (dd-mm-yyyy)", current.DateOfBirth),
-            Height = Int32.TryParse(Prompt("Height in cm", current.Height)),
+            Height = Convert.ToInt32(Prompt("Height in cm", current.Height)),
             Phone = Prompt("Phone (+########### or 06########)", current.Phone),
             Password = Prompt("Password (leave empty to keep current)", current.Password),
             Admin = current.Admin

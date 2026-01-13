@@ -17,6 +17,7 @@ public class LoginStatus
         };
 
         CurrentUserInfo = null;
+        Logout();
     }
 
     public void Login(UserModel accountInfo)

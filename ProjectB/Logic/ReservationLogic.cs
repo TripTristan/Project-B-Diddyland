@@ -6,16 +6,18 @@ public class ReservationLogic
 {
     private readonly SessionAccess _sessionAccess;
     private readonly ReservationAccess _reservationAccess;
+    private readonly AttractiesAccess _attractiesAccess;
 
     public const int MaxNormalReservation = 10;
     public const int MinGroupReservation = 10;
     public const int MaxGroupReservation = 30;
     public const double GroupDiscountRate = 0.20;
 
-    public ReservationLogic(SessionAccess sessionAccess, ReservationAccess reservationAccess)
+    public ReservationLogic(Dependencies ctx)
     {
-        _sessionAccess = sessionAccess;
-        _reservationAccess = reservationAccess;
+        _sessionAccess = ctx.sessionAccess;
+        _reservationAccess = ctx.reservationAccess;
+        _attractiesAccess = ctx.attractiesAccess;
     }
 
     public void CreateSingleTicketBooking(long sessionId, int qty, UserModel? customer, double price)
@@ -41,7 +43,7 @@ public class ReservationLogic
         _sessionAccess.UpdateSession(session);
     }
 
-    public IEnumerable<AttractieModel> GetAttractions()
+    public IEnumerable<AttractieModel> GetAttractions(string location)
     {
         return _attractiesAccess.GetAll()
             .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))

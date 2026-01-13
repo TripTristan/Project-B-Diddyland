@@ -5,9 +5,9 @@ public class AdminSuper
     private readonly AdminFinance _adminFinance;
     private readonly ManageAdmins _manageAdmins;
     private readonly DiscountCode _adminDiscount;
-    private readonly AdminContext _ctx;
+    private readonly Dependencies _ctx;
 
-    public AdminSuper(AdminContext ctx)
+    public AdminSuper(Dependencies ctx)
     {
         _adminFinance = new AdminFinance(ctx);
         _manageAdmins = new ManageAdmins(ctx);
@@ -44,13 +44,13 @@ public class AdminSuper
             switch (selectedIndex[0])
             {
                 case 0:
-                    _adminFinance.Run();
+                    _ctx.adminFinance.Run();
                     break;
                 case 1:
-                    _adminAttraction.Run();
+                    _ctx.adminAttraction.Run();
                     break;
                 case 2:
-                    _adminFoodmenu.Run();
+                    _ctx.adminFoodmenu.Run();
                     break;
                 // case 3:
                 //     _reservationManagement(); to be implemented
@@ -64,14 +64,14 @@ public class AdminSuper
                     break;
 
                 case 5:
-                    _manageAdmins.Run();
+                    _ctx.adminManagement.Run();
                     break;
 
                 case 6:
-                    _adminComplaints.Run();
+                    _ctx.adminComplaints.Run();
                     break;
                 case 7:
-                    _discountCode.CreateDiscountCode();
+                    _ctx.discount.CreateDiscountCode();
                     break;
                 case 8:
                     _ctx.userAuth.Logout();

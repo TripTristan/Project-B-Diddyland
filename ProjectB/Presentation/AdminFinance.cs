@@ -1,7 +1,7 @@
 public class AdminFinance
 {
-    private AdminContext _ctx;
-    public AdminFinance(AdminContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public AdminFinance(Dependencies a) { _ctx = a; }
 
 
     public void Run()

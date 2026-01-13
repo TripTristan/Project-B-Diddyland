@@ -5,17 +5,10 @@ using System.Linq;
 public class BookingHistory
 {
     private readonly BookingHistoryLogic _logic;
-    private readonly SessionAccess _sessionAccess;
-    private readonly AttractiesAccess _attractiesAccess;
 
-    public BookingHistory(
-        BookingHistoryLogic logic,
-        SessionAccess sessionAccess,
-        AttractiesAccess attractiesAccess)
+    public BookingHistory(BookingHistoryLogic logic)
     {
         _logic = logic;
-        _sessionAccess = sessionAccess;
-        _attractiesAccess = attractiesAccess;
     }
 
     public void Display(string username)
@@ -70,7 +63,7 @@ public class BookingHistory
                     ? UserReservation.TimeslotOptions[timeIndex]
                     : "Unknown time";
 
-            return sessionDateFormatted = $"{sessionDate.Split(' ')[0]} {timeSlot}";
+            return $"{sessionDate.Split(' ')[0]} {timeSlot}";
         }
     }
     private void PrintBooking(BookingModel b)
@@ -78,7 +71,7 @@ public class BookingHistory
         string bookingDateFormatted = FormatTicksOrDate(b.BookingDate);
         string typeText = ConvertType(b.Type);
 
-        var session = _sessionAccess.GetSessionById(b.SessionId);
+        var session = _logic.RetrieveSession(b.SessionId);
         string sessionDateFormatted = "Unknown session";
 
         if (session != null)

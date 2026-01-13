@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 public class FastPass
 {
-    private readonly UserContext _context;
+    private readonly Dependencies _ctx;
 
-    public FastPass(UserContext context)
+    public FastPass(Dependencies context)
     {
-        _context = context;
+        _ctx = context;
     }
     public void Run(UserModel? currentUser = null)
     {
@@ -18,9 +18,9 @@ public class FastPass
 
         string location = ChooseParkLocation();
 
-        var attractions = ReservationLogic.GetAttractions();
+        var attractions = _ctx.reservationLogic.GetAttractions(location);
 
-        if (attractions.Count == 0)
+        if (attractions.Count() == 0)
         {
             Console.WriteLine($"No attractions found in {location}. Please add attractions first.");
             return;
@@ -49,7 +49,7 @@ public class FastPass
 
         DateTime day = DateTime.Today;
 
-        var available = _fastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
+        var available = _ctx.fastPassLogic.GetAvailableFastPassSessions(attractionId, day, location);
         if (available.Count == 0)
         {
             Console.WriteLine($"\nNo available timeslots for this attraction today in {location}.");
@@ -97,7 +97,7 @@ public class FastPass
 
         try
         {
-            var confirmation = _fastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser, location);
+            var confirmation = _ctx.fastPassLogic.BookFastPass(selectedSession.Id, qty, currentUser, location);
 
             Console.Clear();
             Console.WriteLine("====== FastPass Confirmation ======\n");

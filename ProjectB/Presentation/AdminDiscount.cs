@@ -2,8 +2,8 @@ using System;
 
 public class DiscountCode
 {
-    private AdminContext _ctx;
-    public DiscountCode(AdminContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public DiscountCode(Dependencies a) { _ctx = a; }
 
 
     public void CreateDiscountCode()

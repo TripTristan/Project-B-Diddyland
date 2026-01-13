@@ -3,8 +3,8 @@ using System.Threading.Tasks.Dataflow;
 
 public class UserFoodmenu
 {
-    private AdminContext _ctx;
-    public UserFoodmenu(AdminContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public UserFoodmenu(Dependencies a) { _ctx = a; }
 
     public void Run()
     {
@@ -102,7 +102,6 @@ public class UserFoodmenu
             var qty = PromptInt("New quantity: ");
             var msg = _ctx.foodmenuLogic.UpdateQuantity(id, qty);
             Pause(msg + " Press any key...");
-            break;
         }
     }
 

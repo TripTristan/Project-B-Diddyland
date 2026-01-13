@@ -5,14 +5,14 @@ public class UserGuest
     private readonly UserHelp _userHelp;
     private readonly BookingHistory _bookingHistory;
     private readonly Profile _profile;
-    private readonly UserContext _ctx;
+    private readonly Dependencies _ctx;
 
-    public UserGuest(UserContext ctx)
+    public UserGuest(Dependencies ctx)
     {
         _reservation = new UserReservation(ctx);
         _fastPass = new FastPass(ctx);
         _userHelp = new UserHelp(ctx);
-        _bookingHistory = new BookingHistory(ctx);
+        _bookingHistory = new BookingHistory(ctx.bookingHistoryLogic);
         _profile = new Profile(ctx);
         _ctx = ctx;
     }

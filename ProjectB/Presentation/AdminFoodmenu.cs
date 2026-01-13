@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 public class AdminFoodmenu
 {
-    private AdminContext _ctx;
-    public AdminFoodmenu(AdminContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public AdminFoodmenu(Dependencies a) { _ctx = a; }
 
 
     public static string FormatMenu(IEnumerable<MenuModel> items)

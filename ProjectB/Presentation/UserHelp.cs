@@ -5,8 +5,8 @@ using System.Threading.Tasks.Dataflow;
 
 public class UserHelp
 {
-    private UserContext _ctx;
-    public UserHelp(UserContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public UserHelp(Dependencies a) { _ctx = a; }
 
     public void Run()
     {
@@ -44,14 +44,14 @@ public class UserHelp
         }
 
 
-        Complain(selectedIndex);
+        ComplainProperties(Options[selectedIndex[0]][0]);
 
         Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
         Console.WriteLine("We appreciate your feedback and will work to improve.\n");
 
     }
 
-    private void Complain(int[] selectedIndex)
+    private void ComplainProperties(string selectedCat)
     {
         string[] locations =
         {
@@ -75,7 +75,7 @@ public class UserHelp
         string description = Console.ReadLine();
 
         string username = _ctx.loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
-        string category = Options[selectedIndex[0]][0];
+        string category = selectedCat;
 
         _ctx.complaintLogic.SubmitComplaint(username, category, description, location);
     }

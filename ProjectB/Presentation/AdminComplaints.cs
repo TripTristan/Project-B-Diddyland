@@ -4,8 +4,8 @@ using System.Linq;
 
 public class AdminComplaints
 {
-    protected AdminContext _ctx;
-    public AdminComplaints(AdminContext a) { _ctx = a; }
+    protected Dependencies _ctx;
+    public AdminComplaints(Dependencies a) { _ctx = a; }
 
     public string Location;
 

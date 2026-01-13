@@ -10,8 +10,8 @@ public enum ReservationType
 
 public class UserReservation
 {
-    private UserContext _ctx;
-    public UserReservation(UserContext a) { _ctx = a; }
+    private Dependencies _ctx;
+    public UserReservation(Dependencies a) { _ctx = a; }
 
     public static List<string> AgeOptions = new() { "0-15   : ", "16-60 : ", "61+   : " };
     public static List<string> TimeslotOptions = new() { "09:00-13:00", "13:00-17:00", "17:00-21:00" };

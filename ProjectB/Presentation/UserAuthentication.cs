@@ -1,8 +1,8 @@
 public class UserAuthentication
 {
-    private readonly UserContext _ctx;
+    private readonly Dependencies _ctx;
 
-    public UserAuthentication(UserContext ctx)
+    public UserAuthentication(Dependencies ctx)
     {
         _ctx = ctx;
     }
@@ -11,7 +11,7 @@ public class UserAuthentication
     {
         if (UiHelpers.ChoiceHelper("=== Logout Menu ===\nAre you sure you want to logout?"))
         {
-            Console.WriteLine(_ctx.authenticationLogic.Logout());
+            Console.WriteLine(_ctx.authLogic.Logout());
             return;
         }
         return;
@@ -37,7 +37,7 @@ public class UserAuthentication
 
     protected bool LoggedIn()
     {
-        return _ctx.authenticationLogic.AccountVerify(UiHelpers.InputRead("Username: "), UiHelpers.InputRead("Password: "));
+        return _ctx.authLogic.AccountVerify(UiHelpers.InputRead("Username: "), UiHelpers.InputRead("Password: "));
     }
 
 }
