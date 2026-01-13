@@ -8,79 +8,28 @@ public enum ReservationType
     Group
 }
 
-public class ReservationUI
+public class UserReservation
 {
-    public static List<string> AgeOptions = new()
-    {
-        "0-15   : ",
-        "16-60 : ",
-        "61+   : "
-    };
+    private Dependencies _ctx;
+    public UserReservation(Dependencies a) { _ctx = a; }
 
-    public static List<string> TimeslotOptions = new()
-    {
-        "09:00-13:00",
-        "13:00-17:00",
-        "17:00-21:00"
-    };
+    public static List<string> AgeOptions = new() { "0-15   : ", "16-60 : ", "61+   : " };
+    public static List<string> TimeslotOptions = new() { "09:00-13:00", "13:00-17:00", "17:00-21:00" };
 
-    private readonly ReservationLogic _reservationLogic;
-    private readonly PaymentUI _paymentUI;
-    private readonly UserLoginUI _loginUI;
-    private readonly UiHelpers _ui;
-    private readonly SessionAccess _sessionAccess;
-    private readonly LoginStatus _loginStatus;
-    private readonly FinancialLogic _financialLogic;
-    private readonly DiscountCodeLogic _discountLogic;
-    private readonly DatePickerUI _datePicker;
-    private readonly LoyaltyDiscountLogic _loyaltyDiscountLogic;
 
-    public ReservationUI(
-        ReservationLogic reservationLogic,
-        PaymentUI paymentUI,
-        UserLoginUI loginUI,
-        UiHelpers ui,
-        SessionAccess sessionAccess,
-        LoginStatus loginStatus,
-        FinancialLogic financialLogic,
-        DiscountCodeLogic discountLogic,
-        DatePickerUI datePicker,
-        LoyaltyDiscountLogic loyaltyDiscountLogic)
-    {
-        _reservationLogic = reservationLogic;
-        _paymentUI = paymentUI;
-        _loginUI = loginUI;
-        _ui = ui;
-        _sessionAccess = sessionAccess;
-        _loginStatus = loginStatus;
-        _financialLogic = financialLogic;
-        _discountLogic = discountLogic;
-        _datePicker = datePicker;
-        _loyaltyDiscountLogic = loyaltyDiscountLogic;
-    }
-
-    public void StartReservation()
+    private (double finalPrice, string? discountInfo) CheckGroupDiscount(List<int> guests)
     {
         ReservationType reservationType = SelectReservationType();
-
-        DateTime chosenDate = _datePicker.PickDate();
-
-        SessionModel session = ShowTimeslotsByDate(
-            _reservationLogic.GetSessionsByDate(chosenDate));
-
-        List<int> guests = GuestQuantitySelection();
         int totalGuests = guests.Sum();
+        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
 
-        _reservationLogic.ValidateReservationType(totalGuests, reservationType);
-
-        double basePrice = _reservationLogic.CalculatePriceForGuests(guests);
-        double finalPrice;
-
-        var currentUser = _loginStatus.CurrentUserInfo;
+        double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
+        var currentUser = _ctx.loginStatus.CurrentUserInfo;
 
         string? discountInfo = null;
+        double finalPrice = basePrice;
 
-        if (_loyaltyDiscountLogic.CanUseLoyaltyDiscount(currentUser))
+        if (_ctx.loyaltyDiscountLogic.CanUseLoyaltyDiscount(currentUser))
         {
             discountInfo =
                 "🎉 Loyalty reward unlocked!\n" +
@@ -88,33 +37,47 @@ public class ReservationUI
                 "• 50% discount applied\n" +
                 "• One-time reward";
 
-            finalPrice = _loyaltyDiscountLogic.ApplyAndConsume(
-                currentUser,
-                basePrice
-            );
+            finalPrice = _ctx.loyaltyDiscountLogic.ApplyAndConsume(currentUser, basePrice);
+            return (finalPrice, discountInfo);
         }
-        else if (reservationType == ReservationType.Group)
+
+        if (reservationType == ReservationType.Group)
         {
             discountInfo =
                 "Group Reservation\n" +
                 "• 20% discount applied\n" +
                 "• Discount codes disabled";
 
-            finalPrice = _reservationLogic.ApplyGroupDiscount(basePrice);
-        }
-        else
-        {
-            Console.Write("\nDiscount code (optional): ");
-            string? code = Console.ReadLine()?.Trim();
-            finalPrice = _discountLogic.Apply(code, basePrice);
+            finalPrice = _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
+            return (finalPrice, discountInfo);
         }
 
+        Console.Write("\nDiscount code (optional): ");
+        string? code = Console.ReadLine()?.Trim();
+        finalPrice = _ctx.discountLogic.Apply(code, basePrice);
+
+        return (finalPrice, discountInfo);
+    }
+
+
+
+    public void Book()
+    {
+        List<int> guests = GuestQuantitySelection();
+        int totalGuests = guests.Sum();
+
+        DateTime chosenDate = DatePicker();
+        SessionModel session = ShowTimeslotsByDate(
+            _ctx.reservationLogic.GetSessionsByDate(chosenDate));
+
+
+        var (finalPrice, discountInfo) = CheckGroupDiscount(guests);
 
         Console.WriteLine($"\nFinal Price: {finalPrice:C}");
 
         ShowBookingDetails(
             chosenDate.Ticks,
-            _reservationLogic.GenerateOrderNumber(currentUser),
+            _ctx.reservationLogic.GenerateOrderNumber(_ctx.loginStatus.CurrentUserInfo),
             session,
             guests,
             finalPrice,
@@ -123,12 +86,11 @@ public class ReservationUI
 
         if (UiHelpers.ChoiceHelper("Confirm reservation"))
         {
-            _reservationLogic.CreateSingleTicketBooking(
+            _ctx.reservationLogic.CreateSingleTicketBooking(
                 session.Id,
                 totalGuests,
-                currentUser,
-                finalPrice
-            );
+                _ctx.loginStatus.CurrentUserInfo,
+                finalPrice);
         }
 
         ShowSuccessMessage();
@@ -136,17 +98,17 @@ public class ReservationUI
 
     public void StartReservationForUser(UserModel user)
     {
-        var originalUser = _loginStatus.CurrentUserInfo;
+        var originalUser = _ctx.loginStatus.CurrentUserInfo;
 
-        _loginStatus.Login(user);
-        StartReservation();
-        _loginStatus.Login(originalUser);
+        _ctx.loginStatus.Login(user);
+        Book();
+        _ctx.loginStatus.Login(originalUser);
     }
 
     public SessionModel PickSessionForDate(DateTime date)
     {
         return ShowTimeslotsByDate(
-            _reservationLogic.GetSessionsByDate(date));
+            _ctx.reservationLogic.GetSessionsByDate(date));
     }
 
     public List<int> PickGuestQuantities()
@@ -159,12 +121,12 @@ public class ReservationUI
         ReservationType type,
         string? discountCode = null)
     {
-        double basePrice = _reservationLogic.CalculatePriceForGuests(guests);
+        double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
 
         if (type == ReservationType.Group)
-            return _reservationLogic.ApplyGroupDiscount(basePrice);
+            return _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
 
-        return _discountLogic.Apply(discountCode, basePrice);
+        return _ctx.discountLogic.Apply(discountCode, basePrice);
     }
 
     private ReservationType SelectReservationType()
@@ -183,13 +145,23 @@ public class ReservationUI
             : ReservationType.Group;
     }
 
+    private DateTime DatePicker()
+    {
+        DateTime date = DateSelection.DatePicker();
+        if (date < DateTime.Now)
+            Console.WriteLine("Cannot book in the past.");
+            this.DatePicker();
+
+        if (!_ctx.reservationLogic.CheckForTimeslotsOnDate(date))
+            _ctx.reservationLogic.PopulateTimeslots(date);
+
+        return date;
+    }
+
     private SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
     {
-        var options = sessions
-            .Select(s => new List<string>
-            {
-                _reservationLogic.AvailabilityFormatter(s)
-            })
+        List<List<string>> options = sessions
+            .Select(s => new List<string> { _ctx.reservationLogic.AvailabilityFormatter(s) })
             .ToList();
 
         var menu = new MainMenu(options, "Select Timeslot");
@@ -233,6 +205,8 @@ public class ReservationUI
         }
 
         Console.WriteLine($"Order: {orderNumber}");
+
+        DateTime sessionDate;
 
         DateTime date = new DateTime(dateTicks);
         Console.WriteLine(

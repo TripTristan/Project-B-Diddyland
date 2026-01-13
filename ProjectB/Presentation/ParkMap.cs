@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 
-public class ParkMap
+public static class ParkMap
 {
     private const int W = 102;
     private const int H = 42;
 
-    private readonly char[,] _glyph = new char[H, W];
-    private readonly int[,] _color = new int[H, W];
+    private static readonly char[,] _glyph = new char[H, W];
+    private static readonly int[,] _color = new int[H, W];
     private const string RESET = "\u001b[0m";
 
     public enum Zone { Adventure = 1, Coastal = 2, Jungle = 3, Retro = 4 }
 
-    public void ShowMap()
+    public static void ShowMap()
     {
         List<List<string>> locationOptions = new List<List<string>>
         {
@@ -29,7 +29,18 @@ public class ParkMap
         ShowInteractive(location);
     }
 
-    public void ShowInteractive(string location)
+    public static string ChooseLocation()
+    {
+        List<List<string>> locations = new List<List<string>>
+        {
+            new List<string> {"DiddyLand - Rotterdam"},
+            new List<string> {"DiddyLand - Amsterdam"},
+        };
+
+        MainMenu lMenu = new MainMenu(locations, "Choose a location");
+        return locations[lMenu.Run()[0]][0];
+    }
+    public static void ShowInteractive(string location)
     {
         List<List<string>> options = new List<List<string>>
         {
@@ -59,17 +70,17 @@ public class ParkMap
         UiHelpers.Pause();
     }
 
-    private void Show(string location, Zone? filter)
+    private static void Show(string location, Zone? filter)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         DrawBase();
         PlaceAll(location, filter);
-        DrawLegend(location);
+        PrintLegend(filter, location);
         Render();
         Console.WriteLine(RESET);
     }
 
-    private void Clear(char ch = ' ')
+    private static void Clear(char ch = ' ')
     {
         for (int y = 0; y < H; y++)
             for (int x = 0; x < W; x++)
@@ -79,19 +90,19 @@ public class ParkMap
             }
     }
 
-    private void P(int x, int y, char ch)
+    private static void P(int x, int y, char ch)
     {
         if (x < 0 || y < 0 || x >= W || y >= H) return;
         _glyph[y, x] = ch;
     }
 
-    private void C(int x, int y, int c)
+    private static void C(int x, int y, int c)
     {
         if (x < 0 || y < 0 || x >= W || y >= H) return;
         _color[y, x] = c;
     }
 
-    private void DrawBase()
+    private static void DrawBase()
     {
         Clear(' ');
 
@@ -115,7 +126,7 @@ public class ParkMap
         P(midX, midY, '+'); C(midX, midY, 90);
     }
 
-    private void PlaceAll(string location, Zone? filter)
+    private static void PlaceAll(string location, Zone? filter)
     {
         bool Show(Zone z) => filter == null || filter == z;
 
@@ -194,18 +205,7 @@ public class ParkMap
         }
     }
 
-    private void DrawLegend(string location)
-    {
-        int y = H - 6;
-        WriteText(3, y, $"Legend – Location: {location}", 96);
-        WriteText(3, y + 1, "# - | +  Walkways", 90);
-        WriteText(3, y + 2, "Red    Adventure Zone", 31);
-        WriteText(3, y + 3, "Blue   Coastal Zone", 34);
-        WriteText(3, y + 4, "Green  Jungle Zone", 32);
-        WriteText(3, y + 5, "Yellow Retro Zone", 33);
-    }
-
-    private void Render()
+    private static void Render()
     {
         for (int y = 0; y < H; y++)
         {
@@ -224,7 +224,7 @@ public class ParkMap
         }
     }
 
-    private void DrawBox(int left, int top, int width, int height, string label, int col)
+    private static void DrawBox(int left, int top, int width, int height, string label, int col)
     {
         int right = Math.Min(W - 1, left + width - 1);
         int bottom = Math.Min(H - 1, top + height - 1);
@@ -248,28 +248,49 @@ public class ParkMap
         WriteText(left + 2, top + height / 2, label, col);
     }
 
-    private void DrawHLine(int x1, int x2, int y, int col = 90)
+    private static void DrawHLine(int x1, int x2, int y, int col = 90)
     {
         for (int x = Math.Max(0, x1); x <= Math.Min(W - 1, x2); x++)
         { P(x, y, '-'); C(x, y, col); }
     }
 
-    private void DrawVLine(int x, int y1, int y2, int col = 90)
+    private static void DrawVLine(int x, int y1, int y2, int col = 90)
     {
         for (int y = Math.Max(0, y1); y <= Math.Min(H - 1, y2); y++)
         { P(x, y, '|'); C(x, y, col); }
     }
 
-    private void WriteText(int x, int y, string text, int col)
+    private static void WriteText(int x, int y, string text, int col)
     {
         for (int i = 0; i < text.Length && x + i < W - 1; i++)
         { P(x + i, y, text[i]); C(x + i, y, col); }
     }
 
-    private void WriteCentered(int y, string text, int col)
+    private static void WriteCentered(int y, string text, int col)
     {
         int x = Math.Max(1, (W - text.Length) / 2);
         for (int i = 0; i < text.Length; i++)
-        { P(x + i, y, text[i]); C(x + i, y, col); }
+            { P(x + i, y, text[i]); C(x + i, y, col); }
+    }
+
+    private static void PrintLegend(Zone? filter, string location)
+    {
+        Console.WriteLine($"Legend – Location: {location}");
+        Console.WriteLine("\u001b[90m#,-,|,+\u001b[0m Walkways");
+        Console.WriteLine("\u001b[31mRed   \u001b[0m Adventure Zone");
+        Console.WriteLine("\u001b[34mBlue  \u001b[0m Coastal Zone");
+        Console.WriteLine("\u001b[32mGreen \u001b[0m Jungle Zone");
+        Console.WriteLine("\u001b[33mYellow\u001b[0m Retro Zone");
+    }
+
+    private static Zone? ParseFilter(string s)
+    {
+        if (s is "0" or "all" or "*" or "") return null;
+        if (int.TryParse(s, out int n) && n is >= 1 and <= 4) return (Zone)n;
+        if (s.StartsWith("adv")) return Zone.Adventure;
+        if (s.StartsWith("coa")) return Zone.Coastal;
+        if (s.StartsWith("jun")) return Zone.Jungle;
+        if (s.StartsWith("ret")) return Zone.Retro;
+        return null;
     }
 }

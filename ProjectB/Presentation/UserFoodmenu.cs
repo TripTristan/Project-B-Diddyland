@@ -1,55 +1,48 @@
 using System.Text;
+using System.Threading.Tasks.Dataflow;
 
-public class OrderForm
+public class UserFoodmenu
 {
-    private readonly OrderLogic _orderLogic;
-    private readonly MenuForm _menuForm;
-
-    public OrderForm(OrderLogic orderLogic, MenuForm menuForm)
-    {
-        _orderLogic = orderLogic;
-        _menuForm = menuForm;
-    }
+    private Dependencies _ctx;
+    public UserFoodmenu(Dependencies a) { _ctx = a; }
 
     public void Run()
     {
+        Console.Clear();
+        List<List<string>> Options = new List<List<string>>
+        {
+            new List<string> {"Add item to cart"},
+            new List<string> {"View cart"},
+            new List<string> {"Remove item from cart"},
+            new List<string> {"Finalize order"},
+            new List<string> {"Back"}
+        };
 
-            Console.Clear();
-            List<List<string>> Options = new List<List<string>> 
-            {
-                new List<string> {"Add item to cart"},
-                new List<string> {"View cart"},
-                new List<string> {"Remove item from cart"},
-                new List<string> {"Finalize order"},
-                new List<string> {"Back"}
-            };
+        MainMenu Menu = new MainMenu(Options, "Your choice: ");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
 
-            MainMenu Menu = new MainMenu(Options, "Your choice: ");
-            int[] selectedIndex = Menu.Run();
-            UiHelpers.Pause();
+        Console.WriteLine(AdminFoodmenu.FormatMenu(_ctx.foodmenuLogic.GetAllMenuItems()));
 
-            Console.WriteLine(_menuForm.FormatMenu(_orderLogic.GetAllMenuItems()));
-
-            switch (selectedIndex[0])
-            {
-                case 0:
-                    AddItemUI();
-                    break;
-                case 1:
-                    ViewCartUI();
-                    break;
-                case 2:
-                    RemoveItemUI();
-                    break;
-                case 3:
-                    FinalizeUI();
-                    break;
-                case 4:
-                    return;
-                default:
-                    break;
-            }
-        
+        switch (selectedIndex[0])
+        {
+            case 0:
+                AddItemUI();
+                break;
+            case 1:
+                ViewCartUI();
+                break;
+            case 2:
+                RemoveItemUI();
+                break;
+            case 3:
+                FinalizeUI();
+                break;
+            case 4:
+                return;
+            default:
+                break;
+        }
     }
 
     private void AddItemUI()
@@ -59,7 +52,7 @@ public class OrderForm
         var id = PromptInt("Enter Menu ID: ");
         var qty = PromptInt("Quantity: ");
 
-        var result = _orderLogic.AddToCart(id, qty);
+        var result = _ctx.foodmenuLogic.AddToCart(id, qty);
         Pause(result + " Press any key...");
     }
 
@@ -68,7 +61,7 @@ public class OrderForm
         Console.Clear();
         Console.WriteLine("=== Remove item from cart ===");
 
-        if (_orderLogic.IsCartEmpty())
+        if (_ctx.foodmenuLogic.IsCartEmpty())
         {
             Pause("Cart is empty. Press any key...");
             return;
@@ -76,7 +69,7 @@ public class OrderForm
 
         PrintCart();
         var id = PromptInt("Enter Menu ID to remove: ");
-        var result = _orderLogic.RemoveFromCart(id);
+        var result = _ctx.foodmenuLogic.RemoveFromCart(id);
 
         Pause(result + " Press any key...");
     }
@@ -86,14 +79,14 @@ public class OrderForm
         Console.Clear();
         Console.WriteLine("=== Cart ===");
 
-        if (_orderLogic.IsCartEmpty())
+        if (_ctx.foodmenuLogic.IsCartEmpty())
         {
             Pause("Your cart is empty. Press any key...");
             return;
         }
 
         PrintCart();
-        List<List<string>> Options = new List<List<string>> 
+        List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Change quantity"},
             new List<string> {"Back"}
@@ -103,16 +96,12 @@ public class OrderForm
         int[] selectedIndex = Menu.Run();
         UiHelpers.Pause();
 
-        switch (selectedIndex[0])
+        if (selectedIndex[0] == 0)
         {
-            case 0:
-                var id = PromptInt("Menu ID to update: ");
-                var qty = PromptInt("New quantity: ");
-                var msg = _orderLogic.UpdateQuantity(id, qty);
-                Pause(msg + " Press any key...");
-                break;
-            case 1:
-                break;
+            var id = PromptInt("Menu ID to update: ");
+            var qty = PromptInt("New quantity: ");
+            var msg = _ctx.foodmenuLogic.UpdateQuantity(id, qty);
+            Pause(msg + " Press any key...");
         }
     }
 
@@ -121,7 +110,7 @@ public class OrderForm
         Console.Clear();
         Console.WriteLine("=== Finalize Order ===");
 
-        if (_orderLogic.IsCartEmpty())
+        if (_ctx.foodmenuLogic.IsCartEmpty())
         {
             Pause("Your cart is empty. Add items before finalizing. Press any key...");
             return;
@@ -134,7 +123,7 @@ public class OrderForm
             return;
         }
 
-        var summary = _orderLogic.FinalizeOrder();
+        var summary = _ctx.foodmenuLogic.FinalizeOrder();
 
         Console.Clear();
         Console.WriteLine("=== Order Confirmed ===");
@@ -158,7 +147,7 @@ public class OrderForm
 
     private void PrintCart()
     {
-        var cart = _orderLogic.GetCart();
+        var cart = _ctx.foodmenuLogic.GetCart();
 
         var lines = cart.Select(c =>
         {
@@ -181,7 +170,7 @@ public class OrderForm
             sb.AppendLine($"{l.ID,-4} {TrimPad(l.Label, 30),-30} {l.Quantity,4} €{l.Unit,7:0.00} €{l.Subtotal,7:0.00}");
 
         sb.AppendLine("------------------------------------------------------------");
-        sb.AppendLine($"TOTAL: €{_orderLogic.GetTotal():0.00}");
+        sb.AppendLine($"TOTAL: €{_ctx.foodmenuLogic.GetTotal():0.00}");
 
         Console.WriteLine(sb.ToString());
     }
@@ -195,16 +184,13 @@ public class OrderForm
 
     private int PromptInt(string label)
     {
-        while (true)
-        {
-            Console.Write(label);
-            var input = (Console.ReadLine() ?? "").Trim();
+        Console.Write(label);
+        var input = (Console.ReadLine() ?? "").Trim();
 
-            if (int.TryParse(input, out var value) && value >= 0)
-                return value;
+        if (int.TryParse(input, out var value) && value >= 0)
+            return value;
 
-            Console.WriteLine("Please enter a valid non-negative integer.");
-        }
+        return PromptInt("Please enter a valid non-negative integer.");
     }
 
     private void Pause(string message)

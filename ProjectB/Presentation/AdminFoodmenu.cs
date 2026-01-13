@@ -3,16 +3,13 @@ using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
 
-public class MenuForm
+public class AdminFoodmenu
 {
-    private readonly MenuLogic _menuLogic;
+    private Dependencies _ctx;
+    public AdminFoodmenu(Dependencies a) { _ctx = a; }
 
-    public MenuForm(MenuLogic menuLogic)
-    {
-        _menuLogic = menuLogic;
-    }
 
-    public string FormatMenu(IEnumerable<MenuModel> items)
+    public static string FormatMenu(IEnumerable<MenuModel> items)
     {
         var list = items.ToList();
         if (list.Count == 0)
@@ -39,12 +36,12 @@ public class MenuForm
 
     public void Run()
     {
-        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
-        List<List<string>> Options = new List<List<string>> 
+        Console.WriteLine(FormatMenu(_ctx.foodmenuLogic.GetAll())); // only run this for non amdin users
+        List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Add FOOD"},
-            new List<string> {"Add DRINK"}, 
-            new List<string> {"Remove item"}, 
+            new List<string> {"Add DRINK"},
+            new List<string> {"Remove item"},
             new List<string> {"Exit"}
         };
 
@@ -74,41 +71,41 @@ public class MenuForm
     {
         Console.Clear();
         Console.WriteLine("=== Add FOOD ===");
-        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
+        Console.WriteLine(FormatMenu(_ctx.foodmenuLogic.GetAll()));
         Console.WriteLine();
 
         var name = PromptNonEmpty("Food name: ");
         var price = PromptPrice("Price (€): ");
 
-        var result = _menuLogic.AddFood(name, price);
-        Pause(result + " Press any key...");
+        var result = _ctx.foodmenuLogic.AddFood(name, price);
+        UiHelpers.Pause(result + " Press any key...");
     }
 
     private void AddDrinkUI()
     {
         Console.Clear();
         Console.WriteLine("=== Add DRINK ===");
-        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
+        Console.WriteLine(FormatMenu(_ctx.foodmenuLogic.GetAll()));
         Console.WriteLine();
 
         var name = PromptNonEmpty("Drink name: ");
         var price = PromptPrice("Price (€): ");
 
-        var result = _menuLogic.AddDrink(name, price);
-        Pause(result + " Press any key...");
+        var result = _ctx.foodmenuLogic.AddDrink(name, price);
+        UiHelpers.Pause(result + " Press any key...");
     }
 
     private void RemoveItemUI()
     {
         Console.Clear();
         Console.WriteLine("=== Remove item ===");
-        Console.WriteLine(FormatMenu(_menuLogic.GetAll()));
+        Console.WriteLine(FormatMenu(_ctx.foodmenuLogic.GetAll()));
         Console.WriteLine();
 
         var id = PromptInt("Menu ID to remove: ");
-        var result = _menuLogic.RemoveItem(id);
+        var result = _ctx.foodmenuLogic.RemoveItem(id);
 
-        Pause(result + " Press any key...");
+        UiHelpers.Pause(result + " Press any key...");
     }
 
     private string PromptNonEmpty(string label)
@@ -127,51 +124,38 @@ public class MenuForm
     private double PromptPrice(string label)
     {
         var styles = NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands;
-        var cultures = new[] 
-        { 
-            CultureInfo.CurrentCulture, 
-            CultureInfo.GetCultureInfo("nl-NL"), 
-            CultureInfo.InvariantCulture 
+        var cultures = new[]
+        {
+            CultureInfo.CurrentCulture,
+            CultureInfo.GetCultureInfo("nl-NL"),
+            CultureInfo.InvariantCulture
         };
 
-        while (true)
+        Console.Write(label);
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        foreach (var c in cultures)
         {
-            Console.Write(label);
-            var input = (Console.ReadLine() ?? "").Trim();
-
-            foreach (var c in cultures)
+            if (double.TryParse(input, styles, c, out var value) && value > 0)
             {
-                if (double.TryParse(input, styles, c, out var value))
-                {
-                    if (value < 0)
-                    {
-                        Console.WriteLine("Price cannot be negative.");
-                        break;
-                    }
-                    return value;
-                }
+                return value;
             }
-
-            Console.WriteLine("Please enter a valid number (e.g., 2.50 or 2,50).");
         }
+
+        Console.WriteLine("Please enter a valid number non negative number (e.g., 2.50 or 2,50).");
+        return PromptPrice(label);
     }
 
     private int PromptInt(string label)
     {
-        while (true)
-        {
-            Console.Write(label);
-            var input = (Console.ReadLine() ?? "").Trim();
-            if (int.TryParse(input, out var value))
-                return value;
 
-            Console.WriteLine("Please enter a valid integer.");
-        }
-    }
+        Console.Write(label);
+        var input = (Console.ReadLine() ?? "").Trim();
+        if (int.TryParse(input, out var value))
+            return value;
 
-    private void Pause(string message)
-    {
-        Console.WriteLine(message);
-        Console.ReadKey(true);
+        Console.WriteLine("Please enter a valid integer.");
+        return PromptInt(label);
+
     }
 }

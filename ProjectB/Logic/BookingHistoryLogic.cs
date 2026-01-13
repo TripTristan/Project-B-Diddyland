@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 public class BookingHistoryLogic
 {
     private readonly IBookingAccess _bookingAccess;
+    private readonly SessionAccess _sessionAccess;
 
     private static readonly Regex AnyTimestamp14 =
         new(@"(?<ts>\d{14})", RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -24,11 +26,16 @@ public class BookingHistoryLogic
 
     private readonly Dictionary<string, DateTime> _cache = new();
 
-    public BookingHistoryLogic(IBookingAccess bookingAccess)
+    public BookingHistoryLogic(Dependencies dp)
     {
-        _bookingAccess = bookingAccess;
+        _bookingAccess = dp.bookingAccess;
+        _sessionAccess = dp.sessionAccess;
     }
 
+    public SessionModel RetrieveSession(int id)
+    {
+        return _sessionAccess.GetSessionById(id);
+    }
     public IEnumerable<IGrouping<int, IGrouping<int, BookingModel>>>
         GetUserBookingsGroupedByYearMonth(string username)
     {

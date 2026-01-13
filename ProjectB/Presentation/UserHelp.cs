@@ -1,39 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks.Dataflow;
 
-public class CustomerHelpPage
+public class UserHelp
 {
-    private readonly ComplaintLogic _logic;
-    private readonly LoginStatus _loginStatus;
-    private readonly UiHelpers _ui;
+    private Dependencies _ctx;
+    public UserHelp(Dependencies a) { _ctx = a; }
 
-    public CustomerHelpPage(ComplaintLogic logic, LoginStatus loginStatus, UiHelpers ui)
-    {
-        _logic = logic;
-        _loginStatus = loginStatus;
-        _ui = ui;
-    }
-
-    public void Show()
+    public void Run()
     {
         Console.Clear();
 
-        List<List<string>> Options = new List<List<string>> 
+        List<List<string>> Options = new List<List<string>>
         {
-            new List<string> {"Food"},
-            new List<string> {"Staff or service"}, 
-            new List<string> {"Safety"}, 
-            new List<string> {"Organization"},
-            new List<string> {"Go Back"}
+            new List<string> {"Complaint about food"},
+            new List<string> {"Complaint about staff or service"},
+            new List<string> {"Complaint about safety"},
+            new List<string> {"Complaint about organization"}
         };
         MainMenu Menu = new MainMenu(Options, "Pick one of the following topics to file a complaint about:");
         int[] selectedIndex = Menu.Run();
-        
-        if (selectedIndex[0] == 4)
-            return;
-
-        UiHelpers.Pause();
 
         Console.Clear();
 
@@ -56,6 +43,16 @@ public class CustomerHelpPage
                 break;
         }
 
+
+        ComplainProperties(Options[selectedIndex[0]][0]);
+
+        Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
+        Console.WriteLine("We appreciate your feedback and will work to improve.\n");
+
+    }
+
+    private void ComplainProperties(string selectedCat)
+    {
         string[] locations =
         {
             "DiddyLand - Amsterdam",
@@ -68,21 +65,19 @@ public class CustomerHelpPage
             new List<string> { "DiddyLand - Rotterdam" }
         };
 
-        MainMenu locationMenu = new MainMenu(locationOptions, "\nSelect park location:");
-        int[] locResult = locationMenu.Run();
-        string location = locations[locResult[0]];
-  
+        Console.Write("\nEnter location number: ");
+        string locInput = Console.ReadLine();
+        int locChoice = int.TryParse(locInput, out int locNum) ? locNum : 1;
+        if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
+
+        string location = locations[locChoice - 1];
         Console.WriteLine("\nPlease describe your complaint below:");
         string description = Console.ReadLine();
 
-        string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
-        string category = Options[selectedIndex[0]][0];
+        string username = _ctx.loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        string category = selectedCat;
 
-        _logic.SubmitComplaint(username, category, description, location);
-
-        Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
-        Console.WriteLine("We appreciate your feedback and will work to improve.\n");
-
+        _ctx.complaintLogic.SubmitComplaint(username, category, description, location);
     }
 
     public static void Complain(string mail)
@@ -96,17 +91,12 @@ public class CustomerHelpPage
 
     public void ShowHandledMessages()
     {
-        string? username = _loginStatus.CurrentUserInfo?.Username;
+        string? username = _ctx.loginStatus.CurrentUserInfo?.Username;
 
-        if (username == null || username == "Guest")
-        {
-            Console.WriteLine("Guests don't receive messages.");
-            return;
-        }
 
         ShowPendingMessages();
 
-        var handledComplaints = _logic.GetByUserAndStatus(username, "Handled");
+        var handledComplaints = _ctx.complaintLogic.GetByUserAndStatus(username, "Handled");
 
         if (!handledComplaints.Any())
             return;
@@ -121,8 +111,8 @@ public class CustomerHelpPage
 
     public void ShowPendingMessages()
     {
-        string username = _loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
-        var pendingComplaints = _logic.GetPendingByUser(username);
+        string username = _ctx.loginStatus.CurrentUserInfo?.Username ?? "Anonymous";
+        var pendingComplaints = _ctx.complaintLogic.GetPendingByUser(username);
 
         if (!pendingComplaints.Any())
             return;
@@ -134,6 +124,7 @@ public class CustomerHelpPage
             Console.WriteLine("This complaint is still pending.\n");
         }
     }
+
 
     private void ComplaintFood() { }
     private void ComplaintStaff() { }

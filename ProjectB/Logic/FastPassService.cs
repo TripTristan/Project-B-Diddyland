@@ -76,8 +76,8 @@ public class FastPassLogic
             OrderNumber = orderNo,
             Type = "FastPass",
             Date = session.Date.ToString(),
-            Time = (int)session.Time > 0 && (int)session.Time <= ReservationUI.TimeslotOptions.Count
-                ? ReservationUI.TimeslotOptions[(int)session.Time - 1]
+            Time = (int)session.Time > 0 && (int)session.Time <= UserReservation.TimeslotOptions.Count
+                ? UserReservation.TimeslotOptions[(int)session.Time - 1]
                 : session.Time.ToString(),
             Quantity = quantity,
             PricePerPerson = basePrice,

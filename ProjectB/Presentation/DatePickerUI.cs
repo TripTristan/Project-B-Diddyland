@@ -13,13 +13,13 @@ public class DatePickerUI
 
     public DateTime PickDate()
     {
-        int month = FinancialMenu.monthMenu();
+        int month = DateSelection.monthMenu();
 
         MainMenu dayMenu = new(
-            FinancialMenu.DaysInSelectedMonth(month),
-            FinancialMenu.Months[month - 1]);
+            DateSelection.DaysInSelectedMonth(month),
+            DateSelection.Months[month - 1]);
 
-        DateTime date = _financialLogic.GetDateFromCoordinate(dayMenu.Run(), 2026, month);
+        DateTime date = DateSelection.GetDateFromCoordinate(dayMenu.Run(), 2026, month);
 
         if (date < DateTime.Now.Date)
             throw new InvalidOperationException("Cannot pick a date in the past.");

@@ -25,12 +25,12 @@ public class UserModel
     public UserModel(int id, string name, string email, string dateOfBirth, int height, string phone, string password, int role = 0)
     {
         Id = id;
-        Name = name;               
+        Name = name;
         Email = email;
         DateOfBirth = dateOfBirth;
         Height = height;
         Phone = phone;
         Password = password;
-        Admin = role;             
+        Admin = role;
     }
 }

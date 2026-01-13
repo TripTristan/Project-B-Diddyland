@@ -1,8 +1,8 @@
-public class DiscountCodeLogic
+public class DiscountLogic
 {
     private readonly DiscountCodeAccess _access;
 
-    public DiscountCodeLogic(DiscountCodeAccess access)
+    public DiscountLogic(DiscountCodeAccess access)
     {
         _access = access;
     }

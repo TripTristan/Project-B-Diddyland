@@ -6,16 +6,16 @@ public class AdminReservationUI
 {
     private readonly AdminReservationLogic _logic;
     private readonly DatePickerUI _datePicker;
-    private readonly ReservationUI _reservationUI;
+    private readonly UserReservation _userReservation;
 
     public AdminReservationUI(
         AdminReservationLogic logic,
         DatePickerUI datePicker,
-        ReservationUI reservationUI)
+        UserReservation userReservation)
     {
         _logic = logic;
         _datePicker = datePicker;
-        _reservationUI = reservationUI;
+        _userReservation = userReservation;
     }
 
     public void Run()
@@ -54,7 +54,7 @@ public class AdminReservationUI
 
                 case 3:
                     var u = PickUser();
-                    _reservationUI.StartReservationForUser(u);
+                    _userReservation.StartReservationForUser(u);
                     break;
 
                 default:
@@ -147,7 +147,7 @@ public class AdminReservationUI
     private void ChangeSession(BookingModel b)
     {
         DateTime date = _datePicker.PickDate();
-        var session = _reservationUI.PickSessionForDate(date);
+        var session = _userReservation.PickSessionForDate(date);
 
         int newSessionId = checked((int)session.Id); // FIX long -> int
 
@@ -165,12 +165,12 @@ public class AdminReservationUI
 
     private void ChangeQuantity(BookingModel b)
     {
-        var guests = _reservationUI.PickGuestQuantities();
+        var guests = _userReservation.PickGuestQuantities();
         int total = guests.Sum();
 
         ReservationType type = total >= 10 ? ReservationType.Group : ReservationType.Normal;
 
-        double newPrice = _reservationUI.CalculatePriceFromGuests(guests, type, null);
+        double newPrice = _userReservation.CalculatePriceFromGuests(guests, type, null);
 
         _logic.EditReservation(
             b.OrderNumber,
@@ -187,7 +187,7 @@ public class AdminReservationUI
     private void ChangeDate(BookingModel b)
     {
         DateTime date = _datePicker.PickDate();
-        var session = _reservationUI.PickSessionForDate(date);
+        var session = _userReservation.PickSessionForDate(date);
 
         int newSessionId = checked((int)session.Id); // FIX long -> int
 

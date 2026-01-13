@@ -1,21 +1,26 @@
-public class LoginLogic
+public class AuthenticationLogic
 {
     private readonly UserAccess _userAccess;
-    private readonly LoginStatus _loginStatus;
+    private readonly LoginStatus _status;
 
-    public LoginLogic(UserAccess userAccess, LoginStatus loginStatus)
+    public AuthenticationLogic(LoginStatus status, UserAccess userAccess)
     {
+        _status = status;
         _userAccess = userAccess;
-        _loginStatus = loginStatus;
     }
 
+    public string Logout()
+    {
+        _status.Logout();
+        return "You have been successfully logged out.";
+    }
     public bool AccountVerify(string username, string password)
     {
         var account = _userAccess.GetByUsername(username.ToLower());
         if (account == null) return false;
         if (account.Password != password) return false;
 
-        _loginStatus.Login(account);
+        _status.Login(account);
         return true;
     }
 }

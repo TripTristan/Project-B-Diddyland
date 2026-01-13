@@ -68,10 +68,10 @@ public class UserAccess : IUserAccess
         return _db.Connection.Query<UserModel>(sql);
     }
 
-    public void SetRole(int id, int roleLevel)
+    public void SetRole(UserModel user)
     {
-        string sql = $"UPDATE {Table} SET Admin = @Role WHERE ID = @Id;";
-        _db.Connection.Execute(sql, new { Id = id, Role = roleLevel });
+        string sql = $"UPDATE {Table} SET Admin = {user.Admin} WHERE ID = {user.Id};";
+        _db.Connection.Execute(sql, user);
     }
 
     public void DeleteUser(int id)
