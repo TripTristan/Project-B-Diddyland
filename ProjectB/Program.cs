@@ -38,7 +38,7 @@ partial class Program
         var discountLogic = new DiscountCodeLogic(discountAccess);
 
         var adminContext = new AdminContext(loginStatus, attractionLogic, foodmenuLogic, financialLogic, complaintLogic, discountLogic, adminSuper);
-        var userContext = new UserContext(loginStatus, reservationLogic, fastPassLogic, bookingHistoryLogic, userLogic, updateLogic, foodmenuLogic, complaintLogic, authLogic);
+        var userContext = new UserContext(loginStatus, reservationLogic, fastPassLogic, bookingHistoryLogic, userLogic, updateLogic, foodmenuLogic, complaintLogic, authLogic, discountLogic);
 
         var adminManagement = new ManageAdmins(adminContext);
         var adminAttraction = new AdminAttraction(adminContext);
@@ -60,11 +60,11 @@ partial class Program
 
         var app = new Application(
             loginStatus,
-            register,
+            userAuth,
             userGuest,
             admin,
             adminSuper,
-            userAuth
+            register
         );
 
         app.Run();

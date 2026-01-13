@@ -10,6 +10,7 @@ public class UserContext
     public FoodmenuLogic foodmenuLogic { get; }
     public ComplaintLogic complaintLogic { get; }
     public AuthenticationLogic authenticationLogic { get; }
+    public DiscountLogic discountLogic { get; }
 
 
     public UserContext(
@@ -21,7 +22,8 @@ public class UserContext
         UserLogic userLogic,
         FoodmenuLogic foodmenuLogic,
         ComplaintLogic complaintLogic,
-        AuthenticationLogic authenticationLogic)
+        AuthenticationLogic authenticationLogic,
+        DiscountLogic discountLogic)
     {
         this.loginStatus = loginStatus;
         this.authenticationLogic = authenticationLogic;
@@ -32,5 +34,6 @@ public class UserContext
         this.userLogic = userLogic;
         this.foodmenuLogic = foodmenuLogic;
         this.complaintLogic = complaintLogic;
+        this.discountLogic = discountLogic;
     }
 }

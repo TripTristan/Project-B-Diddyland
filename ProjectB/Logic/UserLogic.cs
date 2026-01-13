@@ -28,7 +28,6 @@ public class UserLogic
 
         return false;
     }
-
     public bool IsHeightValid(int height)
     {
         return height >= 30 && height <= 250;

@@ -22,34 +22,31 @@ class MainMenu
         {
             for (int j = 0; j<Options[i].Count(); j++)
             {
-                int x = i;
-                int y = j;
-                string prefix = "";
-                string suffix = "";
-                if (x == SelectedIndexHeight && y == SelectedIndexWidth)
-                {
-                    prefix = "{";
-                    suffix = "}";
-                    if (FirstDateSelected)
-                    {
-                        Console.ForegroundColor = ConsoleColor. Green;
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                    }
-                }
-
-                else
-                {
-                    prefix = " ";
-                    suffix = " ";
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                Console.Write($"{prefix}{Options[i][j]}{suffix}");
+                Formatter(i, j);
             }
             Console.WriteLine("");
         }
+    }
+
+    private void Formatter(int x, int y)
+    {
+        string prefix = "";
+        string suffix = "";
+        if (x == SelectedIndexHeight && y == SelectedIndexWidth)
+        {
+            prefix = "{";
+            suffix = "}";
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+        }
+        else
+        {
+            prefix = " ";
+            suffix = " ";
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        Console.Write($"{prefix}{Options[x][y]}{suffix}");
     }
 
     public int[] Run()

@@ -1,3 +1,5 @@
+using System.Net.WebSockets;
+
 public class Application
 {
     private readonly LoginStatus _loginStatus;
@@ -87,7 +89,7 @@ ________  .___________  ________ _____.___.____       _____    _______  ________
                 UiHelpers.Pause();
                 break;
             case 1:
-                _userAuth.Register();
+                _register.Register();
                 UiHelpers.Pause();
                 break;
             case 2:

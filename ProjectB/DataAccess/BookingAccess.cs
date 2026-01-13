@@ -17,7 +17,7 @@ public class BookingAccess : IBookingAccess
             return Enumerable.Empty<BookingModel>();
 
         const string sql = @"
-            SELECT 
+            SELECT
                 OrderNumber,
                 SessionId AS SessionId,
                 Quantity AS Quantity,
@@ -47,3 +47,4 @@ public class BookingAccess : IBookingAccess
         return rows;
     }
 }
+

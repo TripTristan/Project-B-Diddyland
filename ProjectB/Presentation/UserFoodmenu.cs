@@ -8,42 +8,41 @@ public class UserFoodmenu
 
     public void Run()
     {
+        Console.Clear();
+        List<List<string>> Options = new List<List<string>>
+        {
+            new List<string> {"Add item to cart"},
+            new List<string> {"View cart"},
+            new List<string> {"Remove item from cart"},
+            new List<string> {"Finalize order"},
+            new List<string> {"Back"}
+        };
 
-            Console.Clear();
-            List<List<string>> Options = new List<List<string>>
-            {
-                new List<string> {"Add item to cart"},
-                new List<string> {"View cart"},
-                new List<string> {"Remove item from cart"},
-                new List<string> {"Finalize order"},
-                new List<string> {"Back"}
-            };
+        MainMenu Menu = new MainMenu(Options, "Your choice: ");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
 
-            MainMenu Menu = new MainMenu(Options, "Your choice: ");
-            int[] selectedIndex = Menu.Run();
-            UiHelpers.Pause();
+        Console.WriteLine(AdminFoodmenu.FormatMenu(_ctx.foodmenuLogic.GetAllMenuItems()));
 
-            Console.WriteLine(AdminFoodmenu.FormatMenu(_ctx.foodmenuLogic.GetAllMenuItems()));
-
-            switch (selectedIndex[0])
-            {
-                case 0:
-                    AddItemUI();
-                    break;
-                case 1:
-                    ViewCartUI();
-                    break;
-                case 2:
-                    RemoveItemUI();
-                    break;
-                case 3:
-                    FinalizeUI();
-                    break;
-                case 4:
-                    return;
-                default:
-                    break;
-            }
+        switch (selectedIndex[0])
+        {
+            case 0:
+                AddItemUI();
+                break;
+            case 1:
+                ViewCartUI();
+                break;
+            case 2:
+                RemoveItemUI();
+                break;
+            case 3:
+                FinalizeUI();
+                break;
+            case 4:
+                return;
+            default:
+                break;
+        }
     }
 
     private void AddItemUI()
@@ -97,16 +96,13 @@ public class UserFoodmenu
         int[] selectedIndex = Menu.Run();
         UiHelpers.Pause();
 
-        switch (selectedIndex[0])
+        if (selectedIndex[0] == 0)
         {
-            case 0:
-                var id = PromptInt("Menu ID to update: ");
-                var qty = PromptInt("New quantity: ");
-                var msg = _ctx.foodmenuLogic.UpdateQuantity(id, qty);
-                Pause(msg + " Press any key...");
-                break;
-            case 1:
-                break;
+            var id = PromptInt("Menu ID to update: ");
+            var qty = PromptInt("New quantity: ");
+            var msg = _ctx.foodmenuLogic.UpdateQuantity(id, qty);
+            Pause(msg + " Press any key...");
+            break;
         }
     }
 
@@ -189,16 +185,13 @@ public class UserFoodmenu
 
     private int PromptInt(string label)
     {
-        while (true)
-        {
-            Console.Write(label);
-            var input = (Console.ReadLine() ?? "").Trim();
+        Console.Write(label);
+        var input = (Console.ReadLine() ?? "").Trim();
 
-            if (int.TryParse(input, out var value) && value >= 0)
-                return value;
+        if (int.TryParse(input, out var value) && value >= 0)
+            return value;
 
-            Console.WriteLine("Please enter a valid non-negative integer.");
-        }
+        return PromptInt("Please enter a valid non-negative integer.");
     }
 
     private void Pause(string message)

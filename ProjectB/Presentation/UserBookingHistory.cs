@@ -22,18 +22,21 @@ public class BookingHistory
     {
         Console.WriteLine("=== My Bookings ===");
 
-        Console.WriteLine("\nFilter your bookings:");
-        Console.WriteLine("  1) Show ALL bookings");
-        Console.WriteLine("  2) Only Reservations");
-        Console.WriteLine("  3) Only FastPass");
-        Console.Write("\nChoose an option: ");
+        List<List<string>> Options = new List<List<string>>
+            {
+                new List<string> {"Show ALL bookings"},
+                new List<string> {"Only Reservations"},
+                new List<string> {"Only FastPass"}
+            };
 
-        string? choice = Console.ReadLine()?.Trim();
+        MainMenu Menu = new MainMenu(Options, "Filter your bookings:");
+        int[] selectedIndex = Menu.Run();
+        UiHelpers.Pause();
 
-        Func<BookingModel, bool> filter = choice switch
+        Func<BookingModel, bool> filter = selectedIndex[0] switch
         {
-            "2" => b => b.Type == "0", // Reservation
-            "3" => b => b.Type == "1", // FastPass
+            1 => b => b.Type == "0", // Reservation
+            2 => b => b.Type == "1", // FastPass
             _   => b => true
         };
 
@@ -52,16 +55,8 @@ public class BookingHistory
         foreach (var b in bookings)
             PrintBooking(b);
     }
-
-    private void PrintBooking(BookingModel b)
+    private string FormatSession(SessionModel session)
     {
-        string bookingDateFormatted = FormatTicksOrDate(b.BookingDate);
-        string typeText = ConvertType(b.Type);
-
-        var session = _sessionAccess.GetSessionById(b.SessionId);
-        string sessionDateFormatted = "Unknown session";
-
-        if (session != null)
         {
             string sessionDate = FormatTicksOrDate(session.Date.ToString());
 
@@ -75,17 +70,23 @@ public class BookingHistory
                     ? UserReservation.TimeslotOptions[timeIndex]
                     : "Unknown time";
 
-            sessionDateFormatted = $"{sessionDate.Split(' ')[0]} {timeSlot}";
+            return sessionDateFormatted = $"{sessionDate.Split(' ')[0]} {timeSlot}";
+        }
+    }
+    private void PrintBooking(BookingModel b)
+    {
+        string bookingDateFormatted = FormatTicksOrDate(b.BookingDate);
+        string typeText = ConvertType(b.Type);
+
+        var session = _sessionAccess.GetSessionById(b.SessionId);
+        string sessionDateFormatted = "Unknown session";
+
+        if (session != null)
+        {
+            sessionDateFormatted = FormatSession(session);
         }
 
-        Console.WriteLine("\n------------------------------------------------");
-        Console.WriteLine($"Order Number : {b.OrderNumber}");
-        Console.WriteLine($"Type         : {typeText}");
-        Console.WriteLine($"Quantity     : {b.Quantity}");
-        Console.WriteLine($"Booked On    : {bookingDateFormatted}");
-        Console.WriteLine($"Session Time : {sessionDateFormatted}");
-        Console.WriteLine($"Final Price  : {b.Price:C}");
-        Console.WriteLine("------------------------------------------------\n");
+        Console.WriteLine($"\n------------------------------------------------\nOrder Number : {b.OrderNumber}\nType         : {typeText}\nQuantity     : {b.Quantity}\nBooked On    : {bookingDateFormatted}\nSession Time : {sessionDateFormatted}\nFinal Price  : {b.Price:C}\n------------------------------------------------\n");
     }
 
     // =========================
@@ -104,7 +105,18 @@ public class BookingHistory
 
     private static string FormatTicksOrDate(string raw)
     {
+        if (DateTime.TryParse(raw, out var dt))
+            return dt.ToString("dd-MM-yyyy HH:mm");
+
         if (long.TryParse(raw, out var ticks))
+        {
+            return new DateTime(ticks).ToString("dd-MM-yyyy HH:mm");
+        }
+
+        return raw;
+
+        /*
+        PREVIOUS CODE INCASE STUFF FAILS
         {
             try
             {
@@ -115,10 +127,6 @@ public class BookingHistory
                 return raw;
             }
         }
-
-        if (DateTime.TryParse(raw, out var dt))
-            return dt.ToString("dd-MM-yyyy HH:mm");
-
-        return raw;
+        */
     }
 }

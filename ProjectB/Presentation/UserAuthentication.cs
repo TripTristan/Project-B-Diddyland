@@ -11,8 +11,7 @@ public class UserAuthentication
     {
         if (UiHelpers.ChoiceHelper("=== Logout Menu ===\nAre you sure you want to logout?"))
         {
-            string message = _ctx.AuthenticationLogic.Logout();
-            Console.WriteLine(message);
+            Console.WriteLine(_ctx.authenticationLogic.Logout());
             return;
         }
         return;
@@ -22,27 +21,23 @@ public class UserAuthentication
     {
         Console.WriteLine("=== Customer Login ===");
 
-        if (!LoggedIn())
-        {
-            Console.WriteLine("Invalid username or password.\nPlease try again.");
-            if (!UiHelpers.ChoiceHelper("Try again? "))
-            {
-                Console.WriteLine("Exiting login process.");
-                return;
-            }
-            Login();
-            return;
-        }
-        else
+        if (LoggedIn())
         {
             Console.WriteLine("Login successful!");
             return;
         }
+        if (UiHelpers.ChoiceHelper("Invalid username or password, Try again? "))
+        {
+            Login();
+            return;
+        }
+        Console.WriteLine("Exiting login process.");
+        return;
     }
 
     protected bool LoggedIn()
     {
-        return _ctx.AuthenticationLogic.AccountVerify(UiHelpers.InputRead("Username: "), UiHelpers.InputRead("Password: "));
+        return _ctx.authenticationLogic.AccountVerify(UiHelpers.InputRead("Username: "), UiHelpers.InputRead("Password: "));
     }
 
 }

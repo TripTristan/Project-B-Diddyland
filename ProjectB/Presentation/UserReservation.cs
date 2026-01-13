@@ -16,35 +16,38 @@ public class UserReservation
     public static List<string> AgeOptions = new() { "0-15   : ", "16-60 : ", "61+   : " };
     public static List<string> TimeslotOptions = new() { "09:00-13:00", "13:00-17:00", "17:00-21:00" };
 
-    public void Book()
+
+    private double CheckGroupDiscount(List<int> guests)
     {
         ReservationType reservationType = SelectReservationType();
+        int totalGuests = guests.Sum();
+        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
+        double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
+
+        if (reservationType == ReservationType.Group)
+        {
+            Console.WriteLine("\nGroup Reservation:");
+            Console.WriteLine("• 20% discount applied");
+            Console.WriteLine("• Discount codes disabled");
+            return _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
+        }
+        Console.Write("\nDiscount code (optional): ");
+        string? code = Console.ReadLine()?.Trim();
+        return _ctx.discountLogic.Apply(code, basePrice);
+    }
+
+
+    public void Book()
+    {
+        List<int> guests = GuestQuantitySelection();
+        int totalGuests = guests.Sum();
 
         DateTime chosenDate = DatePicker();
         SessionModel session = ShowTimeslotsByDate(
             _ctx.reservationLogic.GetSessionsByDate(chosenDate));
 
-        List<int> guests = GuestQuantitySelection();
-        int totalGuests = guests.Sum();
 
-        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
-
-        double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
-        double finalPrice;
-
-        if (reservationType == ReservationType.Group)
-        {
-            finalPrice = _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
-            Console.WriteLine("\nGroup Reservation:");
-            Console.WriteLine("• 20% discount applied");
-            Console.WriteLine("• Discount codes disabled");
-        }
-        else
-        {
-            Console.Write("\nDiscount code (optional): ");
-            string? code = Console.ReadLine()?.Trim();
-            finalPrice = _ctx.discountLogic.Apply(code, basePrice);
-        }
+        double finalPrice = CheckGroupDiscount(guests);
 
         Console.WriteLine($"\nFinal Price: {finalPrice:C}");
 
@@ -86,16 +89,10 @@ public class UserReservation
 
     private DateTime DatePicker()
     {
-        int month = DateSelection.monthMenu();
-        MainMenu dayMenu = new(
-            DateSelection.DaysInSelectedMonth(month),
-            DateSelection.Months[month - 1]);
-
-        DateTime date = DateSelection.GetDateFromCoordinate(
-            dayMenu.Run(), 2025, month);
-
+        DateTime date = DateSelection.DatePicker();
         if (date < DateTime.Now)
-            throw new InvalidOperationException("Cannot book in the past.");
+            Console.WriteLine("Cannot book in the past.");
+            this.DatePicker();
 
         if (!_ctx.reservationLogic.CheckForTimeslotsOnDate(date))
             _ctx.reservationLogic.PopulateTimeslots(date);
@@ -129,12 +126,7 @@ public class UserReservation
         return menu.Run(1);
     }
 
-    private static void ShowBookingDetails(
-        long date,
-        string orderNumber,
-        SessionModel session,
-        List<int> guests,
-        double price)
+    private static void ShowBookingDetails(long date, string orderNumber, SessionModel session, List<int> guests, double price)
     {
         Console.Clear();
         Console.WriteLine("Booking Details\n");

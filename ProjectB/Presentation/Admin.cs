@@ -57,11 +57,11 @@ public class Admin
                     ParkMap.ShowMap();
                     break;
                 case 1:
-                    adminAttraction.Run();
+                    _adminAttraction.Run();
                     break;
 
                 case 2:
-                    adminFoodmenu.Run();
+                    _adminFoodmenu.Run();
                     break;
 
                 // case 4:

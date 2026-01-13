@@ -131,38 +131,31 @@ public class AdminFoodmenu
             CultureInfo.InvariantCulture
         };
 
-        while (true)
+        Console.Write(label);
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        foreach (var c in cultures)
         {
-            Console.Write(label);
-            var input = (Console.ReadLine() ?? "").Trim();
-
-            foreach (var c in cultures)
+            if (double.TryParse(input, styles, c, out var value) && value > 0)
             {
-                if (double.TryParse(input, styles, c, out var value))
-                {
-                    if (value < 0)
-                    {
-                        Console.WriteLine("Price cannot be negative.");
-                        break;
-                    }
-                    return value;
-                }
+                return value;
             }
-
-            Console.WriteLine("Please enter a valid number (e.g., 2.50 or 2,50).");
         }
+
+        Console.WriteLine("Please enter a valid number non negative number (e.g., 2.50 or 2,50).");
+        return PromptPrice(label);
     }
 
     private int PromptInt(string label)
     {
-        while (true)
-        {
-            Console.Write(label);
-            var input = (Console.ReadLine() ?? "").Trim();
-            if (int.TryParse(input, out var value))
-                return value;
 
-            Console.WriteLine("Please enter a valid integer.");
-        }
+        Console.Write(label);
+        var input = (Console.ReadLine() ?? "").Trim();
+        if (int.TryParse(input, out var value))
+            return value;
+
+        Console.WriteLine("Please enter a valid integer.");
+        return PromptInt(label);
+
     }
 }

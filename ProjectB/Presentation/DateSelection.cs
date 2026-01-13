@@ -59,4 +59,13 @@ public static class DateSelection
         if (day > daysInMonth) day = daysInMonth;
         return new DateTime(year, month, day);
     }
+
+    public static DateTime DatePicker()
+    {
+        int month = monthMenu();
+        MainMenu dayMenu = new(DaysInSelectedMonth(month), Months[month - 1]);
+
+        return DateSelection.GetDateFromCoordinate(dayMenu.Run(), 2025, month);
+
+    }
 }

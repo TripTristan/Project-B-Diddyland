@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks.Dataflow;
 
 public class UserHelp
 {
@@ -20,8 +21,6 @@ public class UserHelp
         };
         MainMenu Menu = new MainMenu(Options, "Which complaint do you have?");
         int[] selectedIndex = Menu.Run();
-        // Console.WriteLine($"{selectedIndex[0]} {selectedIndex[1]}");
-        UiHelpers.Pause();
 
         Console.Clear();
 
@@ -44,6 +43,16 @@ public class UserHelp
                 break;
         }
 
+
+        Complain(selectedIndex);
+
+        Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
+        Console.WriteLine("We appreciate your feedback and will work to improve.\n");
+
+    }
+
+    private void Complain(int[] selectedIndex)
+    {
         string[] locations =
         {
             "DiddyLand - Amsterdam",
@@ -69,10 +78,6 @@ public class UserHelp
         string category = Options[selectedIndex[0]][0];
 
         _ctx.complaintLogic.SubmitComplaint(username, category, description, location);
-
-        Console.WriteLine("\n✅ Your complaint has been saved. Thank you!");
-        Console.WriteLine("We appreciate your feedback and will work to improve.\n");
-
     }
 
     public static void Complain(string mail)
@@ -88,11 +93,6 @@ public class UserHelp
     {
         string? username = _ctx.loginStatus.CurrentUserInfo?.Username;
 
-        if (username == null || username == "Guest")
-        {
-            Console.WriteLine("Guests don't receive messages.");
-            return;
-        }
 
         ShowPendingMessages();
 
@@ -124,6 +124,7 @@ public class UserHelp
             Console.WriteLine("This complaint is still pending.\n");
         }
     }
+
 
     private void ComplaintFood() { }
     private void ComplaintStaff() { }

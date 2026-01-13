@@ -41,6 +41,13 @@ public class ReservationLogic
         _sessionAccess.UpdateSession(session);
     }
 
+    public IEnumerable<AttractieModel> GetAttractions()
+    {
+        return _attractiesAccess.GetAll()
+            .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     public void ValidateReservationType(int totalGuests, ReservationType type)
     {
         if (type == ReservationType.Normal && totalGuests > MaxNormalReservation)

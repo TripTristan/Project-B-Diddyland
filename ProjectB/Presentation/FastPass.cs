@@ -18,9 +18,7 @@ public class FastPass
 
         string location = ChooseParkLocation();
 
-        var attractions = _attractiesAccess.GetAll()
-            .Where(a => a.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        var attractions = ReservationLogic.GetAttractions();
 
         if (attractions.Count == 0)
         {
