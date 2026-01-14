@@ -24,6 +24,7 @@ public class FastPass
         if (!attractions.Any())
         {
             Console.WriteLine($"No attractions found in {location}. Please add attractions first.");
+            UiHelpers.Pause();
             return;
         }
 
@@ -45,6 +46,7 @@ public class FastPass
         if (attractionId == 0)
         {
             Console.WriteLine("FastPass cancelled.");
+            UiHelpers.Pause();
             return;
         }
 
@@ -54,6 +56,7 @@ public class FastPass
         if (available.Count == 0)
         {
             Console.WriteLine($"\nNo available timeslots for this attraction today in {location}.");
+            UiHelpers.Pause();
             return;
         }
 
@@ -76,6 +79,7 @@ public class FastPass
         if (index == 0)
         {
             Console.WriteLine("FastPass cancelled.");
+            UiHelpers.Pause();
             return;
         }
 
@@ -111,10 +115,14 @@ public class FastPass
             Console.WriteLine($"Total Price  : {confirmation.TotalPrice:C}");
             Console.WriteLine("\nThank you and enjoy your ride!");
             Console.WriteLine("===================================");
+
+            UiHelpers.Pause();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"\nBooking failed: {ex.Message}");
+
+            UiHelpers.Pause();
         }
     }
 
