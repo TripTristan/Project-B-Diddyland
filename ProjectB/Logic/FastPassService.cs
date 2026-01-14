@@ -35,7 +35,7 @@ public class FastPassLogic
 
     public List<SessionModel> GetAvailableFastPassSessions(int attractionId, DateTime day, string location)
     {
-        var sessionsForDay = _sessionAccess.EnsureSessionsForAttractionAndDate(attractionId, day);
+        var sessionsForDay = _sessionAccess.EnsureFastPassSessionsForAttractionAndDate(attractionId, day, location);
 
         return sessionsForDay
             .Where(s => s.Capacity > 0)
@@ -48,12 +48,14 @@ public class FastPassLogic
         var session = _sessionAccess.GetSessionById(sessionId)
                       ?? throw new ArgumentException("Session not found.");
 
+        if (session.SessionType != 1)
+            throw new InvalidOperationException("This session is not a FastPass session.");
+
         if (!_reservationLogic.CanBookSession(sessionId, quantity))
             throw new InvalidOperationException("Not enough capacity for this timeslot.");
 
         const double basePrice = 10.0;
-        double  original = basePrice * quantity;
-
+        double original = basePrice * quantity;
 
         var orderNo = _reservationLogic.GenerateOrderNumber(user);
 
@@ -71,14 +73,25 @@ public class FastPassLogic
         session.Capacity -= quantity;
         _sessionAccess.UpdateSession(session);
 
+        string attractionName = "";
+        try
+        {
+            var attr = _attractiesAccess.GetAll(location)
+                        .FirstOrDefault(a => a.ID == session.AttractionId);
+            if (attr != null) attractionName = attr.Name;
+        }
+        catch
+        {
+            attractionName = "";
+        }
+
         return new Confirmation
         {
             OrderNumber = orderNo,
             Type = "FastPass",
-            Date = session.Date.ToString(),
-            Time = (int)session.Time > 0 && (int)session.Time <= UserReservation.TimeslotOptions.Count
-                ? UserReservation.TimeslotOptions[(int)session.Time - 1]
-                : session.Time.ToString(),
+            Attraction = attractionName,
+            Date = new DateTime(session.Date).ToString("yyyy-MM-dd"),
+            Time = new TimeSpan(session.Time).ToString(@"hh\:mm"),
             Quantity = quantity,
             PricePerPerson = basePrice,
             TotalPrice = original

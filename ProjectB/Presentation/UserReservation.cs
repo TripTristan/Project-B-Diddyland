@@ -17,62 +17,67 @@ public class UserReservation
     public static List<string> TimeslotOptions = new() { "09:00-13:00", "13:00-17:00", "17:00-21:00" };
 
 
-    private (double finalPrice, string? discountInfo) CheckGroupDiscount(List<int> guests)
+    private (double finalPrice, string? discountInfo) CalculateFinalPrice(List<int> guests,ReservationType reservationType)
     {
-        ReservationType reservationType = SelectReservationType();
-        int totalGuests = guests.Sum();
-        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
-
         double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
         var currentUser = _ctx.loginStatus.CurrentUserInfo;
 
-        string? discountInfo = null;
-        double finalPrice = basePrice;
-
+        // Loyalty discount first (no code, no group discount)
         if (_ctx.loyaltyDiscountLogic.CanUseLoyaltyDiscount(currentUser))
         {
-            discountInfo =
+            string discountInfo =
                 "🎉 Loyalty reward unlocked!\n" +
                 "• 5 different visit dates reached\n" +
                 "• 50% discount applied\n" +
                 "• One-time reward";
 
-            finalPrice = _ctx.loyaltyDiscountLogic.ApplyAndConsume(currentUser, basePrice);
+            double finalPrice = _ctx.loyaltyDiscountLogic.ApplyAndConsume(currentUser, basePrice);
             return (finalPrice, discountInfo);
         }
 
+        // Group discount next (codes disabled)
         if (reservationType == ReservationType.Group)
         {
-            discountInfo =
+            string discountInfo =
                 "Group Reservation\n" +
                 "• 20% discount applied\n" +
                 "• Discount codes disabled";
 
-            finalPrice = _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
+            double finalPrice = _ctx.reservationLogic.ApplyGroupDiscount(basePrice);
             return (finalPrice, discountInfo);
         }
 
+        // Normal reservation: ask for code
         Console.Write("\nDiscount code (optional): ");
         string? code = Console.ReadLine()?.Trim();
-        finalPrice = _ctx.discountLogic.Apply(code, basePrice);
 
-        return (finalPrice, discountInfo);
+        double priceWithCode = _ctx.discountLogic.Apply(code, basePrice);
+        return (priceWithCode, null);
     }
-
-
 
     public void Book()
     {
+        // 1) ask for type of reservation
+        ReservationType reservationType = SelectReservationType();
+
+        // 2) select date
+        DateTime chosenDate = DatePicker();
+
+        // 3) select timeslot
+        var sessionsForDate = _ctx.reservationLogic.GetSessionsByDate(chosenDate);
+        SessionModel session = ShowTimeslotsByDate(sessionsForDate);
+
+        // 4) select ages
         List<int> guests = GuestQuantitySelection();
         int totalGuests = guests.Sum();
 
-        DateTime chosenDate = DatePicker();
-        SessionModel session = ShowTimeslotsByDate(
-            _ctx.reservationLogic.GetSessionsByDate(chosenDate));
+        // validate type vs guest count now (so user gets feedback early)
+        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
 
+        // 5) ask for discount code (only if allowed) + apply discounts
+        var (finalPrice, discountInfo) = CalculateFinalPrice(guests, reservationType);
 
-        var (finalPrice, discountInfo) = CheckGroupDiscount(guests);
-
+        // 6) confirmation screen
         Console.WriteLine($"\nFinal Price: {finalPrice:C}");
 
         ShowBookingDetails(
@@ -90,7 +95,8 @@ public class UserReservation
                 session.Id,
                 totalGuests,
                 _ctx.loginStatus.CurrentUserInfo,
-                finalPrice);
+                finalPrice
+            );
         }
 
         ShowSuccessMessage();
@@ -147,16 +153,23 @@ public class UserReservation
 
     private DateTime DatePicker()
     {
-        DateTime date = DateSelection.DatePicker();
-        if (date < DateTime.Now)
-            Console.WriteLine("Cannot book in the past.");
-            this.DatePicker();
+        while (true)
+        {
+            DateTime date = DateSelection.DatePicker();
 
-        if (!_ctx.reservationLogic.CheckForTimeslotsOnDate(date))
-            _ctx.reservationLogic.PopulateTimeslots(date);
+            if (date.Date < DateTime.Now.Date)
+            {
+                Console.WriteLine("Cannot book in the past.");
+                continue; 
+            }
 
-        return date;
+            if (!_ctx.reservationLogic.CheckForTimeslotsOnDate(date))
+                _ctx.reservationLogic.PopulateTimeslots(date);
+
+            return date; 
+        }
     }
+
 
     private SessionModel ShowTimeslotsByDate(List<SessionModel> sessions)
     {

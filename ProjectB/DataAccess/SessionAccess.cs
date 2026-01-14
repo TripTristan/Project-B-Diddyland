@@ -20,7 +20,10 @@ public class SessionAccess
                  ID AS Id,
                  Date,
                  Time,
-                 Capacity
+                 Capacity,
+                 AttractionId,
+                 Location,
+                 SessionType
               FROM Sessions").ToList();
 
     public SessionModel? GetSessionById(long id)
@@ -29,7 +32,10 @@ public class SessionAccess
                  ID AS Id,
                  Date,
                  Time,
-                 Capacity
+                 Capacity,
+                 AttractionId,
+                 Location,
+                 SessionType
               FROM Sessions
               WHERE ID = @Id", new { Id = id });
 
@@ -43,46 +49,43 @@ public class SessionAccess
 
     public void Insert(SessionModel session)
     {
-        Console.WriteLine($"{session.Id} {session.Time} {session.Date} {session.Capacity}");
-        string sql = @"INSERT INTO Sessions
-                             (ID, Date, Time, Capacity)
-                             VALUES (@Id, @Date, @Time, @Capacity);";
+        const string sql = @"INSERT INTO Sessions
+                             (ID, Date, Time, Capacity, AttractionId, Location, SessionType)
+                             VALUES (@Id, @Date, @Time, @Capacity, @AttractionId, @Location, @SessionType);";
+
         _db.Connection.Execute(sql, session);
     }
 
-    public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date)
+    public List<SessionModel> GetNormalSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
         long dateTicks = date.Date.Ticks;
-        const string sql = @"SELECT 
+
+        const string sql = @"SELECT
                                 ID AS Id,
                                 Date,
                                 Time,
-                                Capacity
+                                Capacity,
+                                AttractionId,
+                                Location,
+                                SessionType
                              FROM Sessions
                              WHERE Date = @Date
+                               AND AttractionId = @AttractionId
+                               AND Location = @Location
+                               AND SessionType = 0
                              ORDER BY Time";
 
-        return _db.Connection.Query<SessionModel>(sql, new { Date = dateTicks }).ToList();
+        return _db.Connection.Query<SessionModel>(sql, new
+        {
+            Date = dateTicks,
+            AttractionId = attractionId,
+            Location = location
+        }).ToList();
     }
 
-    public List<SessionModel> GetSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
+    public List<SessionModel> EnsureNormalSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
     {
-        long dateTicks = date.Date.Ticks;
-        const string sql = @"SELECT 
-                                ID AS Id,
-                                Date,
-                                Time,
-                                Capacity
-                             FROM Sessions
-                             WHERE Date = @Date
-                             ORDER BY Time";
-
-        return _db.Connection.Query<SessionModel>(sql, new { Date = dateTicks }).ToList();
-    }
-
-    public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date)
-    {
-        var existing = GetSessionsForAttractionOnDate(attractionId, date);
+        var existing = GetNormalSessionsForAttractionOnDate(attractionId, date, location);
         if (existing.Any())
             return existing;
 
@@ -90,29 +93,72 @@ public class SessionAccess
 
         for (int i = 1; i <= 3; i++)
         {
-            var session = new SessionModel(NextId(), date.Ticks, i, 35);
+            var session = new SessionModel(NextId(), date.Date.Ticks, i, 35)
+            {
+                AttractionId = attractionId,
+                Location = location,
+                SessionType = 0
+            };
+
             Insert(session);
             newSessions.Add(session);
         }
 
         return newSessions;
     }
-    public List<SessionModel> EnsureSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
+
+    public List<SessionModel> GetFastPassSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
-        var existing = GetSessionsForAttractionOnDate(attractionId, date, location);
+        long dateTicks = date.Date.Ticks;
+
+        const string sql = @"SELECT
+                                ID AS Id,
+                                Date,
+                                Time,
+                                Capacity,
+                                AttractionId,
+                                Location,
+                                SessionType
+                             FROM Sessions
+                             WHERE Date = @Date
+                               AND AttractionId = @AttractionId
+                               AND Location = @Location
+                               AND SessionType = 1
+                             ORDER BY Time";
+
+        return _db.Connection.Query<SessionModel>(sql, new
+        {
+            Date = dateTicks,
+            AttractionId = attractionId,
+            Location = location
+        }).ToList();
+    }
+
+    public List<SessionModel> EnsureFastPassSessionsForAttractionAndDate(int attractionId, DateTime date, string location)
+    {
+        var existing = GetFastPassSessionsForAttractionOnDate(attractionId, date, location);
         if (existing.Any())
             return existing;
 
-        var newSessions = new List<SessionModel>();
+        int cap = 10;
 
-        for (int i = 1; i <= 3; i++)
+        var created = new List<SessionModel>();
+        var slots = GenerateHalfHourSlots(); // ticks-from-midnight
+
+        foreach (var slotTicks in slots)
         {
-            var session = new SessionModel(NextId(), date.Ticks, i, 35);
+            var session = new SessionModel(NextId(), date.Date.Ticks, slotTicks, cap)
+            {
+                AttractionId = attractionId,
+                Location = location,
+                SessionType = 1
+            };
+
             Insert(session);
-            newSessions.Add(session);
+            created.Add(session);
         }
 
-        return newSessions;
+        return created;
     }
 
     private List<long> GenerateHalfHourSlots()
@@ -122,24 +168,31 @@ public class SessionAccess
         var end = new TimeSpan(21, 0, 0);
 
         for (var t = start; t < end; t = t.Add(TimeSpan.FromMinutes(30)))
-        {
             slots.Add(t.Ticks);
-        }
 
         return slots;
     }
 
     public List<SessionModel> GetAllSessionsForDate(long date)
     {
-        string sql = $@"SELECT * FROM Sessions WHERE Date = {date}";
-        return _db.Connection.Query<SessionModel>(sql).ToList();
+        const string sql = @"SELECT
+                                ID AS Id,
+                                Date,
+                                Time,
+                                Capacity,
+                                AttractionId,
+                                Location,
+                                SessionType
+                             FROM Sessions
+                             WHERE Date = @Date";
+        return _db.Connection.Query<SessionModel>(sql, new { Date = date }).ToList();
     }
 
     public int NextId()
     {
         try
         {
-            string sql = $"SELECT IFNULL(MAX(Id), 0) + 1 FROM Sessions";
+            const string sql = @"SELECT IFNULL(MAX(Id), 0) + 1 FROM Sessions";
             return _db.Connection.ExecuteScalar<int>(sql);
         }
         catch (Exception e)
@@ -148,5 +201,4 @@ public class SessionAccess
             return 1;
         }
     }
-
 }

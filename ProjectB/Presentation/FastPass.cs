@@ -11,6 +11,7 @@ public class FastPass
     {
         _ctx = context;
     }
+
     public void Run(UserModel? currentUser = null)
     {
         Console.Clear();
@@ -20,7 +21,7 @@ public class FastPass
 
         var attractions = _ctx.reservationLogic.GetAttractions(location);
 
-        if (attractions.Count() == 0)
+        if (!attractions.Any())
         {
             Console.WriteLine($"No attractions found in {location}. Please add attractions first.");
             return;
@@ -56,14 +57,13 @@ public class FastPass
             return;
         }
 
-        Console.WriteLine($"\nAvailable timeslots for {day:yyyy-MM-dd}:");
+        Console.WriteLine($"\nAvailable FastPass timeslots for {day:yyyy-MM-dd}:");
 
         for (int i = 0; i < available.Count; i++)
         {
             var s = available[i];
-            long cap = s.Capacity;
-
-            Console.WriteLine($"  [{i + 1}] {s.Time} (Booked: {s.Capacity}/{cap})");
+            string timeLabel = new TimeSpan(s.Time).ToString(@"hh\:mm");
+            Console.WriteLine($"  [{i + 1}] {timeLabel} (Available: {s.Capacity})");
         }
 
         Console.WriteLine("\nChoose a timeslot (0 to cancel): ");
