@@ -99,6 +99,7 @@ Navigate using the arrow keys and press Enter to select.
                 _userGuest.Run();
                 break;
             case 3:
+                Environment.Exit(0);
                 break;
 
             default:
