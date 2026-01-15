@@ -1,21 +1,28 @@
 public class Profile
 {
     private readonly Dependencies _ctx;
-    private UserModel user;
 
     public Profile(Dependencies ctx)
     {
         _ctx = ctx;
-        user = _ctx.loginStatus.CurrentUserInfo;
     }
     public void Run()
     {
+        UserModel user = _ctx.loginStatus.CurrentUserInfo;
+        
+        if (user == null)
+        {
+            Console.WriteLine("No user logged in.");
+            UiHelpers.Pause();
+            return;
+        }
+        
         RenderProfile(user);
 
         List<List<string>> Options = new List<List<string>>
         {
             new List<string> {"Edit"},
-            new List<string> {"Back"}
+            new List<string> {"Go Back"}
         };
 
         MainMenu Menu = new MainMenu(Options, "Options:");

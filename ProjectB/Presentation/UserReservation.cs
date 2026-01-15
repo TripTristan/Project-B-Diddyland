@@ -58,7 +58,12 @@ public class UserReservation
     public void Book()
     {
         // 1) ask for type of reservation
-        ReservationType reservationType = SelectReservationType();
+        ReservationType? reservationType = SelectReservationType();
+        
+        if (reservationType == null)
+        {
+            return;
+        }
 
         // 2) select date
         DateTime chosenDate = DatePicker();
@@ -72,10 +77,10 @@ public class UserReservation
         int totalGuests = guests.Sum();
 
         // validate type vs guest count now (so user gets feedback early)
-        _ctx.reservationLogic.ValidateReservationType(totalGuests, reservationType);
+        _ctx.reservationLogic.ValidateReservationType(totalGuests, (ReservationType)reservationType);
 
         // 5) ask for discount code (only if allowed) + apply discounts
-        var (finalPrice, discountInfo) = CalculateFinalPrice(guests, reservationType);
+        var (finalPrice, discountInfo) = CalculateFinalPrice(guests, (ReservationType)reservationType);
 
         // 6) confirmation screen
         Console.WriteLine($"\nFinal Price: {finalPrice:C}");
@@ -135,16 +140,20 @@ public class UserReservation
         return _ctx.discountLogic.Apply(discountCode, basePrice);
     }
 
-    private ReservationType SelectReservationType()
+    private ReservationType? SelectReservationType()
     {
         var options = new List<List<string>>
         {
             new() { "Normal Reservation (1–10 people)" },
-            new() { "Group Reservation (10–30 people)" }
+            new() { "Group Reservation (10–30 people)" },
+            new() { "Go Back" }
         };
 
         var menu = new MainMenu(options, "Select Reservation Type");
         int[] result = menu.Run();
+
+        if (result[0] == 2)
+            return null;
 
         return result[0] == 0
             ? ReservationType.Normal

@@ -20,12 +20,17 @@ public class BookingHistory
         {
             new List<string> {"Show ALL bookings"},
             new List<string> {"Only Reservations"},
-            new List<string> {"Only FastPass"}
+            new List<string> {"Only FastPass"},
+            new List<string> {"Go Back"}
         };
 
         MainMenu Menu = new MainMenu(Options, "Filter your bookings:");
         int[] selectedIndex = Menu.Run();
-        UiHelpers.Pause();
+
+        if (selectedIndex[0] == 3)
+        {
+            return;
+        }
 
         Func<BookingModel, bool> filter = selectedIndex[0] switch
         {

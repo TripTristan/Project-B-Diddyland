@@ -17,13 +17,18 @@ public class UserHelp
             new List<string> {"Complaint about food"},
             new List<string> {"Complaint about staff or service"},
             new List<string> {"Complaint about safety"},
-            new List<string> {"Complaint about organization"}
+            new List<string> {"Complaint about organization"},
+            new List<string> {"Go Back"}
         };
         MainMenu Menu = new MainMenu(Options, "Pick one of the following topics to file a complaint about:");
         int[] selectedIndex = Menu.Run();
 
         Console.Clear();
 
+        if (selectedIndex[0] == 4)
+        {
+            return;
+        }
 
         switch (selectedIndex[0])
         {

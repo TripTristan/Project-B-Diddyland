@@ -18,6 +18,11 @@ public class FastPass
         Console.WriteLine("=== FastPass Reservation ===\n");
 
         string location = ChooseParkLocation();
+        
+        if (location == null)
+        {
+            return;
+        }
 
         var attractions = _ctx.reservationLogic.GetAttractions(location);
 
@@ -128,21 +133,49 @@ public class FastPass
 
     private string ChooseParkLocation()
     {
-        string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam" };
+        string[] locations = { "DiddyLand - Amsterdam", "DiddyLand - Rotterdam", "Go Back" };
+        int selectedIndex = 0;
 
         while (true)
         {
-            Console.WriteLine("Select park location:");
+            Console.Clear();
+            Console.WriteLine("Select park location:\n");
+            
             for (int i = 0; i < locations.Length; i++)
-                Console.WriteLine($"{i + 1}) {locations[i]}");
+            {
+                if (i == selectedIndex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"{{ {locations[i]} }}");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine($"  {locations[i]}");
+                }
+            }
 
-            Console.Write("\nEnter choice number: ");
-            string? input = Console.ReadLine();
+            ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+            ConsoleKey keyPressed = keyInfo.Key;
 
-            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= locations.Length)
-                return locations[choice - 1];
-
-            Console.WriteLine("Invalid input. Please choose a valid number.\n");
+            if (keyPressed == ConsoleKey.UpArrow)
+            {
+                selectedIndex--;
+                if (selectedIndex == -1)
+                    selectedIndex = locations.Length - 1;
+            }
+            else if (keyPressed == ConsoleKey.DownArrow)
+            {
+                selectedIndex++;
+                if (selectedIndex == locations.Length)
+                    selectedIndex = 0;
+            }
+            else if (keyPressed == ConsoleKey.Enter)
+            {
+                if (selectedIndex == 2)
+                    return null;
+                return locations[selectedIndex];
+            }
         }
     }
 

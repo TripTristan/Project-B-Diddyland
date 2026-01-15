@@ -22,15 +22,15 @@ public class UserGuest
         while (_ctx.loginStatus.CurrentUserInfo != null &&
                _ctx.loginStatus.CurrentUserInfo.Role == 0)
         {
-            string Prompt = $"Diddyland – Guest Page\nLogged in as: {_ctx.loginStatus.CurrentUserInfo.Username} (Guest)";
+            string Prompt = $"Diddyland – Guest Page\nLogged in as: {_ctx.loginStatus.CurrentUserInfo.Username} (Guest)\nWhat would you like to do today?";
             List<List<string>> Options = new List<List<string>>
             {
-                new List<string> {"Make Reservation"},
-                new List<string> {"Buy Fastpass"},
-                new List<string> {"Submit A Complaint"},
-                new List<string> {"View Map"},
-                new List<string> {"View Orders"},
-                new List<string> {"View Profile"},
+                new List<string> {"Make a Reservation"},
+                new List<string> {"Buy a fastpass for an Attraction"},
+                new List<string> {"Submit a complaint"},
+                new List<string> {"View the maps of our themeparks"},
+                new List<string> {"View your order history"},
+                new List<string> {"Manage your profile"},
                 new List<string> {"Logout"}
             };
 
