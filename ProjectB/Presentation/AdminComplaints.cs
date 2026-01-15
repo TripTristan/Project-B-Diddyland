@@ -250,7 +250,6 @@ public class AdminComplaints
             return;
         }
 
-        UiHelpers.Pause();
         var selected = openComplaints.FirstOrDefault(c => c.Id == id);
         if (selected == null)
         {
@@ -265,7 +264,6 @@ public class AdminComplaints
         _ctx.complaintLogic.MarkComplaintHandled(id, response);
 
         Console.WriteLine("✔ Complaint marked as handled with admin response.");
-        UiHelpers.Pause();
     }
 
     private void DeleteComplaint(string location)

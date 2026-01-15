@@ -70,8 +70,10 @@ public class UserHelp
             new List<string> { "DiddyLand - Rotterdam" }
         };
 
-        Console.Write("\nEnter location number: ");
-        string locInput = Console.ReadLine();
+        // Console.Write("\nEnter location number: ");
+        // string locInput = Console.ReadLine();
+
+        string locInput = "1";
         int locChoice = int.TryParse(locInput, out int locNum) ? locNum : 1;
         if (locChoice < 1 || locChoice > locations.Length) locChoice = 1;
 

@@ -44,10 +44,10 @@ public class Application
                 {
                     UiHelpers.Warn("Invalid role. Logging out...");
                     _userAuth.Logout();
-                    UiHelpers.Pause();
                 }
             }
             ShowSplash();
+            Run();
         }
         catch (Exception ex)
         {
@@ -89,11 +89,10 @@ Navigate using the arrow keys and press Enter to select.
         {
             case 0:
                 _userAuth.Login();
-                UiHelpers.Pause();
                 break;
             case 1:
                 _register.Register();
-                UiHelpers.Pause();
+                // ShowSplash();
                 break;
             case 2:
                 EnsureGuestSession();

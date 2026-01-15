@@ -36,7 +36,6 @@ public class UserGuest
 
         MainMenu Menu = new MainMenu(Options, Prompt);
         int[] selectedIndex = Menu.Run();
-        UiHelpers.Pause();
 
             switch (selectedIndex[0])
             {
@@ -50,7 +49,6 @@ public class UserGuest
 
                 case 2:
                     _ctx.userHelp.Run();
-                    UiHelpers.Pause();
                     break;
 
                 case 3:
@@ -60,7 +58,6 @@ public class UserGuest
 
                 case 4:
                     _ctx.bookingHistory.Display(_ctx.loginStatus.CurrentUserInfo.Username);
-                    UiHelpers.Pause();
                     break;
 
                 case 5:

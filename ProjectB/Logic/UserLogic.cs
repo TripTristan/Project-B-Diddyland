@@ -169,7 +169,7 @@ public class UserLogic
             2 => "Superadmin",
             _ => "Unknown"
         };
-        if(!rolechange)
+        if(rolechange)
         {
             return $"has been promoted to {role}.";
         }
