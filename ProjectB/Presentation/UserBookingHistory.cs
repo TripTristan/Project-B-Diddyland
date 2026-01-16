@@ -68,15 +68,12 @@ public class BookingHistory
         return $"{dateOnly} {timeSlot}";
     }
 
-    // ✅ NEW: handles BOTH normal (1..3) AND fastpass (ticks)
     private static string FormatSessionTime(long time)
     {
-        // Normal sessions are stored as 1..3
         if (time == 1) return UserReservation.TimeslotOptions[0];
         if (time == 2) return UserReservation.TimeslotOptions[1];
         if (time == 3) return UserReservation.TimeslotOptions[2];
 
-        // FastPass sessions are stored as ticks-from-midnight
         try
         {
             var ts = new TimeSpan(time);

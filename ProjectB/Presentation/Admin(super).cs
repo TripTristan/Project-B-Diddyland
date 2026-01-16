@@ -28,7 +28,7 @@ public class AdminSuper
                 new List<string> {"Financial Dashboard"},
                 new List<string> {"Attraction management"},
                 new List<string> {"Menu management"},
-                // new List<string> {"Manage Reservations"},
+                new List<string> {"Manage Reservations"},
                 new List<string> {"Map"},
                 new List<string> {"Manage Admins"},
                 new List<string> {"Manage Complaints"},
@@ -52,31 +52,28 @@ public class AdminSuper
                 case 2:
                     _ctx.adminFoodmenu.Run();
                     break;
-                // case 3:
-                //     _reservationManagement(); to be implemented
-                //     break;
-                // case 3:
-                //     UiHelpers.Pause();
-                //     break;
-
                 case 3:
-                    ParkMap.ShowMap();
+                    _ctx.adminReservations.Run(); 
                     break;
 
                 case 4:
-                    _ctx.adminManagement.Run();
+                    ParkMap.ShowMap();
                     break;
 
                 case 5:
+                    _ctx.adminManagement.Run();
+                    break;
+
+                case 6:
                     _ctx.adminComplaints.Run();
                     break;
-                case 6:
+                case 7:
                     _ctx.discount.CreateDiscountCode();
                     break;
-                case 7:
+                case 8:
                     _ctx.userAuth.Logout();
                     return;
-                case 8:
+                case 9:
                     Environment.Exit(0);
                     return;
                 default:

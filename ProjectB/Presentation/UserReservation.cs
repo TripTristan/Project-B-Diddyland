@@ -22,7 +22,6 @@ public class UserReservation
         double basePrice = _ctx.reservationLogic.CalculatePriceForGuests(guests);
         var currentUser = _ctx.loginStatus.CurrentUserInfo;
 
-        // Loyalty discount first (no code, no group discount)
         if (_ctx.loyaltyDiscountLogic.CanUseLoyaltyDiscount(currentUser))
         {
             string discountInfo =
@@ -35,7 +34,6 @@ public class UserReservation
             return (finalPrice, discountInfo);
         }
 
-        // Group discount next (codes disabled)
         if (reservationType == ReservationType.Group)
         {
             string discountInfo =
@@ -47,7 +45,6 @@ public class UserReservation
             return (finalPrice, discountInfo);
         }
 
-        // Normal reservation: ask for code
         Console.Write("\nDiscount code (optional): ");
         string? code = Console.ReadLine()?.Trim();
 
@@ -57,7 +54,6 @@ public class UserReservation
 
     public void Book()
     {
-        // 1) ask for type of reservation
         ReservationType? reservationType = SelectReservationType();
         
         if (reservationType == null)
@@ -65,24 +61,18 @@ public class UserReservation
             return;
         }
 
-        // 2) select date
         DateTime chosenDate = DatePicker();
 
-        // 3) select timeslot
         var sessionsForDate = _ctx.reservationLogic.GetSessionsByDate(chosenDate);
         SessionModel session = ShowTimeslotsByDate(sessionsForDate);
 
-        // 4) select ages
         List<int> guests = GuestQuantitySelection();
         int totalGuests = guests.Sum();
 
-        // validate type vs guest count now (so user gets feedback early)
         _ctx.reservationLogic.ValidateReservationType(totalGuests, (ReservationType)reservationType);
 
-        // 5) ask for discount code (only if allowed) + apply discounts
         var (finalPrice, discountInfo) = CalculateFinalPrice(guests, (ReservationType)reservationType);
 
-        // 6) confirmation screen
         Console.WriteLine($"\nFinal Price: {finalPrice:C}");
 
         ShowBookingDetails(
