@@ -15,6 +15,7 @@ public class Dependencies
     public BookingAccess bookingAccess;
     public FinancialAccess financialAccess;
     public DiscountCodeAccess discountAccess;
+    public AdminReservationAccess adminReservationAccess;
 
     // Logic layers
     public UserLogic userLogic;
@@ -28,6 +29,7 @@ public class Dependencies
     public FinancialLogic financialLogic;
     public DiscountLogic discountLogic;
     public LoyaltyDiscountLogic loyaltyDiscountLogic;
+    public AdminReservationLogic adminReservationLogic;
 
     // UI / Controllers
     public ManageAdmins adminManagement;
@@ -48,6 +50,9 @@ public class Dependencies
     public Admin admin;
     public AdminSuper adminSuper;
     public Application app;
+    public AdminReservationUI adminReservations;
+    public DatePickerUI datePicker;
+
 
     public Dependencies(DatabaseContext dB)
     {
@@ -65,6 +70,7 @@ public class Dependencies
         bookingAccess = new BookingAccess(db);
         financialAccess = new FinancialAccess(db);
         discountAccess = new DiscountCodeAccess(db);
+        adminReservationAccess = new AdminReservationAccess(db);
 
         // Logic
         userLogic = new UserLogic(userAccess);
@@ -77,6 +83,11 @@ public class Dependencies
             reservationLogic,
             reservationAccess,
             attractiesAccess
+        );
+        adminReservationLogic = new AdminReservationLogic(
+            adminReservationAccess,
+            sessionAccess,
+            reservationLogic
         );
         foodmenuLogic = new FoodmenuLogic();
         complaintLogic = new ComplaintLogic(complaintsAccess);
@@ -101,6 +112,13 @@ public class Dependencies
         fastPass = new FastPass(this);
         admin = new Admin(this);
         adminSuper = new AdminSuper(this);
+        datePicker = new DatePickerUI(financialLogic, reservationLogic);
+
+        adminReservations = new AdminReservationUI(
+            adminReservationLogic,
+            datePicker,
+            reservation
+        );
 
 
         app = new Application(

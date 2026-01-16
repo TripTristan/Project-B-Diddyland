@@ -1,4 +1,3 @@
-// SessionAccess.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,10 +56,6 @@ public class SessionAccess
         _db.Connection.Execute(sql, session);
     }
 
-    // -------------------------
-    // NORMAL SESSIONS (3 blocks)
-    // -------------------------
-
     public List<SessionModel> GetNormalSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
         long dateTicks = date.Date.Ticks;
@@ -94,7 +89,6 @@ public class SessionAccess
         if (existing.Any())
             return existing;
 
-        // ✅ capacity comes from the attraction
         int cap = GetAttractionCapacity(attractionId, fallback: 35);
 
         var newSessions = new List<SessionModel>();
@@ -114,10 +108,6 @@ public class SessionAccess
 
         return newSessions;
     }
-
-    // -------------------------
-    // FASTPASS SESSIONS (half-hour)
-    // -------------------------
 
     public List<SessionModel> GetFastPassSessionsForAttractionOnDate(int attractionId, DateTime date, string location)
     {
@@ -152,11 +142,10 @@ public class SessionAccess
         if (existing.Any())
             return existing;
 
-        // ✅ capacity comes from the attraction
         int cap = GetAttractionCapacity(attractionId, fallback: 10);
 
         var created = new List<SessionModel>();
-        var slots = GenerateHalfHourSlots(); // ticks-from-midnight
+        var slots = GenerateHalfHourSlots(); 
 
         foreach (var slotTicks in slots)
         {
@@ -174,7 +163,6 @@ public class SessionAccess
         return created;
     }
 
-    // ✅ uses your AttractiesAccess API (GetById)
     private int GetAttractionCapacity(int attractionId, int fallback)
     {
         try
@@ -185,7 +173,6 @@ public class SessionAccess
         }
         catch
         {
-            // ignore and fall back
         }
 
         return fallback;

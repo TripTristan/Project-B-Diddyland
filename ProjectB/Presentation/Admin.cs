@@ -23,9 +23,9 @@ public class Admin
                 new List<string> {"Map"},
                 new List<string> {"Attractions"},
                 new List<string> {"Menu management"},
-                // new List<string> {"Manage Reservations"},
-                new List<string> {"Logout"},
+                new List<string> {"Manage Reservations"},
                 new List<string> {"Manage Complaints"},
+                new List<string> {"Logout"},
                 new List<string> {"Quit"}
             };
             List<List<string>> MapOptions = new List<List<string>>
@@ -57,19 +57,21 @@ public class Admin
                     _ctx.adminFoodmenu.Run();
                     break;
 
-                // case 4:
-                    //     _reservationManagement(); to be implemented
-                    //     break;
-
                 case 3:
-                    _ctx.userAuth.Logout();
-                    UiHelpers.Pause();
-                    return;
+                    _ctx.adminReservations.Run(); 
+                    break;
+
                 case 4:
                     _ctx.adminComplaints.Run();
                     UiHelpers.Pause();
                     break;
+
                 case 5:
+                    _ctx.userAuth.Logout();
+                    UiHelpers.Pause();
+                    return;
+
+                case 6:
                     Environment.Exit(0);
                     return;
 

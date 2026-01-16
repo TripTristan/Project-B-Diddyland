@@ -8,7 +8,6 @@ public class Application
     private readonly UserGuest _userGuest;
     private readonly Admin _admin;
     private readonly AdminSuper _AdminSuper;
-    // private readonly AdminSuper _AdminSuper;
 
     public Application(
         LoginStatus loginStatus,
