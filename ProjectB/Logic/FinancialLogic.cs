@@ -22,6 +22,19 @@ public class FinancialLogic
         return orders;
     }
 
+    public DateTime GetDateFromCoordinate(int[] coord, int year, int month)
+    {
+        int day = (coord[0] * 5) + coord[1];
+        int daysInMonth = DateTime.DaysInMonth(year, month);
+        
+        if (day > daysInMonth)
+        {
+            day = daysInMonth;
+        }
+        
+        return new DateTime(year, month, day);
+    }
+
     public void GraphByDateAndRevenue(List<long> date, List<double> revenue)
     {
         Console.WriteLine();
