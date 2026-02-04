@@ -15,6 +15,8 @@ public class ReservationLogic
 
     public ReservationLogic(Dependencies ctx)
     {
+        if (ctx == null)
+            return;
         _sessionAccess = ctx.sessionAccess;
         _reservationAccess = ctx.reservationAccess;
         _attractiesAccess = ctx.attractiesAccess;

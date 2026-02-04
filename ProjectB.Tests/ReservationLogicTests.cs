@@ -113,4 +113,65 @@ public class ReservationLogicTests
         string result = _logic.GenerateOrderNumber(null);
         Assert.IsTrue(result.Contains("ORD-GUEST-"));
     }
+
+    [DataTestMethod]
+    [DataRow(-1, ReservationType.Normal)]
+    [DataRow(-10, ReservationType.Group)]
+    public void ValidateReservationType_NegativeGuests_ShouldThrow(int totalGuests, ReservationType type)
+    {
+        var logic = new ReservationLogic(null); 
+
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            logic.ValidateReservationType(totalGuests, type));
+    }
+
+    [DataTestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(2)]
+    public void CalculatePriceForGuests_TooFewGuestTypes_ShouldThrowArgumentException(int count)
+    {
+        var logic = new ReservationLogic(null);
+        var guests = Enumerable.Repeat(1, count).ToList();
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            logic.CalculatePriceForGuests(guests));
+    }
+
+    [DataTestMethod]
+    [DataRow(-1, 0, 0)]
+    [DataRow(0, -1, 0)]
+    [DataRow(0, 0, -1)]
+    public void CalculatePriceForGuests_Negatives_ShouldThrow(int a, int b, int c)
+    {
+        var logic = new ReservationLogic(null);
+        var guests = new List<int> { a, b, c };
+
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            logic.CalculatePriceForGuests(guests));
+    }
+
+    [TestMethod]
+    public void AvailabilityFormatter_InvalidTime_ShouldNotThrow()
+    {
+        var logic = new ReservationLogic(null);
+
+        var session = new SessionModel(1, DateTime.Now.Ticks, 999, 20);
+
+        string result = logic.AvailabilityFormatter(session);
+
+        Assert.IsTrue(result.Contains("UNKNOWN") || !string.IsNullOrWhiteSpace(result));
+    }
+
+    [DataTestMethod]
+    [DataRow(-0.01)]
+    [DataRow(-100)]
+    public void ApplyGroupDiscount_NegativePrice_ShouldThrow(double basePrice)
+    {
+        var logic = new ReservationLogic(null);
+
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            logic.ApplyGroupDiscount(basePrice));
+    }
+
 }
