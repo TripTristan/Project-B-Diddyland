@@ -25,6 +25,8 @@ public class AttractionLogicTests
     [DataRow("Coaster", "Ride", 120, 0, "Zone A")]
     [DataRow("Coaster", "Ride", 120, 150, "Zone A")]
     [DataRow("Coaster", "Ride", 120, 20, "")]
+    [DataRow("Coaster", "Ride", 0, 20, "Zone A")]      
+    [DataRow("Coaster", "Ride", 120, 100, "Zone A")] 
     public void Add_InvalidModel_ThrowsArgumentException(
         string name, string type, int height, int capacity, string location)
     {
