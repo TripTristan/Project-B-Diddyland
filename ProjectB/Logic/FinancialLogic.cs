@@ -9,7 +9,6 @@ public class FinancialLogic
 
     public FinancialLogic(ReservationAccess reservationAccess, UserAccess userAccess)
     {
-        // Keep as-is (tests pass null on purpose; only "pure" method is tested here)
         _reservationAccess = reservationAccess;
         _userAccess = userAccess;
     }
