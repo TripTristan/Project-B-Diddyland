@@ -14,12 +14,14 @@ public class UserLogicTests
     }
 
     [DataTestMethod]
-    [DataRow("+31612345678", true)] 
-    [DataRow("0612345678", true)]   
+    [DataRow("+31612345678", true)]
+    [DataRow("0612345678", true)]
     [DataRow("123456", false)]
     [DataRow("+1234567", false)]
     [DataRow("", false)]
     [DataRow("A061234567", false)]
+    [DataRow(" 0612345678 ", true)]       
+    [DataRow(" +31612345678 ", true)]     
     public void IsPhoneValid_Tests(string phone, bool expected)
     {
         var result = _logic.IsPhoneValid(phone);
@@ -51,6 +53,7 @@ public class UserLogicTests
     [DataRow("A", false)]
     [DataRow("ThisNameIsWayTooLongForValidation", false)]
     [DataRow("J0hn", false)]
+    [DataRow("John!", false)]
     public void IsNameValid_Tests(string name, bool expected)
     {
         Assert.AreEqual(expected, _logic.IsNameValid(name));
@@ -58,10 +61,11 @@ public class UserLogicTests
 
     [DataTestMethod]
     [DataRow("Aa1!test", true)]
-    [DataRow("short1!", false)] 
+    [DataRow("short1!", false)]
     [DataRow("NOLOWERCASE1!", false)]
     [DataRow("NoDigits!", false)]
     [DataRow("NoSpecial1", false)]
+    [DataRow("Aa1!aaaaaaaaaaaaaaaaaaaa", false)] // > 16 chars
     public void IsPasswordValid_Tests(string password, bool expected)
     {
         Assert.AreEqual(expected, _logic.IsPasswordValid(password));
@@ -83,5 +87,24 @@ public class UserLogicTests
         var dob = DateTime.Now.AddYears(-20).ToString("dd-MM-yyyy");
         var age = _logic.DOBtoAGE(dob);
         Assert.IsTrue(age >= 19 && age <= 21);
+    }
+
+    [TestMethod]
+    public void Register_WithNullAccess_ThrowsInvalidOperationException()
+    {
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            _logic.Register("john", "test@example.com", "01-01-2000", 180, "0612345678", "Aa1!test"));
+    }
+
+    [TestMethod]
+    public void DeleteUser_WithNullAccess_ThrowsInvalidOperationException()
+    {
+        Assert.ThrowsException<InvalidOperationException>(() => _logic.DeleteUser(1));
+    }
+
+    [TestMethod]
+    public void GetById_WithNullAccess_ThrowsInvalidOperationException()
+    {
+        Assert.ThrowsException<InvalidOperationException>(() => _logic.GetById(1));
     }
 }
