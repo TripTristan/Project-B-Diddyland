@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 public class FinancialLogic
 {
     private readonly ReservationAccess _reservationAccess;
@@ -5,10 +9,10 @@ public class FinancialLogic
 
     public FinancialLogic(ReservationAccess reservationAccess, UserAccess userAccess)
     {
+        // Keep as-is (tests pass null on purpose; only "pure" method is tested here)
         _reservationAccess = reservationAccess;
         _userAccess = userAccess;
     }
-
 
     public List<ReservationModel> GetRevenueByDateRange(long beginDate, long endDate)
     {
@@ -24,14 +28,24 @@ public class FinancialLogic
 
     public DateTime GetDateFromCoordinate(int[] coord, int year, int month)
     {
+        if (coord == null)
+            throw new ArgumentNullException(nameof(coord));
+
+        if (coord.Length < 2)
+            throw new ArgumentException("Coordinate must contain at least 2 values.", nameof(coord));
+
         int day = (coord[0] * 5) + coord[1];
+
+        if (day <= 0)
+            day = 1;
+
         int daysInMonth = DateTime.DaysInMonth(year, month);
-        
+
         if (day > daysInMonth)
         {
             day = daysInMonth;
         }
-        
+
         return new DateTime(year, month, day);
     }
 
@@ -44,5 +58,4 @@ public class FinancialLogic
     {
         return _userAccess.GetAllUsers().ToList();
     }
-
 }
