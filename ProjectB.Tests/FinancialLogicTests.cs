@@ -66,4 +66,31 @@ public class FinancialLogicTests
 
         Assert.AreEqual(22, result.Day);
     }
+
+    [TestMethod]
+    public void GetDateFromCoordinate_CoordNull_ThrowsArgumentNullException()
+    {
+        Assert.ThrowsException<ArgumentNullException>(() =>
+            _logic.GetDateFromCoordinate(null, 2024, 1));
+    }
+
+    [TestMethod]
+    public void GetDateFromCoordinate_CoordTooShort_ThrowsArgumentException()
+    {
+        int[] coord = { 1 }; 
+
+        Assert.ThrowsException<ArgumentException>(() =>
+            _logic.GetDateFromCoordinate(coord, 2024, 1));
+    }
+
+    [TestMethod]
+    public void GetDateFromCoordinate_DayZero_ShouldClampToFirstDay()
+    {
+        int[] coord = { 0, 0 }; 
+        DateTime result = _logic.GetDateFromCoordinate(coord, 2024, 1);
+
+        Assert.AreEqual(1, result.Day);
+        Assert.AreEqual(1, result.Month);
+        Assert.AreEqual(2024, result.Year);
+    }
 }
