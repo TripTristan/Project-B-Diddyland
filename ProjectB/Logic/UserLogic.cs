@@ -4,30 +4,42 @@ using System.Linq;
 
 public class UserLogic
 {
-    private readonly IUserAccess _userAccess;
+    private readonly IUserAccess? _userAccess;
 
     public UserLogic(IUserAccess userAccess)
     {
         _userAccess = userAccess;
     }
 
+    private void EnsureAccess()
+    {
+        if (_userAccess == null)
+            throw new InvalidOperationException("User access is not configured.");
+    }
+
     public bool IsPhoneValid(string phone)
     {
+        if (phone == null) return false;
+
+        phone = phone.Trim();
         if (phone.Length == 0) return false;
 
         if (phone[0] != '+' && phone[0] != '0')
             return false;
 
-        if ((phone.Trim().Substring(1, phone.Trim().Length - 1).All(char.IsDigit)
-                && phone[0] == '+' && phone.Trim().Length == 12)
-            || (phone.Trim().All(char.IsDigit)
-                && phone[0] == '0' && phone.Length > 1 && phone[1] == '6' && phone.Trim().Length == 10))
+        if (phone[0] == '+' && phone.Length == 12)
         {
-            return true;
+            return phone.Substring(1).All(char.IsDigit);
+        }
+
+        if (phone[0] == '0' && phone.Length == 10)
+        {
+            return phone.All(char.IsDigit) && phone.Length > 1 && phone[1] == '6';
         }
 
         return false;
     }
+
     public bool IsHeightValid(int height)
     {
         return height >= 30 && height <= 250;
@@ -41,7 +53,6 @@ public class UserLogic
         int at = email.IndexOf("@");
         int dot = email.LastIndexOf(".");
 
-
         if (at <= 0) return false;
         if (dot <= at + 1) return false;
         if (dot == email.Length - 1) return false;
@@ -49,18 +60,22 @@ public class UserLogic
         return true;
     }
 
-
     public bool IsNameValid(string name)
     {
-        if (2 < name.Length && name.Length < 20 && name.All(ch => !char.IsDigit(ch)))
-            return true;
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
 
-        return false;
+        if (!(2 < name.Length && name.Length < 20))
+            return false;
+
+        return name.All(char.IsLetter);
     }
 
     public bool IsPasswordValid(string password)
     {
-        if (password.Length < 8)
+        if (password == null) return false;
+
+        if (password.Length < 8 || password.Length > 16)
             return false;
 
         if (!password.Any(char.IsUpper))
@@ -104,8 +119,10 @@ public class UserLogic
 
     public void Register(string name, string email, string dateOfBirth, int height, string phone, string password)
     {
+        EnsureAccess();
+
         UserModel registeredAccount = new UserModel(
-            _userAccess.NextId(),
+            _userAccess!.NextId(),
             name.ToLower(),
             email,
             dateOfBirth,
@@ -116,7 +133,11 @@ public class UserLogic
         _userAccess.Write(registeredAccount);
     }
 
-    public UserModel? GetById(int id) => _userAccess.GetById(id);
+    public UserModel? GetById(int id)
+    {
+        EnsureAccess();
+        return _userAccess!.GetById(id);
+    }
 
     public (bool ok, string? error) UpdateProfile(UserModel updated)
     {
@@ -140,7 +161,8 @@ public class UserLogic
 
         try
         {
-            _userAccess.Update(updated);
+            EnsureAccess();
+            _userAccess!.Update(updated);
             return (true, null);
         }
         catch (Exception ex)
@@ -151,12 +173,14 @@ public class UserLogic
 
     public void DeleteUser(int id)
     {
-        _userAccess.DeleteUser(id);
+        EnsureAccess();
+        _userAccess!.DeleteUser(id);
     }
 
     public string SetRole(UserModel user, bool rolechange, int adminid)
     {
-        _userAccess.SetRole(user);
+        EnsureAccess();
+        _userAccess!.SetRole(user);
         return intToRole(rolechange, adminid);
     }
 
@@ -169,7 +193,7 @@ public class UserLogic
             2 => "Superadmin",
             _ => "Unknown"
         };
-        if(rolechange)
+        if (rolechange)
         {
             return $"has been promoted to {role}.";
         }
